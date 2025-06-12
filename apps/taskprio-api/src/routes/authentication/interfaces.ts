@@ -1,0 +1,26 @@
+import { Request } from "express";
+import { TLoginRequestBody, TRegisterRequestBody } from "./types.js";
+
+export interface ILoginRequest extends Request {
+    body : TLoginRequestBody
+}
+
+export interface IGoogleLoginRequest extends Request {
+    body : {
+        credential : string,
+        client_id : string
+    },
+    user : {
+        google_user_id : string,
+        email : string,
+        email_verified : boolean,
+        name : string,
+        given_name : string,
+        family_name : string,
+        picture? : string
+    }
+}
+
+export interface IRegisterRequest extends Request {
+    body : TRegisterRequestBody
+}

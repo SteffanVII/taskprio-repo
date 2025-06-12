@@ -1,0 +1,45 @@
+{
+  "name": "taskprio-api",
+  "version": "1.0.0",
+  "description": "Taskprio Service",
+  "license": "ISC",
+  "author": "Steffan",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "lint": "eslint .",
+    "dev": "nodemon src/app.ts --exec tsx",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "argon2": "^0.43.0",
+    "axios": "^1.9.0",
+    "cookie": "^1.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "google-auth-library": "^9.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.15.6",
+    "resend": "^4.5.2",
+    "slugify": "^1.6.6",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.3",
+    "@types/pg": "^8.11.14",
+    "@types/ws": "^8.18.1",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "@repo/eslint-config" : "workspace:*",
+    "eslint": "^9.22.0"
+  }
+}
