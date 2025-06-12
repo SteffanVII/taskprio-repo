@@ -2,7 +2,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { createPostgrePool } from "./database/postgresql.js";
+import { createPostgrePool, getPostgrePool } from "./database/postgresql.js";
 import reigsterAuthenticationRoutes from "./routes/authentication/authentication.js";
 import cookieParser from "cookie-parser";
 import registerProjectRoutes from "./routes/project/project.js";
@@ -103,3 +103,58 @@ registerWebSocketLogic(wss)
 SERVER.listen(PORT, () => {
     console.log(` Server is running on port ${PORT} `)
 })
+
+// Graceful shutdown handling
+const gracefulShutdown = async (signal: string) => {
+    console.log(`\n${signal} received. Starting graceful shutdown...`);
+    
+    try {
+        // Close the HTTP server (stops accepting new connections)
+        await new Promise<void>((resolve, reject) => {
+            SERVER.close((err) => {
+                if (err) {
+                    console.error('Error closing server:', err);
+                    reject(err);
+                } else {
+                    console.log('HTTP server closed');
+                    resolve();
+                }
+            });
+        });
+
+        // Close WebSocket connections
+        console.log('Closing WebSocket connections...');
+        wss.close()
+        
+        // Close database pool
+        const pool = getPostgrePool();
+        if (pool) {
+            console.log('Closing database pool...');
+            await pool.end();
+            console.log('Database pool closed');
+        }
+
+        console.log('Graceful shutdown completed');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error during graceful shutdown:', error);
+        process.exit(1);
+    }
+};
+
+// Handle different termination signals
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));   // Ctrl+C
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM')); // Termination signal
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // Nodemon restart
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    gracefulShutdown('uncaughtException');
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    gracefulShutdown('unhandledRejection');
+});
