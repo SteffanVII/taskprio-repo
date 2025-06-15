@@ -4,6 +4,8 @@ import { resend } from "../../app.js";
 import jwt from "jsonwebtoken";
 import { TInvitationTokenPayload } from "./types.js";
 import { getUserByEmail } from "../../database/queries/user/query.js";
+import { PoolClient } from "pg";
+import { getPoolClient } from "../../database/postgresql.js";
 
 const registerInvitationRoutes = ( router : Router ) => {
 
@@ -19,6 +21,9 @@ const registerInvitationRoutes = ( router : Router ) => {
                 res.status(400).json({ message : "Invalid request" });
                 return;
             }
+
+            let client : PoolClient;
+            let releaseClient : () => void;
 
             try {
 
@@ -65,11 +70,47 @@ const registerInvitationRoutes = ( router : Router ) => {
                     return;
                 }
 
+                const {
+                    client : newClient,
+                    release
+                } = await getPoolClient()
+                
+                client = newClient;
+                releaseClient = release;
+
+                await Promise.all( emailsWithToken.map( async email => {
+
+                    await client.query({
+                        text : `--sql
+                            INSERT INTO workspace_invitation (
+                                workspace_id,
+                                sender_id,
+                                email,
+                                token_string,
+                                accepted
+                            ) VALUES (
+                                $1, $2, $3, $4, $5
+                            )
+                        `,
+                        values : [
+                            workspace_id,
+                            user_id,
+                            email.email,
+                            email.token,
+                            false
+                        ]
+                    })
+
+                } ) )
+
                 res.status(200).json({ message : "Invitation sent" });
 
             } catch (error) {
                 console.error(error);
+                if ( client ) await client.query("ROLLBACK");
                 res.status(500).json({ message : "Internal server error" });
+            } finally {
+                releaseClient?.();
             }
         }
     )
