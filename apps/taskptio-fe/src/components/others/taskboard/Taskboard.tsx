@@ -6,7 +6,7 @@ import { TTaskSectionWithTasks } from "@/services/private/tasksection/types";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
 import { useParams } from "react-router";
 import TaskboardSectionDrop from "./TaskboardSectionDrop";
-import { TaskboardTaskDialog } from "../dialogs/TaskboardTaskDialog";
+import { TaskboardTaskDialog } from "../dialogs/TaskboardTaskdialog";
 
 
 export const Taskboard = () => {
