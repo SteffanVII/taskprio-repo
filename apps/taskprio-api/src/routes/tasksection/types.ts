@@ -1,37 +1,38 @@
-import { TTask, TTaskForCardView } from "../task/types.js"
 
-// Query
+// // Query
 
-export type TGetTaskboardSectionsRequestParams = {
-    task_board_id : string
-}
+// import { TTaskForCardView } from "@repo/taskprio-types"
 
-// Mutation
+// export type TGetTaskboardSectionsRequestParams = {
+//     task_board_id : string
+// }
 
-export type TCreateTaskboardSectionRequestBody = {
-    task_board_id : string,
-    task_section_name : string,
-}
+// // Mutation
 
-export type TUpdateTaskboardSectionRequestParams = {
-    task_section_id : string
-}
+// export type TCreateTaskboardSectionRequestBody = {
+//     task_board_id : string,
+//     task_section_name : string,
+// }
 
-export type TUpdateTaskboardSectionRequestBody = {
-    task_section_name? : string,
-    display_order? : number
-}
+// export type TUpdateTaskboardSectionRequestParams = {
+//     task_section_id : string
+// }
 
-// Task Section
+// export type TUpdateTaskboardSectionRequestBody = {
+//     task_section_name? : string,
+//     display_order? : number
+// }
 
-export type TTaskSection = {
-    task_section_id : string,
-    task_section_name : string,
-    task_board_id : string,
-    display_order : number,
-    created_at : string   
-}
+// // Task Section
 
-export type TTaskSectionWithTasks = TTaskSection & {
-    tasks : TTaskForCardView[]
-}
+// export type TTaskSection = {
+//     task_section_id : string,
+//     task_section_name : string,
+//     task_board_id : string,
+//     display_order : number,
+//     created_at : string   
+// }
+
+// export type TTaskSectionWithTasks = TTaskSection & {
+//     tasks : TTaskForCardView[]
+// }

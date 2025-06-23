@@ -1,8 +1,6 @@
 import dotenv from "dotenv";
 import { ICreateProjectRequest, IGetUserWorkspaceProjectsRequest } from "./interfaces.js";
 import { Response, Router } from "express";
-import { getPostgrePool } from "../../database/postgresql.js";
-import { EProjectRole } from "../../utilities/enums.js";
 import { getProject, getUserProjects, getUserWorkspaceProjects } from "../../database/queries/project/query.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
 import { createProject } from "../../database/queries/project/mutation.js";

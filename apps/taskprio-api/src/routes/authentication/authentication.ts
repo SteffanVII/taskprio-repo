@@ -217,6 +217,13 @@ function reigsterAuthenticationRoutes() {
         }
     )
 
+    APP.post(
+        `/logout`,
+        async ( _req : Request, res : Response ) => {
+            res.clearCookie("accessToken").status(200).json({ message : "Logged out" });
+        }
+    )
+
 }
 
 export default reigsterAuthenticationRoutes;

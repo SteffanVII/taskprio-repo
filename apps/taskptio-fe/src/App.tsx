@@ -7,6 +7,7 @@ import PrivateLayout from './services/private/PrivateLayout'
 import ProjectPage from './routes/private/project/projectPage'
 import MainPage from './routes/private/mainPage'
 import TaskboardPage from './routes/private/project/taskboard/taskboardPage'
+import AcceptRoute from './routes/public/accept'
 
 const queryClient = new QueryClient()
 
@@ -38,7 +39,11 @@ const router = createBrowserRouter([
 								]
 							}
 						]
-					}
+					},
+                    {
+                        path : "accept",
+                        element : <AcceptRoute/>
+                    }
 				]
 			},
 		]

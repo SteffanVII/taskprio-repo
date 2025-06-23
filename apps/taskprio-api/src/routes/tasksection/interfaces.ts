@@ -1,5 +1,5 @@
+import { TCreateTaskboardSectionRequestBody, TGetTaskboardSectionsRequestParams, TUpdateTaskboardSectionRequestBody, TUpdateTaskboardSectionRequestParams } from "@repo/taskprio-types";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
-import { TCreateTaskboardSectionRequestBody, TGetTaskboardSectionsRequestParams, TUpdateTaskboardSectionRequestBody, TUpdateTaskboardSectionRequestParams } from "./types.js";
 
 // Query
 

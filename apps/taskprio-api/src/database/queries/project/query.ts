@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { TProjectMember } from "../../../routes/project/types.js";
+import { TProjectMember } from "@repo/taskprio-types";
 
 export const getProject = async ( project_id : string, postgreClient? : PoolClient ) => {
 

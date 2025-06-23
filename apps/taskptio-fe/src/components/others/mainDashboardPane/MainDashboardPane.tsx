@@ -1,15 +1,13 @@
 import { cn } from "@/lib/utils"
 import { Button } from "../../ui/button";
-import { LogOut, Mail, Sun } from "lucide-react";
+import { Mail, Sun } from "lucide-react";
 import ProjectsList_MainDashboardPane from "./ProjectsList_MainDashboardPane";
 import WorkspaceDropdown_MainDashboardPane from "./WorkspaceDropdown_MainDashboardPane";
-import { useLogout } from "@/lib/hooks/useLogout";
 import { updateDialogsStore } from "@/stores/dialogs";
 import GeneralButtons from "./GeneralButtons_MainDashboardPane";
+import LogoutTrigger from "../shared/LogoutTrigger";
 
 const MainDashboardPane = () => {
-
-    const logout = useLogout()
 
     return (
         <div
@@ -56,11 +54,7 @@ const MainDashboardPane = () => {
                 )}
             >
                 <div className=" flex items-center gap-2 " >
-                    <Button
-                        size={"sm"}
-                        variant={"outline"}
-                        onClick={logout}
-                    ><LogOut className=" size-4 "/> Logout</Button>
+                    <LogoutTrigger/>
                     <Button
                         size={"sm"}
                         variant={"outline"}

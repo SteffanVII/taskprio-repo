@@ -1,4 +1,4 @@
-import { TTask } from "../routes/task/types.js"
+import { TTask } from "@repo/taskprio-types"
 import { EWebSocketEventType } from "./enums.js"
 
 export type TWebSocketMessage<T = any> = {

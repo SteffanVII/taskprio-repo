@@ -1,4 +1,4 @@
-import { TUser } from "../../../routes/user/types.js";
+import { TUser } from "@repo/taskprio-types";
 import { getPoolClient } from "../../postgresql.js";
 
 

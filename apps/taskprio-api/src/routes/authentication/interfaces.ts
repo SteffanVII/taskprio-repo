@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { TLoginRequestBody, TRegisterRequestBody } from "./types.js";
+import { TLoginRequestBody, TRegisterRequestBody } from "@repo/taskprio-types";
 
 export interface ILoginRequest extends Request {
     body : TLoginRequestBody

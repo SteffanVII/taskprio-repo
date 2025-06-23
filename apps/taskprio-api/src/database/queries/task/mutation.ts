@@ -1,7 +1,7 @@
 import { PoolClient } from "pg"
 import { getPoolClient } from "../../postgresql.js"
 import { getTask, getTaskLastDisplayOrder } from "./query.js"
-import { TArrangeTaskRequestBody, TTask, TTaskTimeLog, TUpdateTaskPrimitiveFieldsRequestBody } from "../../../routes/task/types.js"
+import { TArrangeTaskRequestBody, TTask, TTaskTimeLog, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
 
 export const createTask = async (
     task_section_id : string,

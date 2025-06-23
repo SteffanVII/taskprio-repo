@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthenticate } from "@/services/authentication";
 import { updateGlobalsStore } from "@/stores/globals";
@@ -7,6 +7,9 @@ import { updateGlobalsStore } from "@/stores/globals";
 const AuthLayout = () => {
 
     const navigate = useNavigate()
+    const location = useLocation()
+    const [ searchParams ] = useSearchParams()
+
 
     const {
         mutateAsync : authenticate
@@ -15,12 +18,16 @@ const AuthLayout = () => {
             updateGlobalsStore({
                 authenticated : true
             })
-            // navigate("/p/w")
+            if ( searchParams.get("invite_token") ) return
+            if ( location.pathname === "/login" || location.pathname === "/register" ) {
+                // navigate("/p/w")
+            }
         },
         () => {
             updateGlobalsStore({
                 authenticated : false
             })
+            if ( location.pathname === "/p/accept" ) return
             navigate("/login")
         }
     )

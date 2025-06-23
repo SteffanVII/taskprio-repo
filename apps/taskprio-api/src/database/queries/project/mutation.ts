@@ -1,12 +1,10 @@
 import { Request } from "express";
-import { TCreateProjectRequestBody, TProject } from "../../../routes/project/types.js";
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
 import slugify from "slugify";
-import { EProjectRole } from "../../../utilities/enums.js";
 import { getProject } from "./query.js";
 import { createTaskboard } from "../taskboard/mutation.js";
-
+import { EProjectRole, TCreateProjectRequestBody, TProject } from "@repo/taskprio-types";
 
 export const createProject = async (
     body : TCreateProjectRequestBody,

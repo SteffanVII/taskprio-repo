@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
-import { TTaskSection, TUpdateTaskboardSectionRequestBody } from "../../../routes/tasksection/types.js";
+import { TTaskSection, TUpdateTaskboardSectionRequestBody } from "@repo/taskprio-types";
 
 export const createTaskSection = async (
     task_board_id : string,

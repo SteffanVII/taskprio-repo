@@ -1,7 +1,6 @@
 import { PoolClient } from "pg";
-import { TTaskboard } from "../../../routes/taskboard/types.js";
 import { getPoolClient } from "../../postgresql.js";
-
+import { TTaskboard } from "@repo/taskprio-types";
 
 export const getProjectTaskboardList = async ( project_id : string, poolClient? : PoolClient ) : Promise<TTaskboard[] | undefined> => {
 

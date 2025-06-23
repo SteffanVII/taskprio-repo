@@ -1,6 +1,15 @@
-export type TInvitationTokenPayload = {
-    sender_id : string,
-    email : string,
-    workspace_id : string,
-    projects : string[]
-}
+// export type TInvitationTokenPayload = {
+//     sender_id : string,
+//     email : string,
+//     workspace_id : string,
+//     projects : string[]
+// }
+
+// export type TWorkspaceInvitation = {
+//     workspace_id : string,
+//     sender_id : string,
+//     email : string,
+//     token_string : string,
+//     accepted : boolean,
+//     created_at : string
+// }

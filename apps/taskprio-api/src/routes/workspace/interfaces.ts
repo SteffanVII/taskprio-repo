@@ -1,5 +1,5 @@
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
-import { TCreateWorkspaceBody } from "./types.js";
+import { TCreateWorkspaceBody } from "@repo/taskprio-types";
 
 export interface IGetWorkspaceRequest extends IAuthenticatedRequest {
     params : {

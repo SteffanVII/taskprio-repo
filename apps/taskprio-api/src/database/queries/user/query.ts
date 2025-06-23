@@ -1,7 +1,6 @@
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
-import { TUser } from "../../../routes/user/types.js";
-
+import { TUser } from "@repo/taskprio-types";
 
 export const getUserByEmail = async ( email : string, poolClient? : PoolClient ) : Promise<TUser | undefined> => {
 

@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
-import { TTaskPath } from "../../../routes/task/types.js";
+import { TTaskPath } from "@repo/taskprio-types";
 
 export const getTaskLastDisplayOrder = async (
     task_section_id : string,

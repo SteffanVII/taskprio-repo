@@ -1,4 +1,3 @@
-
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -104,57 +103,107 @@ SERVER.listen(PORT, () => {
     console.log(` Server is running on port ${PORT} `)
 })
 
-// Graceful shutdown handling
-const gracefulShutdown = async (signal: string) => {
-    console.log(`\n${signal} received. Starting graceful shutdown...`);
+// // Graceful shutdown handling
+// const gracefulShutdown = async (signal: string) => {
+//     console.log(`\n${signal} received. Starting graceful shutdown...`);
     
-    try {
-        // Close the HTTP server (stops accepting new connections)
-        await new Promise<void>((resolve, reject) => {
-            SERVER.close((err) => {
-                if (err) {
-                    console.error('Error closing server:', err);
-                    reject(err);
-                } else {
-                    console.log('HTTP server closed');
-                    resolve();
-                }
-            });
-        });
+//     // Set a timeout to force exit if graceful shutdown takes too long
+//     const forceExitTimeout = setTimeout(() => {
+//         console.error('Forced exit due to timeout');
+//         process.exit(1);
+//     }, 5000); // Reduced to 5 seconds timeout
 
-        // Close WebSocket connections
-        console.log('Closing WebSocket connections...');
-        wss.close()
+//     try {
+//         // Immediately stop accepting new connections
+//         SERVER.on('request', (req, res) => {
+//             res.writeHead(503, { 'Connection': 'close' });
+//             res.end('Server is shutting down');
+//         });
+
+//         // Close all WebSocket connections first
+//         console.log('Closing WebSocket connections...');
+//         const closePromises = Array.from(wss.clients).map(client => {
+//             return new Promise<void>((resolve) => {
+//                 if (client.readyState === WebSocket.OPEN) {
+//                     client.close(1000, 'Server shutting down');
+//                 }
+//                 resolve();
+//             });
+//         });
         
-        // Close database pool
-        const pool = getPostgrePool();
-        if (pool) {
-            console.log('Closing database pool...');
-            await pool.end();
-            console.log('Database pool closed');
-        }
+//         await Promise.all(closePromises);
+        
+//         // Close WebSocket server
+//         await new Promise<void>((resolve) => {
+//             wss.close(() => {
+//                 console.log('WebSocket server closed');
+//                 resolve();
+//             });
+//         });
 
-        console.log('Graceful shutdown completed');
-        process.exit(0);
-    } catch (error) {
-        console.error('Error during graceful shutdown:', error);
-        process.exit(1);
-    }
-};
+//         // Close the HTTP server with a timeout
+//         await Promise.race([
+//             new Promise<void>((resolve, reject) => {
+//                 SERVER.close((err) => {
+//                     if (err) {
+//                         console.error('Error closing server:', err);
+//                         reject(err);
+//                     } else {
+//                         console.log('HTTP server closed');
+//                         resolve();
+//                     }
+//                 });
+//             }),
+//             new Promise((_, reject) => 
+//                 setTimeout(() => reject(new Error('Server close timeout')), 2000)
+//             )
+//         ]);
 
-// Handle different termination signals
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));   // Ctrl+C
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM')); // Termination signal
-process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // Nodemon restart
+//         // Close database pool
+//         const pool = getPostgrePool();
+//         if (pool) {
+//             console.log('Closing database pool...');
+//             await pool.end();
+//             console.log('Database pool closed');
+//         }
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    gracefulShutdown('uncaughtException');
-});
+//         clearTimeout(forceExitTimeout);
+//         console.log('Graceful shutdown completed');
+        
+//         // Force exit after a short delay to ensure all cleanup is done
+//         setTimeout(() => {
+//             process.exit(0);
+//         }, 100);
+//     } catch (error) {
+//         console.error('Error during graceful shutdown:', error);
+//         clearTimeout(forceExitTimeout);
+//         // Force exit immediately on error
+//         process.exit(1);
+//     }
+// };
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    gracefulShutdown('unhandledRejection');
-});
+// // Handle different termination signals
+// process.on('SIGINT', () => {
+//     console.log('SIGINT received');
+//     gracefulShutdown('SIGINT');
+// });   // Ctrl+C
+
+// process.on('SIGTERM', () => {
+//     console.log('SIGTERM received');
+//     gracefulShutdown('SIGTERM');
+// }); // Termination signal
+
+// // Remove SIGUSR2 handler as it's not needed for Windows
+// // process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // Nodemon restart
+
+// // Handle uncaught exceptions
+// process.on('uncaughtException', (error) => {
+//     console.error('Uncaught Exception:', error);
+//     gracefulShutdown('uncaughtException');
+// });
+
+// // Handle unhandled promise rejections
+// process.on('unhandledRejection', (reason, promise) => {
+//     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+//     gracefulShutdown('unhandledRejection');
+// });

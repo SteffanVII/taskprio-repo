@@ -1,0 +1,28 @@
+{
+    "name": "@repo/taskprio-types",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
+    "license": "MIT",
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "lint": "eslint .",
+        "clean": "rimraf .turbo node_modules dist",
+        "check-types": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "eslint": "^9.22.0",
+        "tsup": "^8.0.2",
+        "typescript": "^5.8.2",
+        "rimraf": "^5.0.5"
+    },
+    "files": [
+        "dist/**"
+    ]
+}

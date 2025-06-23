@@ -1,10 +1,9 @@
 import { PoolClient } from "pg"
 import { getPoolClient } from "../../postgresql.js"
-import { TTaskboard } from "../../../routes/taskboard/types.js"
 import slugify from "slugify"
-import { Request, Response } from "express"
-import { getProjectMember } from "../project/query.js"
+import { Request } from "express"
 import { createTaskSection } from "../tasksection/mutation.js"
+import { TTaskboard } from "@repo/taskprio-types"
 
 
 export const createTaskboard = async (

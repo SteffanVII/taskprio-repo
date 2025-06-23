@@ -1,5 +1,5 @@
+import { TArrangeTaskRequestBody, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js"
-import { TArrangeTaskRequestBody, TUpdateTaskPrimitiveFieldsRequestBody } from "./types.js"
 
 export interface ICreateTaskRequest extends IAuthenticatedRequest {
     body : {

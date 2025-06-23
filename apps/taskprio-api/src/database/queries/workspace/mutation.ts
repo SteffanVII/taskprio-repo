@@ -1,11 +1,9 @@
 import { PoolClient } from "pg";
-import { TCreateWorkspaceBody, TWorkspace } from "../../../routes/workspace/types.js";
 import { getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { EWorkspaceRole } from "../../../utilities/enums.js";
 import { getUserWorkspace } from "./query.js";
 import slugify from "slugify";
 import { Request } from "express";
-
+import { EWorkspaceRole, TCreateWorkspaceBody, TWorkspace } from "@repo/taskprio-types";
 
 export const createWorkspace = async ( body : TCreateWorkspaceBody, user_id : string, request : Request, postgreClient? : PoolClient ) : Promise<TWorkspace | undefined> => {
     

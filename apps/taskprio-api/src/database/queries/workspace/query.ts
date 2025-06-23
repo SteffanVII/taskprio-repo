@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
-import { TWorkspace, TWorkspaceMember } from "../../../routes/workspace/types.js";
+import { TWorkspace, TWorkspaceMember } from "@repo/taskprio-types";
 
 export const getUserWorkspace = async ( workspace_id : string, user_id : string, postgreClient? : PoolClient ) : Promise<TWorkspace | undefined> => {
     

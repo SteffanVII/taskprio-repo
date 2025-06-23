@@ -2,10 +2,10 @@ import { Response, Router } from "express";
 import { IAcceptInvitationRequest, IInviteToWorkspaceRequest } from "./interfaces.js";
 import { resend } from "../../app.js";
 import jwt from "jsonwebtoken";
-import { TInvitationTokenPayload } from "./types.js";
 import { getUserByEmail } from "../../database/queries/user/query.js";
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../database/postgresql.js";
+import { TInvitationTokenPayload } from "@repo/taskprio-types";
 
 const registerInvitationRoutes = ( router : Router ) => {
 
@@ -15,7 +15,7 @@ const registerInvitationRoutes = ( router : Router ) => {
 
             const { workspace_id } = req.params;
             const { projects, emails } = req.body;
-            const { user_id } = req.user;
+            const { user_id, email : user_email } = req.user;
 
             if ( !workspace_id || !projects || !emails ) {
                 res.status(400).json({ message : "Invalid request" });
@@ -58,8 +58,8 @@ const registerInvitationRoutes = ( router : Router ) => {
                         subject : "You've been invited to a workspace",
                         html : `
                             <h1>You've been invited to a workspace</h1>
-                            <p>You've been invited to a workspace by ${user_id}.</p>
-                            <p>Click <a href="https://app.000184.xyz/workspace/${workspace_id}">here</a> to accept the invitation.</p>
+                            <p>You've been invited to a workspace by ${user_email}.</p>
+                            <p>Click <a href="http://localhost:5001/p/accept?invite_token=${emailWithToken.token}">here</a> to accept the invitation.</p>
                         `
                     }) )
                 )
@@ -126,6 +126,8 @@ const registerInvitationRoutes = ( router : Router ) => {
                 const decodedToken = jwt.verify(invitation, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenPayload;
 
                 const user = await getUserByEmail( decodedToken.email );
+
+                res.status(200).json({ message : "Invitation accepted" })
 
             } catch (error) {
                 console.error(error);
