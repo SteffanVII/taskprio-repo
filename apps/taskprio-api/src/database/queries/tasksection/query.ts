@@ -31,7 +31,7 @@ export const getTaskboardSections = async (
     }
 }
 
-export const getTaskboardSectionsWithTasks = async (
+export const getTaskboardSectionsWithTasksForCardView = async (
     task_board_id : string,
     poolClient? : PoolClient
 ) : Promise<TTaskSectionWithTasks[] | undefined> => {
@@ -66,6 +66,7 @@ export const getTaskboardSectionsWithTasks = async (
                         t.task_title,
                         t.task_description,
                         t.task_estimate,
+                        t.task_deadline,
                         t.display_order,
                         t.created_at,
                         t.created_by

@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS public."task" (
 	task_title VARCHAR(255) NOT NULL,
 	task_description VARCHAR(255),
 	task_estimate INTEGER,
-	task_deadline TIMESTAMP WITH TIME ZONE,
+	task_deadline VARCHAR(255),
 	display_order DOUBLE PRECISION NOT NULL,
 	created_by UUID NOT NULL REFERENCES public."user",
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

@@ -38,6 +38,8 @@ export type TTaskForCardView = Pick<
     "task_estimate" |
     "task_deadline" |
     "display_order" |
+    "created_at" |
+    "created_by" |
     "assignees"
 >
 

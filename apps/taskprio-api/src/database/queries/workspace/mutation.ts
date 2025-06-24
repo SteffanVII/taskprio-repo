@@ -1,9 +1,9 @@
 import { PoolClient } from "pg";
 import { getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { getUserWorkspace } from "./query.js";
+import { getUserWorkspace, getWorkspaceMember } from "./query.js";
 import slugify from "slugify";
 import { Request } from "express";
-import { EWorkspaceRole, TCreateWorkspaceBody, TWorkspace } from "@repo/taskprio-types";
+import { EWorkspaceRole, TCreateWorkspaceBody, TWorkspace, TWorkspaceMember } from "@repo/taskprio-types";
 
 export const createWorkspace = async ( body : TCreateWorkspaceBody, user_id : string, request : Request, postgreClient? : PoolClient ) : Promise<TWorkspace | undefined> => {
     
@@ -74,6 +74,71 @@ export const createWorkspace = async ( body : TCreateWorkspaceBody, user_id : st
         client.query("ROLLBACK")
         console.log(error);
         throw error;
+    } finally {
+        release()
+    }
+
+}
+
+export const addWorkspaceMember = async (
+    workspace_id : string,
+    user_id : string,
+    email : string,
+    workspace_role : EWorkspaceRole,
+    invited_by : string,
+    postgreClient? : PoolClient
+) : Promise<TWorkspaceMember | undefined> => {
+
+    const {
+        client,
+        release,
+        internalClient
+    } = await getPoolClient(postgreClient)
+
+    try {
+
+        if ( internalClient ) await client.query("BEGIN")
+
+        await client.query({
+            text : `--sql
+                INSERT INTO public."workspace_members" (
+                    workspace_id,
+                    user_id,
+                    workspace_role,
+                    invited_by
+                ) VALUES ($1, $2, $3, $4)
+            `,
+            values : [
+                workspace_id,
+                user_id,
+                workspace_role,
+                invited_by
+            ]
+        })
+
+        await client.query({
+            text : `--sql
+                UPDATE public."workspace_invitation" 
+                SET accepted = TRUE 
+                WHERE workspace_id = $1 
+                AND email = $2
+            `,
+            values : [
+                workspace_id,
+                email
+            ]
+        })
+
+        if ( internalClient ) await client.query("COMMIT")
+
+        const workspaceMember = await getWorkspaceMember( workspace_id, user_id, client )
+
+        return workspaceMember
+
+    } catch (error) {
+        if ( internalClient ) await client.query("ROLLBACK")
+        console.log(error)
+        throw error
     } finally {
         release()
     }

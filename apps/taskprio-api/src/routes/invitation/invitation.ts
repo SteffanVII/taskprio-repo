@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 import { getUserByEmail } from "../../database/queries/user/query.js";
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../database/postgresql.js";
-import { TInvitationTokenPayload } from "@repo/taskprio-types";
+import { EWorkspaceRole, TInvitationTokenDecoded } from "@repo/taskprio-types";
+import { getInvitationByToken_WorkspaceId_Recipient } from "../../database/queries/invitation/query.js";
+import { addWorkspaceMember } from "../../database/queries/workspace/mutation.js";
 
 const registerInvitationRoutes = ( router : Router ) => {
 
@@ -119,13 +121,41 @@ const registerInvitationRoutes = ( router : Router ) => {
         "/workspace/accept/:invitation",
         async ( req : IAcceptInvitationRequest, res : Response ) => {
 
-            const { invitation } = req.params
+            const { invitation : invitationToken } = req.params
 
             try {
 
-                const decodedToken = jwt.verify(invitation, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenPayload;
+                const decodedToken = jwt.verify(invitationToken, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenDecoded;
 
-                const user = await getUserByEmail( decodedToken.email );
+                if ( decodedToken.exp && decodedToken.exp < Date.now() / 1000 ) {
+                    res.status(400).json({ message : "Invitation expired" });
+                    return;
+                }
+
+                const user = await getUserByEmail(decodedToken.email)
+
+                const invitation = await getInvitationByToken_WorkspaceId_Recipient(
+                    invitationToken,
+                    decodedToken.workspace_id,
+                    decodedToken.email
+                )
+
+                if ( !invitation ) {
+                    res.status(404).json({ message : "Invitation not found" });
+                }
+
+                if ( invitation.accepted ) {
+                    res.status(400).json({ message : "Invitation already accepted" });
+                    return;
+                }
+
+                await addWorkspaceMember(
+                    invitation.workspace_id,
+                    user.user_id,
+                    invitation.email,
+                    EWorkspaceRole.MEMBER,
+                    invitation.sender_id
+                )
 
                 res.status(200).json({ message : "Invitation accepted" })
 

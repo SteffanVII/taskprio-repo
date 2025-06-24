@@ -1,6 +1,6 @@
 import { Response, Router } from "express";
 import { ICreateTaskboardSectionRequest, IGetTaskboardSectionsRequest, IUpdateTaskboardSectionRequest } from "./interfaces.js";
-import { getLastTaskboardSectionDisplayOrder, getTaskboardSections, getTaskboardSectionsWithTasks } from "../../database/queries/tasksection/query.js";
+import { getLastTaskboardSectionDisplayOrder, getTaskboardSections, getTaskboardSectionsWithTasksForCardView } from "../../database/queries/tasksection/query.js";
 import { getProjectMember, getProjectMemberByTaskboardId, getProjectMemberByTaskSectionId } from "../../database/queries/project/query.js";
 import { createTaskSection, updateTaskSection } from "../../database/queries/tasksection/mutation.js";
 
@@ -22,7 +22,7 @@ export const registerTaskSectionRoutes = ( router : Router ) => {
                     return
                 }
 
-                const taskboardSections = Boolean(include_tasks) ? await getTaskboardSectionsWithTasks(task_board_id) : await getTaskboardSections(task_board_id);
+                const taskboardSections = Boolean(include_tasks) ? await getTaskboardSectionsWithTasksForCardView(task_board_id) : await getTaskboardSections(task_board_id);
                 res.status(200).json(taskboardSections);
             } catch (error) {
                 console.log(error);

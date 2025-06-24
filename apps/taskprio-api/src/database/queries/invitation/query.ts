@@ -1,16 +1,16 @@
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
+import { TWorkspaceInvitation } from "@repo/taskprio-types";
 
 
-const getInvitationByTokenWorkspaceIdRecipient = async (
+export const getInvitationByToken_WorkspaceId_Recipient = async (
     token : string,
     workspace_id : string,
     email : string,
     poolClient? : PoolClient
-) => {
+) : Promise<TWorkspaceInvitation | undefined> => {
 
     const {
-        internalClient,
         client,
         release
     } = await getPoolClient(poolClient)
@@ -19,7 +19,7 @@ const getInvitationByTokenWorkspaceIdRecipient = async (
         
         const invitation = await client.query({
             text : `--sql
-                SELECT * FROM public."workspace_invitations"
+                SELECT * FROM public."workspace_invitation"
                 WHERE token_string = $1 AND workspace_id = $2 AND email = $3
             `,
             values : [
@@ -28,6 +28,8 @@ const getInvitationByTokenWorkspaceIdRecipient = async (
                 email
             ]
         })
+
+        return invitation.rows[0]
 
     } catch (error) {
         console.error(error)

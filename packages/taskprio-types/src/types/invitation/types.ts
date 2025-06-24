@@ -5,6 +5,10 @@ export type TInvitationTokenPayload = {
     projects : string[]
 }
 
+export type TInvitationTokenDecoded = TInvitationTokenPayload & {
+    exp : number
+}
+
 export type TWorkspaceInvitation = {
     workspace_id : string,
     sender_id : string,

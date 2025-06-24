@@ -9,6 +9,7 @@ export type TCreateWorkspaceBody = {
 export type TWorkspace = {
     workspace_id : string,
     workspace_name : string,
+    workspace_slug : string,
     workspace_members : TWorkspaceMember[]
 }
 
