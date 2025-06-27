@@ -148,9 +148,15 @@ const WorkspaceInvitationDialog = () => {
                 </div>
                 <DialogFooter>
                     <Button
-                        disabled={ isInvitingToWorkspace }
+                        disabled={ isInvitingToWorkspace || isProjectsLoading }
                         onClick={ handleSendInvitation }
-                    >Invite</Button>
+                    >
+                        {
+                            isInvitingToWorkspace ?
+                            <Spinner size="sm" /> :
+                            "Invite"
+                        }
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

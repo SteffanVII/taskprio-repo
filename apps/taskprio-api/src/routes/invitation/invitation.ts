@@ -8,6 +8,7 @@ import { getPoolClient } from "../../database/postgresql.js";
 import { EWorkspaceRole, TInvitationTokenDecoded } from "@repo/taskprio-types";
 import { getInvitationByToken_WorkspaceId_Recipient } from "../../database/queries/invitation/query.js";
 import { addWorkspaceMember } from "../../database/queries/workspace/mutation.js";
+import { acceptInvitation } from "../../database/queries/invitation/mutation.js";
 
 const registerInvitationRoutes = ( router : Router ) => {
 
@@ -148,6 +149,12 @@ const registerInvitationRoutes = ( router : Router ) => {
                     res.status(400).json({ message : "Invitation already accepted" });
                     return;
                 }
+
+                await acceptInvitation(
+                    invitationToken,
+                    decodedToken.workspace_id,
+                    decodedToken.email
+                )
 
                 await addWorkspaceMember(
                     invitation.workspace_id,

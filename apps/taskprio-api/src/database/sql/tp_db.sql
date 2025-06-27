@@ -214,10 +214,10 @@ CREATE TABLE IF NOT EXISTS public."task_time_log" (
 -- Workspace Invitation
 DROP TABLE IF EXISTS public."workspace_invitation" CASCADE;
 CREATE TABLE IF NOT EXISTS public."workspace_invitation" (
+	token_string VARCHAR(512) PRIMARY KEY NOT NULL,
 	workspace_id UUID NOT NULL REFERENCES public."workspace",
 	sender_id UUID NOT NULL REFERENCES public."user",
 	email VARCHAR(255) NOT NULL,
-	token_string VARCHAR(512) NOT NULL,
 	accepted BOOLEAN DEFAULT FALSE,
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 )

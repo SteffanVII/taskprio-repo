@@ -131,6 +131,8 @@ export const addWorkspaceMember = async (
 
         if ( internalClient ) await client.query("COMMIT")
 
+        console.log(workspace_id, user_id);
+
         const workspaceMember = await getWorkspaceMember( workspace_id, user_id, client )
 
         return workspaceMember
