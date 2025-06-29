@@ -1,3 +1,4 @@
+import { TUserSecure } from "@repo/taskprio-types/src"
 
 export type TLoginPayload = {
     body : TLoginBody
@@ -10,7 +11,8 @@ export type TLoginBody = {
 
 export type TLoginResponse = {
     message : string,
-    access_token : string
+    access_token : string,
+    user : TUserSecure
 }
 
 export type TRegisterPayload = {
@@ -27,5 +29,11 @@ export type TRegisterBody = {
 
 export type TRegisterResponse = {
     message : string,
-    access_token : string
+    access_token : string,
+    user : TUserSecure
+}
+
+export type TAuthenticateResponse = {
+    message : string,
+    user : TUserSecure
 }

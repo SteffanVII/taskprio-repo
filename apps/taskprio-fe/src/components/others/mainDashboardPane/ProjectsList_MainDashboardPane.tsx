@@ -56,8 +56,7 @@ const ProjectsList_MainDashboardPane = () => {
         if ( !project_slug ) {
             if ( projects ) {
                 if ( projects.length > 0 ) {
-                    console.log("ss");
-                    navigate(`/p/w/${selectedWorkspace?.workspace_slug}/d/${projects[0].project_slug}/t`)
+                    navigate(`/p/w/${workspace_slug}/d/${projects[0].project_slug}/t`)
                     updateGlobalsStore({
                         noProjects : false
                     })
@@ -68,7 +67,7 @@ const ProjectsList_MainDashboardPane = () => {
                 }
             }
         }
-    }, [ projects, project_slug, workspace_slug, selectedWorkspace ])
+    }, [ projects, project_slug, workspace_slug ])
 
     useLayoutEffect(() => {
         updateGlobalsStore({
@@ -145,7 +144,7 @@ const ProjectsList_MainDashboardPane = () => {
                             )}
                             disabled={selectedProject?.project_id === project.project_id}
                             onClick={() => {
-                                navigate(`/p/w/${selectedWorkspace?.workspace_slug}/d/${project.project_slug}/t`)
+                                navigate(`/p/w/${workspace_slug}/d/${project.project_slug}/t`)
                             }}
                         >
                             <p className=" text-sm font-medium " >{project.project_name}</p>

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { TLoginPayload, TLoginResponse, TRegisterPayload, TRegisterResponse } from "./types"
+import { TAuthenticateResponse, TLoginPayload, TLoginResponse, TRegisterPayload, TRegisterResponse } from "./types"
 import { axiosInstance } from "../axios"
 import { AxiosResponse } from "axios"
 import { updateGlobalsStore } from "@/stores/globals"
@@ -26,9 +26,10 @@ export const useLogin = ( successCallback : ( data : TLoginResponse ) => void ) 
             return response.data
             
         },
-        onSuccess : () => {
+        onSuccess : ( data ) => {
             updateGlobalsStore({
-                authenticated : true
+                authenticated : true,
+                user : data.user
             })
         }
     })
@@ -55,7 +56,8 @@ export const useGoogleLoginT = ( successCallback : ( data : TLoginResponse ) => 
         onSuccess : ( data ) => {
             successCallback( data )
             updateGlobalsStore({
-                authenticated : true
+                authenticated : true,
+                user : data.user
             })
         }
     })
@@ -82,9 +84,10 @@ export const useRegister = ( successCallback : ( data : TRegisterResponse ) => v
 
             return response.data
         },
-        onSuccess : () => {
+        onSuccess : ( data ) => {
             updateGlobalsStore({
-                authenticated : true
+                authenticated : true,
+                user : data.user
             })
         }
     })
@@ -102,15 +105,18 @@ export const useAuthenticate = (
     errorCallback? : () => void
 ) => {
 
-    return useMutation({
+    return useMutation<TAuthenticateResponse>({
         mutationFn : async () => {
             const response = await axiosInstance.post(
                 `/auth`
             )
             return response.data
         },
-        onSuccess : () => {
+        onSuccess : ( data ) => {
             if ( successCallback ) {
+                updateGlobalsStore({
+                    user : data.user
+                })
                 successCallback()
             }
         },

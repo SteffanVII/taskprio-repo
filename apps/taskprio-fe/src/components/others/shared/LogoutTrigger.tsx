@@ -5,9 +5,7 @@ import { LogOut } from "lucide-react"
 import { useState } from "react"
 import Spinner from "../Spinner"
 
-
-
-const LogoutTrigger = () => {
+const LogoutTrigger = ( props : { children? : React.ReactNode } ) => {
 
     const [
         isOpen,
@@ -32,12 +30,22 @@ const LogoutTrigger = () => {
                 }
             }}
         >
-            <DialogTrigger asChild >
-                <Button
-                    size={"sm"}
-                    variant={"outline"}
-                    onClick={() => setIsOpen(true)}
-                ><LogOut className=" size-4 "/> Logout</Button>
+            <DialogTrigger
+                asChild
+                onClick={ e => {
+                    e.stopPropagation()
+                    setIsOpen(true)
+                }}
+            >
+                {
+                    props.children ? 
+                    props.children
+                    :
+                    <Button
+                        size={"sm"}
+                        variant={"outline"}
+                    ><LogOut className=" size-4 "/> Logout</Button>
+                }
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

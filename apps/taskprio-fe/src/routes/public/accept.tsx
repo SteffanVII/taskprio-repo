@@ -40,31 +40,79 @@ const AcceptRoute = () => {
     }, [ searchParams, authenticated ] )
 
     if ( acceptInvitationError ) {
-        if (
-            acceptInvitationError instanceof AxiosError &&
-            acceptInvitationError.response?.status === 400 &&
-            acceptInvitationError.response?.data.message === "Invitation already accepted"
-        ) {
-            return (
-                <div className="size-full flex items-center justify-center">
-                    <div className="text-center p-8 bg-blue-50 border border-blue-200 rounded-lg shadow-lg max-w-md">
-                        <div className="mb-4">
-                            <svg className="w-16 h-16 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+        if ( acceptInvitationError instanceof AxiosError ) {
+            if ( acceptInvitationError.response?.status === 400 ) {
+                if ( acceptInvitationError.response?.data?.message === "Invitation already accepted" ) {
+                    return (
+                        <div className="size-full flex items-center justify-center">
+                            <div className="text-center p-8 max-w-md">
+                                <div className="mb-4">
+                                    <svg className="w-16 h-16 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h2 className="text-2xl font-bold text-blue-800 mb-2">Invitation Already Accepted</h2>
+                                <p className="text-blue-600 mb-4">
+                                    This invitation has already been accepted. You can access the workspace from your dashboard.
+                                </p>
+                                <Button
+                                    onClick={() => {
+                                        if ( authenticated ) {
+                                            navigate('/')
+                                        } else {
+                                            navigate('/login')
+                                        }
+                                    }}
+                                >
+                                    {
+                                        authenticated ?
+                                        "Go to Dashboard"
+                                        :
+                                        "Go to Login"
+                                    }
+                                </Button>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold text-blue-800 mb-2">Invitation Already Accepted</h2>
-                        <p className="text-blue-600 mb-4">
-                            This invitation has already been accepted. You can access the workspace from your dashboard.
-                        </p>
-                        <Button
-                            onClick={() => navigate('/')}
-                        >
-                            Go to Dashboard
-                        </Button>
-                    </div>
-                </div>
-            )
+                    )
+                }
+            }
+            if ( acceptInvitationError.response?.status === 404 ) {
+                if ( acceptInvitationError.response?.data.message === "Invitation not found" ) {
+                    return (
+                        <div className="size-full flex items-center justify-center">
+                            <div className="text-center p-8  max-w-md">
+                                <div className="mb-4">
+                                    <svg className="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h2 className="text-2xl font-bold text-red-800 mb-2">Invitation Not Found or Expired</h2>
+                                <p className="text-red-600 mb-4">
+                                    This invitation could not be found. It may have been deleted or the link is incorrect.
+                                </p>
+                                <Button
+                                    variant={"destructive"}
+                                    onClick={() => {
+                                        if ( authenticated ) {
+                                            navigate('/')
+                                        } else {
+                                            navigate('/login')
+                                        }
+                                    }}
+                                >
+                                    {
+                                        authenticated ?
+                                        "Go to Dashboard"
+                                        :
+                                        "Go to Login"
+                                    }
+                                </Button>
+                            </div>
+                        </div>
+                    )
+                }
+
+            }
         }
     }
 

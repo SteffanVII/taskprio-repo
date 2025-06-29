@@ -6,9 +6,10 @@ import { useGetUserWorkspaces } from "@/services/private/workspace/query";
 import { updateDialogsStore } from "@/stores/dialogs";
 import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
 import { CheckCircle2Icon, ChevronDown, Plus } from "lucide-react";
-import { useContext, useLayoutEffect, useMemo } from "react";
+import { useContext, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { WebSocketContext } from "../websocket/WebsocketHandler";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 
@@ -78,13 +79,18 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                         ` cursor-pointer flex items-center justify-between `
                     )}
                 >
-                    <p
-                        className={cn(
-                            " max-w-[16rem] truncate ",
-                            " text-xl font-bold "
-                        )}
-                        title={selectedWorkspace?.workspace_name}
-                    >{selectedWorkspace?.workspace_name}</p>
+                    {
+                        isLoadingWorkspaces ?
+                        <Skeleton className=" w-[16rem] h-[2rem]" />
+                        :
+                        <p
+                            className={cn(
+                                " max-w-[16rem] truncate ",
+                                " text-xl font-bold "
+                            )}
+                            title={selectedWorkspace?.workspace_name}
+                        >{selectedWorkspace?.workspace_name}</p>
+                    }
                     <ChevronDown className=" size-4 " />
                 </div>
             </PopoverTrigger>
@@ -105,10 +111,12 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                         {
                             workspaces?.map( workspace => (
                                 <Button
+                                    key={workspace.workspace_id}
                                     variant={ selectedWorkspace?.workspace_id === workspace.workspace_id ? "default" : "ghost"}
                                     className=" justify-between gap-2 "
                                     onClick={() => {
                                         navigate(`/p/w/${workspace.workspace_slug}`)
+
                                     }}
                                     disabled={selectedWorkspace?.workspace_id === workspace.workspace_id}
                                 >
@@ -129,8 +137,9 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                         }}
                         className={cn(
                             " p-2 ",
-                            " flex justify-center items-center gap-2 ",
-                            " text-sm "
+                            " flex justify-center items-center gap-2 rounded-b-md ",
+                            " text-sm ",
+                            " hover:bg-muted-foreground/10 active:bg-muted-foreground/20 "
                         )}
                     >Create New Workspace <Plus className="size-4" /></button>
                 </div>

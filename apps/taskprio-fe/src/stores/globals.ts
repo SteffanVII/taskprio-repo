@@ -1,4 +1,4 @@
-import { TProject } from "@repo/taskprio-types/src/index"
+import { TProject, TUserSecure } from "@repo/taskprio-types/src/index"
 import { TTask, TTaskForCardView } from "@repo/taskprio-types/src/index"
 import { TTaskboard } from "@repo/taskprio-types/src/index"
 import { TTaskSection } from "@repo/taskprio-types/src/index"
@@ -15,6 +15,7 @@ export type TTaskboardTaskDrag = {
 
 export type TGlobalsStore = {
     authenticated : boolean,
+    user : TUserSecure | null,
 
     selectedWorkspace : TWorkspace | null,
     selectedProject : TProject | null,   
@@ -30,6 +31,7 @@ export type TGlobalsStore = {
 
 const GlobalsStore = new Store<TGlobalsStore>({
     authenticated : false,
+    user : null,
 
     selectedWorkspace : null,
     selectedProject : null,
@@ -57,6 +59,7 @@ export const updateGlobalsStore = ( store : Partial<TGlobalsStore> ) => {
 export const resetGlobalsStore = () => {
     GlobalsStore.setState( () => ({
         authenticated : false,
+        user : null,
         selectedWorkspace : null,
         selectedProject : null,
         selectedTaskboard : null,

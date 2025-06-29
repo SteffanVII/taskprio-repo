@@ -1,8 +1,16 @@
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../postgresql.js";
-import { TUser } from "@repo/taskprio-types";
+import { TUser, TUserSecure } from "@repo/taskprio-types";
 
-export const getUserByEmail = async ( email : string, poolClient? : PoolClient ) : Promise<TUser | undefined> => {
+export async function getUserByEmail( email : string, secure : true, poolClient? : PoolClient ) : Promise<TUserSecure | undefined>
+export async function getUserByEmail( email : string, secure : false, poolClient? : PoolClient ) : Promise<TUser | undefined>
+export async function getUserByEmail( email : string, secure? : true, poolClient? : PoolClient ) : Promise<TUserSecure | undefined>
+
+export async function getUserByEmail(
+    email : string,
+    secure : boolean | undefined = true,
+    poolClient? : PoolClient
+) : Promise<TUser | TUserSecure | undefined> {
 
     const {
         client,
@@ -12,7 +20,14 @@ export const getUserByEmail = async ( email : string, poolClient? : PoolClient )
     try {
         const user = await client.query({
             text : `--sql
-                SELECT * FROM public."user" WHERE email = $1
+                SELECT ${
+                    secure ?
+                    "user_id, email, firstname, lastname, created_at, last_modified"
+                    :
+                    "*"
+                }
+                FROM public."user"
+                WHERE email = $1
             `,
             values : [ email ]
         })
@@ -26,7 +41,11 @@ export const getUserByEmail = async ( email : string, poolClient? : PoolClient )
 
 }
 
-export const getUserByGoogleUserId = async ( google_user_id : string, poolClient? : PoolClient ) : Promise<TUser | undefined> => {
+export const getUserByGoogleUserId = async (
+    google_user_id : string,
+    secure : boolean | undefined = true,
+    poolClient? : PoolClient
+) : Promise<TUser | TUserSecure | undefined> => {
 
     const {
         client,
@@ -36,7 +55,14 @@ export const getUserByGoogleUserId = async ( google_user_id : string, poolClient
     try {
         const user = await client.query({
             text : `--sql
-                SELECT * FROM public."user" WHERE google_user_id = $1
+                SELECT ${
+                    secure ?
+                    "user_id, email, firstname, lastname, created_at, last_modified"
+                    :
+                    "*"
+                }
+                FROM public."user"
+                WHERE google_user_id = $1
             `,
             values : [ google_user_id ]
         })
