@@ -28,7 +28,7 @@ export const createWorkspace = async ( body : TCreateWorkspaceBody, user_id : st
 
         const createdWorkspace = await client.query({
             text : `--sql
-                INSERT INTO public."workspace" (
+                INSERT INTO workspace."workspace" (
                     workspace_name,
                     workspace_slug
                 )
@@ -48,7 +48,7 @@ export const createWorkspace = async ( body : TCreateWorkspaceBody, user_id : st
 
         const createdWorkspaceMember = await client.query({
             text : `--sql
-                INSERT INTO public."workspace_members" (
+                INSERT INTO workspace."workspace_members" (
                     workspace_id,
                     user_id,
                     workspace_role,
@@ -101,7 +101,7 @@ export const addWorkspaceMember = async (
 
         await client.query({
             text : `--sql
-                INSERT INTO public."workspace_members" (
+                INSERT INTO workspace."workspace_members" (
                     workspace_id,
                     user_id,
                     workspace_role,
@@ -118,7 +118,7 @@ export const addWorkspaceMember = async (
 
         await client.query({
             text : `--sql
-                UPDATE public."workspace_invitation" 
+                UPDATE invitation."workspace_invitation" 
                 SET accepted = TRUE 
                 WHERE workspace_id = $1 
                 AND email = $2

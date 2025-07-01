@@ -24,7 +24,7 @@ export const createTask = async (
 
         const createdTask = await client.query({
             text : `--sql
-                INSERT INTO public."task" (
+                INSERT INTO taskboard."task" (
                     task_section_id,
                     task_title,
                     display_order,
@@ -93,7 +93,7 @@ export const arrangeTask = async (
 
         const task = await client.query({
             text : `--sql
-                UPDATE public."task"
+                UPDATE taskboard."task"
                 SET ${clauses.join(", ")}
                 WHERE task_id = $${clauseIndex++}
             `,
@@ -131,7 +131,7 @@ export const transferTaskToTrash = async (
 
         await client.query({
             text : `--sql
-                UPDATE public."task"
+                UPDATE taskboard."task"
                 SET in_trash = true
                 WHERE task_id = $1
             `,
@@ -192,7 +192,7 @@ export const updateTaskPrimitiveFields = async (
 
         const task = await client.query({
             text : `--sql
-                UPDATE public."task"
+                UPDATE taskboard."task"
                 SET ${clauses.join(", ")}
                 WHERE task_id = $${clauseIndex}
                 RETURNING *;
@@ -233,7 +233,7 @@ export const addTaskAssignee = async (
 
         await client.query({
             text : `--sql
-                INSERT INTO public."task_assignee" (
+                INSERT INTO taskboard."task_assignee" (
                     task_id,
                     user_id
                 ) VALUES ( $1, $2 )
@@ -271,7 +271,7 @@ export const removeTaskAssignee = async (
 
         await client.query({
             text : `--sql
-                DELETE FROM public."task_assignee"
+                DELETE FROM taskboard."task_assignee"
                 WHERE task_id = $1 AND user_id = $2
             `,
             values : [task_id, user_id]
@@ -308,7 +308,7 @@ export const logTaskTime = async (
 
         const createdTaskTimeLog = await client.query({
             text : `--sql
-                INSERT INTO public."task_time_log" (
+                INSERT INTO taskboard."task_time_log" (
                     task_id,
                     user_id,
                     time_spent

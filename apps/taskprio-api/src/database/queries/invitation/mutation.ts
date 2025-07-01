@@ -27,7 +27,7 @@ export const acceptInvitation = async (
 
         await client.query({
             text : `--sql
-                UPDATE public."workspace_invitation"
+                UPDATE invitation."workspace_invitation"
                 SET accepted = TRUE
                 WHERE token_string = $1
                 AND workspace_id = $2

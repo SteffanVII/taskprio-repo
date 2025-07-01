@@ -35,7 +35,7 @@ export const createProject = async (
         // Create the project data
         const createdProject = await client.query({
             text : `--sql
-                INSERT INTO public."project" (project_name, project_slug) VALUES ($1, $2) RETURNING *;
+                INSERT INTO project."project" (project_name, project_slug) VALUES ($1, $2) RETURNING *;
             `,
             values : [body.project_name, projectSlug]
         })
@@ -48,7 +48,7 @@ export const createProject = async (
         // Create the join for workspace and project
         const createdWorkspaceProject = await client.query({
             text : `--sql
-                INSERT INTO public."workspace_projects" ( workspace_id, project_id, user_id ) VALUES ($1, $2, $3) RETURNING *;
+                INSERT INTO project."workspace_projects" ( workspace_id, project_id, user_id ) VALUES ($1, $2, $3) RETURNING *;
             `,
             values : [ body.workspace_id, createdProject.rows[0].project_id, user_id ]
         })
@@ -61,7 +61,7 @@ export const createProject = async (
         // Create the join for user and project
         const createdProjectMember = await client.query({
             text : `--sql
-                INSERT INTO public."project_members" (user_id, project_id, project_role, invited_by) VALUES ($1, $2, $3, $4) RETURNING *;
+                INSERT INTO project."project_members" (user_id, project_id, project_role, invited_by) VALUES ($1, $2, $3, $4) RETURNING *;
             `,
             values : [ user_id, createdProject.rows[0].project_id, EProjectRole.OWNER + 1, user_id ]
         })

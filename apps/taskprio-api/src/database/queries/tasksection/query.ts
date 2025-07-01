@@ -16,7 +16,7 @@ export const getTaskboardSections = async (
 
         const taskboardSections = await client.query({
             text : `--sql
-                SELECT * FROM public."task_section" WHERE task_board_id = $1;
+                SELECT * FROM taskboard."task_section" WHERE task_board_id = $1;
             `,
             values : [ task_board_id ]
         })
@@ -58,8 +58,8 @@ export const getTaskboardSectionsWithTasksForCardView = async (
                             ) FILTER ( WHERE u.user_id IS NOT NULL ), '[]'
                         ) as assignees
                     FROM public."task" t
-                    LEFT JOIN public."task_assignee" ta ON t.task_id = ta.task_id
-                    LEFT JOIN public."user" u ON ta.user_id = u.user_id
+                    LEFT JOIN taskboard."task_assignee" ta ON t.task_id = ta.task_id
+                    LEFT JOIN tp_user."user" u ON ta.user_id = u.user_id
                     GROUP BY
                         t.task_id,
                         t.task_section_id,
@@ -79,7 +79,7 @@ export const getTaskboardSectionsWithTasksForCardView = async (
                         ) FILTER ( WHERE twa.task_id IS NOT NULL ), '[]'
                     ) as tasks
                 FROM
-                    public."task_section" ts
+                    taskboard."task_section" ts
                 LEFT JOIN
                     task_with_assignees twa ON ts.task_section_id = twa.task_section_id
                 WHERE ts.task_board_id = $1
@@ -122,7 +122,7 @@ export const getLastTaskboardSectionDisplayOrder = async (
                 SELECT
                     COALESCE(MAX(display_order), -99) as display_order
                 FROM
-                    public."task_section" ts
+                    taskboard."task_section" ts
                 WHERE
                     ts.task_board_id = $1;
             `,

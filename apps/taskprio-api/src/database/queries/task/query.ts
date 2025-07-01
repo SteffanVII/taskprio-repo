@@ -16,7 +16,7 @@ export const getTaskLastDisplayOrder = async (
         const lastDisplayOrder = await client.query({
             text : `--sql
                 SELECT COALESCE(MAX(display_order), -99) AS last_display_order
-                FROM public."task" t
+                FROM taskboard."task" t
                 WHERE t.task_section_id = $1;
             `,
             values : [task_section_id]
@@ -59,12 +59,12 @@ export const getTask = async (
                     ) as assignees,
                     (
                         SELECT COALESCE(json_agg(ttl ORDER BY ttl.created_at DESC ), '[]')
-                        FROM public."task_time_log" ttl
+                        FROM taskboard."task_time_log" ttl
                         WHERE ttl.task_id = t.task_id AND ttl.user_id = $2
                     ) as task_time_logs
-                FROM public."task" t
-                LEFT JOIN public."task_assignee" ta ON t.task_id = ta.task_id
-                LEFT JOIN public."user" u ON ta.user_id = u.user_id
+                FROM taskboard."task" t
+                LEFT JOIN taskboard."task_assignee" ta ON t.task_id = ta.task_id
+                LEFT JOIN tp_user."user" u ON ta.user_id = u.user_id
                 WHERE t.task_id = $1
                 GROUP BY
                     t.task_id,
@@ -108,11 +108,11 @@ export const getTaskPath = async (
                     p.project_id,
                     tb.task_board_id,
                     ts.task_section_id
-                FROM public."task" t
-                JOIN public."task_section" ts ON t.task_section_id = ts.task_section_id
-                JOIN public."task_board" tb ON ts.task_board_id = tb.task_board_id
-                JOIN public."project" p ON tb.project_id = p.project_id
-                JOIN public."workspace_projects" wp ON p.project_id = wp.project_id
+                FROM taskboard."task" t
+                JOIN taskboard."task_section" ts ON t.task_section_id = ts.task_section_id
+                JOIN taskboard."task_board" tb ON ts.task_board_id = tb.task_board_id
+                JOIN project."project" p ON tb.project_id = p.project_id
+                JOIN project."workspace_projects" wp ON p.project_id = wp.project_id
                 WHERE t.task_id = $1;
             `,
             values : [ task_id ]

@@ -26,7 +26,7 @@ export async function getUserByEmail(
                     :
                     "*"
                 }
-                FROM public."user"
+                FROM tp_user."user"
                 WHERE email = $1
             `,
             values : [ email ]
@@ -61,7 +61,7 @@ export const getUserByGoogleUserId = async (
                     :
                     "*"
                 }
-                FROM public."user"
+                FROM tp_user."user"
                 WHERE google_user_id = $1
             `,
             values : [ google_user_id ]

@@ -18,7 +18,7 @@ export const createUser = async (
 
         const createdUser = await client.query({
             text : `--sql
-                INSERT INTO public."user" (
+                INSERT INTO tp_user."user" (
                     email,
                     firstname,
                     lastname,

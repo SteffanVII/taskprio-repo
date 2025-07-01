@@ -28,11 +28,11 @@ export const getProject = async ( project_id : string, postgreClient? : PoolClie
                         )
                     ) as project_members
                 FROM
-                    public."project" p
+                    project."project" p
                 JOIN
-                    public."project_members" pm ON p.project_id = pm.project_id
+                    project."project_members" pm ON p.project_id = pm.project_id
                 JOIN
-                    public."user" u ON pm.user_id = u.user_id
+                    tp_user."user" u ON pm.user_id = u.user_id
                 WHERE
                     p.project_id = $1
                 GROUP BY
@@ -79,13 +79,13 @@ export const getUserWorkspaceProjects = async ( workspace_id : string, user_id :
                         )
                     ) as project_members
                 FROM
-                    public."workspace_projects" wp
+                    project."workspace_projects" wp
                 JOIN
-                    public."project" p ON wp.project_id = p.project_id
+                    project."project" p ON wp.project_id = p.project_id
                 JOIN
-                    public."project_members" pm ON p.project_id = pm.project_id
+                    project."project_members" pm ON p.project_id = pm.project_id
                 JOIN
-                    public."user" u ON pm.user_id = u.user_id
+                    tp_user."user" u ON pm.user_id = u.user_id
                 WHERE
                     wp.workspace_id = $1 AND pm.user_id = $2
                 GROUP BY
@@ -130,11 +130,11 @@ export const getUserProjects = async ( user_id : string, postgreClient? : PoolCl
                         )
                     ) as project_members
                 FROM
-                    public."project_members" pm
+                    project."project_members" pm
                 JOIN
-                    public."project" p ON pm.project_id = p.project_id
+                    project."project" p ON pm.project_id = p.project_id
                 JOIN
-                    public."user" u ON pm.user_id = u.user_id
+                    tp_user."user" u ON pm.user_id = u.user_id
                 WHERE
                     pm.user_id = $1
                 GROUP BY
@@ -165,7 +165,7 @@ export const getProjectMember = async ( project_id : string, user_id : string, p
                 SELECT
                     *
                 FROM
-                    public."project_members"
+                    project."project_members"
                 WHERE
                     project_id = $1 AND user_id = $2
             `,
@@ -193,11 +193,11 @@ export const getProjectMemberByTaskboardId = async ( task_board_id : string, use
                 SELECT
                     pm.*
                 FROM
-                    public."task_board" tb
+                    taskboard."task_board" tb
                 JOIN
-                    public."project" p ON tb.project_id = p.project_id
+                    project."project" p ON tb.project_id = p.project_id
                 JOIN
-                    public."project_members" pm ON p.project_id = pm.project_id
+                    project."project_members" pm ON p.project_id = pm.project_id
                 WHERE
                     tb.task_board_id = $1 AND pm.user_id = $2
             `,
@@ -226,13 +226,13 @@ export const getProjectMemberByTaskSectionId = async ( task_section_id : string,
                 SELECT
                     pm.*
                 FROM
-                    public."task_section" ts
+                    taskboard."task_section" ts
                 JOIN
-                    public."task_board" tb ON tb.task_board_id = ts.task_board_id
+                    taskboard."task_board" tb ON tb.task_board_id = ts.task_board_id
                 JOIN
-                    public."project" p ON tb.project_id = p.project_id
+                    project."project" p ON tb.project_id = p.project_id
                 JOIN
-                    public."project_members" pm ON p.project_id = pm.project_id
+                    project."project_members" pm ON p.project_id = pm.project_id
                 WHERE
                     ts.task_section_id = $1 AND pm.user_id = $2;
             `,
@@ -265,15 +265,15 @@ export const getProjectMemberByTaskId = async (
                 SELECT
                     pm.*
                 FROM
-                    public."task" t
+                    taskboard."task" t
                 JOIN
-                    public."task_section" ts ON ts.task_section_id = t.task_section_id
+                    taskboard."task_section" ts ON ts.task_section_id = t.task_section_id
                 JOIN
-                    public."task_board" tb ON tb.task_board_id = ts.task_board_id
+                    taskboard."task_board" tb ON tb.task_board_id = ts.task_board_id
                 JOIN
-                    public."project" p ON tb.project_id = p.project_id
+                    project."project" p ON tb.project_id = p.project_id
                 JOIN
-                    public."project_members" pm ON p.project_id = pm.project_id
+                    project."project_members" pm ON p.project_id = pm.project_id
                 WHERE
                     t.task_id = $1 AND pm.user_id = $2;
             `,

@@ -19,7 +19,7 @@ export const getInvitationByToken_WorkspaceId_Recipient = async (
         
         const invitation = await client.query({
             text : `--sql
-                SELECT * FROM public."workspace_invitation"
+                SELECT * FROM invitation."workspace_invitation"
                 WHERE token_string = $1 AND workspace_id = $2 AND email = $3
             `,
             values : [

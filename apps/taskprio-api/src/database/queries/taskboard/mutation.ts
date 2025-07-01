@@ -36,7 +36,7 @@ export const createTaskboard = async (
 
         const createdTaskboard = await client.query({
             text : `--sql
-                INSERT INTO public."task_board" (
+                INSERT INTO taskboard."task_board" (
                     task_board_name,
                     task_board_slug,
                     project_id

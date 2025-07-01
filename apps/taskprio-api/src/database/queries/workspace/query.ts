@@ -29,13 +29,13 @@ export const getUserWorkspace = async ( workspace_id : string, user_id : string,
                         )
                     ) as workspace_members
                 FROM
-                    public."workspace" w
+                    workspace."workspace" w
                 JOIN
-                    public."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
+                    workspace."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
                 JOIN
-                    public."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
+                    worksapce."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
                 JOIN
-                    public."user" all_members_u ON all_memberS_wm.user_id = all_members_u.user_id
+                    tp_user."user" all_members_u ON all_memberS_wm.user_id = all_members_u.user_id
                 WHERE
                     w.workspace_id = $1 AND querying_user_wm.user_id = $2
                 GROUP BY
@@ -80,13 +80,13 @@ export const getUserWorkspaces = async ( user_id : string, postgreClient? : Pool
                         )
                     ) as workspace_members
                 FROM
-                    public."workspace" w
+                    workspace."workspace" w
                 JOIN
-                    public."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
+                    workspace."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
                 JOIN
-                    public."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
+                    workspace."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
                 JOIN
-                    public."user" all_members_u ON all_memberS_wm.user_id = all_members_u.user_id
+                    tp_user."user" all_members_u ON all_memberS_wm.user_id = all_members_u.user_id
                 WHERE
                     querying_user_wm.user_id = $1
                 GROUP BY
@@ -125,9 +125,9 @@ export const getWorkspaceMember = async ( workspace_id : string, user_id : strin
                     u.firstname,
                     u.lastname,
                 FROM
-                    public."workspace_member" wm,
+                    workspace."workspace_member" wm,
                 JOIN
-                    public."user" u ON wm.user_id = u.user_id
+                    tp_user."user" u ON wm.user_id = u.user_id
                 WHERE
                     wm.workspace_id = $1 AND wm.user_id = $2
             `,

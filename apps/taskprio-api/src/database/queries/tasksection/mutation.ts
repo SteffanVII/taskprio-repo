@@ -21,7 +21,7 @@ export const createTaskSection = async (
 
         const createdTaskSection = await client.query({
             text : `--sql
-                INSERT INTO public."task_section" (
+                INSERT INTO taskboard."task_section" (
                     task_section_name,
                     task_board_id,
                     display_order
@@ -79,7 +79,7 @@ export const updateTaskSection = async (
 
         const updatedTaskSection = await client.query({
             text : `--sql
-                UPDATE public."task_section"
+                UPDATE taskboard."task_section"
                 SET ${clauses.join(", ")}
                 WHERE task_section_id = $${paramIndex}
                 RETURNING *;

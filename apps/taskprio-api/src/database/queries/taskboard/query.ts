@@ -11,11 +11,11 @@ export const getProjectTaskboardList = async ( project_id : string, poolClient? 
 
     try {
         const taskboardList = await client.query({
-            text : `-- sql
+            text : `--sql
                 SELECT
                     *
                 FROM
-                    public."task_board"
+                    taskboard."task_board"
                 WHERE
                     project_id = $1
             `,
