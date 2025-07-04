@@ -6,7 +6,7 @@ import { useGlobalsStore } from "@/stores/globals"
 import { TProject } from "@repo/taskprio-types/src/index"
 
 
-export const useCreateProject = () => {
+export const useCreateProject = ( successCallback? : ( project : TCreateProjectResponse ) => void ) => {
 
     const queryClient = useQueryClient()
 
@@ -32,6 +32,8 @@ export const useCreateProject = () => {
                 newProjects[foundIndex] = data
                 return newProjects
             })
+
+            successCallback?.(data)
 
         }
     })

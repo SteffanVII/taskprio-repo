@@ -94,3 +94,93 @@ export const createProject = async (
     }
 
 }
+
+export const addProjectMember = async (
+    project_id : string,
+    user_id : string,
+    invited_by : string,
+    project_role : EProjectRole,
+    poolClient? : PoolClient
+) : Promise<void> => {
+
+    const {
+        internalClient,
+        client,
+        release
+    } = await getPoolClient( poolClient )
+
+    try {
+
+        if ( internalClient ) await client.query("BEGIN")
+
+        await client.query({
+            text : `--sql
+                INSERT INTO project.project_members (
+                    user_id,
+                    project_id,
+                    project_role,
+                    invited_by
+                ) VALUES ($1, $2, $3, $4) RETURNING *;
+            `,
+            values : [
+                user_id,
+                project_id,
+                project_role,
+                invited_by
+            ]
+        })
+
+        if ( internalClient ) await client.query("COMMIT")
+
+    } catch (error) {
+        console.log(error)
+        await client.query("ROLLBACK")
+        throw error
+    } finally {
+        release()
+    }
+
+}
+
+export const addMemberToProjects = async (
+    user_id : string,
+    invited_by : string,
+    role : EProjectRole,
+    projects : string[],
+    poolClient? : PoolClient
+) : Promise<void> => {
+
+    const {
+        client,
+        release,
+        begin,
+        commit
+    } = await getPoolClient( poolClient )
+
+    try {
+
+        console.log(projects);
+
+        await begin()
+        
+        await Promise.all( projects.map( async project => {
+            await addProjectMember(
+                project,
+                user_id,
+                invited_by,
+                role,
+                client
+            )
+        } ) )
+        
+        await commit()
+
+    } catch (error) {
+        console.log(error)
+        await client.query("ROLLBACK")
+        throw error
+    } finally {
+        release()
+    }
+
+}

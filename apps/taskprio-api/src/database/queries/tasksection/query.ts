@@ -57,7 +57,7 @@ export const getTaskboardSectionsWithTasksForCardView = async (
                                 )
                             ) FILTER ( WHERE u.user_id IS NOT NULL ), '[]'
                         ) as assignees
-                    FROM public."task" t
+                    FROM taskboard."task" t
                     LEFT JOIN taskboard."task_assignee" ta ON t.task_id = ta.task_id
                     LEFT JOIN tp_user."user" u ON ta.user_id = u.user_id
                     GROUP BY

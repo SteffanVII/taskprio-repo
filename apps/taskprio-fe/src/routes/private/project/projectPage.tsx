@@ -1,21 +1,21 @@
+import MainDashboardHeader from "@/components/others/mainDashboardPane/MainDashboardHeader";
 import { cn } from "@/lib/utils";
-import { Outlet, useParams } from "react-router";
+import { Outlet } from "react-router";
 
 
 const ProjectPage = () => {
 
-    const {
-        project_slug
-    } = useParams()
-
     return (
-        <div
-            className={cn(
-                ` grow bg-accent `
-            )}
-        >
-            <Outlet/>
-        </div>
+        <>
+            <MainDashboardHeader/>  
+            <div
+                className={cn(
+                    ` grow bg-accent `
+                )}
+            >
+                <Outlet/>
+            </div>
+        </>
     )
 
 }

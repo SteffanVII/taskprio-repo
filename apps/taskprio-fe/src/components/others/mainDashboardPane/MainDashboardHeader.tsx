@@ -1,15 +1,30 @@
 import { cn } from "@/lib/utils";
 import { useGlobalsStore } from "@/stores/globals";
 import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocation, useNavigate } from "react-router";
+import { useMemo } from "react";
+import { Settings2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 const MainDashboardHeader = () => {
 
+    const { pathname } = useLocation()
+    const navigate = useNavigate()
+
     const {
         selectedProject
     } = useGlobalsStore()
+
+    const projectRoute = useMemo(() => {
+        if ( pathname.includes("/t/") ) {
+            return "boards"
+        }
+        if ( pathname.includes("/project_settings/") || pathname.includes("/project_settings") ) {
+            return "project_settings"
+        }
+    }, [ pathname ])
 
     return (
         <>
@@ -18,19 +33,45 @@ const MainDashboardHeader = () => {
             <div
                 className={cn(
                     ` w-full p-3 `,
-                    ` flex items-center `,
+                    ` flex items-center gap-4 `,
                 )}
             >
-                <Tabs>
-                    <TabsList>
-                        <TabsTrigger value="boards">Boards</TabsTrigger>
-                        <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-                {/* {
+                {
                     selectedProject &&
-                    <h3 className=" text-lg font-medium " >{selectedProject.project_name}</h3>
-                } */}
+                    <>
+                        <h3 className=" text-lg font-medium " >{selectedProject.project_name}</h3>
+                        <Tabs
+                            value={projectRoute}
+                        >
+                            <TabsList>
+                                <TabsTrigger
+                                    value="boards"
+                                    onClick={() => {
+                                        navigate(`t`)
+                                    }}
+                                >Boards</TabsTrigger>
+                                <TabsTrigger
+                                    value="project_settings"
+                                    onClick={() => {
+                                        // navigate( pathname.replace(/\/t\/.*/, "/project_settings") )
+                                        navigate( "project_settings" )
+                                    }}
+                                >
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <Settings2/>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                            side="bottom"
+                                        >
+                                            Project Settings
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                    </>
+                }
                 <div className=" ml-auto " ></div>
                 <UserPopoverMenu/>
             </div>

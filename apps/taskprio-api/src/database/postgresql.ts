@@ -19,7 +19,7 @@ export const getPostgrePool = () => {
     return pool;
 }
 
-export const getPoolClient = async ( postgreClient? : PoolClient ) : Promise<{ internalClient : boolean, client : PoolClient, release : () => void }> => {
+export const getPoolClient = async ( postgreClient? : PoolClient ) : Promise<{ internalClient : boolean, client : PoolClient, release : () => void, begin : () => Promise<void>, commit : () => Promise<void> }> => {
     let internalClient : boolean = false;
     let client : PoolClient = postgreClient;
     if ( !postgreClient ) {
@@ -30,7 +30,17 @@ export const getPoolClient = async ( postgreClient? : PoolClient ) : Promise<{ i
             throw error;
         }
     }
-    return { internalClient, client, release : () => {
-        if ( internalClient ) client.release();
-    } };
+    return {
+        internalClient,
+        client,
+        release : () => {
+            if ( internalClient ) client.release();
+        },
+        begin : async () => {
+            if ( internalClient ) await client.query("BEGIN")
+        },
+        commit : async() => {
+            if ( internalClient ) await client.query("COMMIT")
+        }
+};
 }

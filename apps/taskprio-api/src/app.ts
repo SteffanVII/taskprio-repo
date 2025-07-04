@@ -89,8 +89,8 @@ privateRoutes.use("/project", projectRoutes)
 privateRoutes.use("/taskboard", taskBoardRoutes)
 privateRoutes.use("/tasksection", taskSectionRoutes)
 privateRoutes.use("/task", taskRoutes)
-privateRoutes.use("/invitation", invitationRoutes)
 APP.use("/private", privateRoutes)
+APP.use("/invitation", invitationRoutes)
 
 // Mount the websocket
 registerWebSocketLogic(wss)

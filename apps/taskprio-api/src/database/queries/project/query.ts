@@ -87,7 +87,13 @@ export const getUserWorkspaceProjects = async ( workspace_id : string, user_id :
                 JOIN
                     tp_user."user" u ON pm.user_id = u.user_id
                 WHERE
-                    wp.workspace_id = $1 AND pm.user_id = $2
+                    wp.workspace_id = $1
+                    AND EXISTS (
+                        SELECT 1
+                        FROM project."project_members" pm2
+                        WHERE pm2.project_id = p.project_id
+                        AND pm2.user_id = $2
+                    )
                 GROUP BY
                     p.project_id, p.project_name;
             `,

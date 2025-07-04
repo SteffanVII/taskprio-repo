@@ -2,11 +2,21 @@ import LoginForm from "@/components/others/shared/LoginForm"
 import RegisterForm from "@/components/others/shared/RegisterForm"
 import Spinner from "@/components/others/Spinner"
 import { Button } from "@/components/ui/button"
-import { useAcceptInvitation } from "@/services/private/invitation/mutation"
+import { useAcceptInvitation } from "@/services/public/invitation/mutation"
+import { useGetInvitationInfo } from "@/services/public/invitation/query"
 import { useGlobalsStore } from "@/stores/globals"
 import { AxiosError } from "axios"
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
+
+// TO DO : 
+// 1. Get invitation info
+// 2. Check if a user is already logged in
+// 3. If a user is logged in, check if the invitation recipient is the same as the user
+// 4. If the invitation recipient is the same as the user, accept the invitation immediately and show the redirect to dashboard.
+// 5. If the invitation recipient is not the same as the user,
+//    show the login form if the invitation info shows the recipient have an account else show the register form.
+// 6. On successfull login or register, accept the invitation immediately.
 
 
 const AcceptRoute = () => {
@@ -19,11 +29,21 @@ const AcceptRoute = () => {
     } = useGlobalsStore()
 
     const {
+        data : invitationInfo,
+        isPending : getInvitationInfoIsPending,
+        isError : getInvitationInfoIsError,
+        error : getInvitationInfoError
+    } = useGetInvitationInfo( searchParams.get("invite_token") )
+
+    const {
         mutateAsync : acceptInvitation,
         isPending : isAcceptInvitationPending,
-        isSuccess : isAcceptInvitationSuccess,
-        error : acceptInvitationError
-    } = useAcceptInvitation()
+        error : acceptInvitationError,
+    } = useAcceptInvitation( () => {
+        setIsAcceptInvitationSuccess(true)
+    } )
+
+    const [ isAcceptInvitationSuccess, setIsAcceptInvitationSuccess ] = useState<boolean>(false)
 
     const [ registerFormOpen, setRegisterFormOpen ] = useState<boolean>(false)
 
@@ -39,7 +59,53 @@ const AcceptRoute = () => {
         }
     }, [ searchParams, authenticated ] )
 
-    if ( acceptInvitationError ) {
+    if ( !searchParams.get("invite_token") ) {
+        return (
+            <div className="size-full flex items-center justify-center">
+                <p>Invitation token not found</p>
+            </div>
+        )
+    }
+
+    if ( getInvitationInfoIsPending ) {
+        return (
+            <div className="size-full flex items-center justify-center">
+                <Spinner size="xl" />
+            </div>
+        )
+    }
+
+    if ( getInvitationInfoIsError && getInvitationInfoError ) {
+        if ( getInvitationInfoError instanceof AxiosError ) {
+            return (
+                <div className="size-full flex items-center justify-center">
+                    <p>{getInvitationInfoError.response?.data.message}</p>
+                </div>
+            )
+        }
+    }
+
+    if ( invitationInfo ) {
+
+        if ( !invitationInfo.is_invitation_exists ) {
+            return (
+                <div className="size-full flex items-center justify-center">
+                    <p>Invitation not found</p>
+                </div>
+            )
+        }
+
+        if ( invitationInfo.accepted ) {
+            return (
+                <div>
+                    <p>Invitation already accepted</p>
+                </div>
+            )
+        }
+
+    }
+
+    if ( acceptInvitationError !== null ) {
         if ( acceptInvitationError instanceof AxiosError ) {
             if ( acceptInvitationError.response?.status === 400 ) {
                 if ( acceptInvitationError.response?.data?.message === "Invitation already accepted" ) {
@@ -111,7 +177,6 @@ const AcceptRoute = () => {
                         </div>
                     )
                 }
-
             }
         }
     }

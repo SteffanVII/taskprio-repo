@@ -2,7 +2,6 @@ import CreateProjectDialog from "@/components/others/dialogs/CreateProjectDialog
 import CreateTaskboardDialog from "@/components/others/dialogs/CreateTaskboardDialog";
 import CreateWorkspaceDialog from "@/components/others/dialogs/CreateWorkspaceDialog";
 import WorkspaceInvitationDialog from "@/components/others/dialogs/WorkspaceInvitationDialog";
-import MainDashboardHeader from "@/components/others/mainDashboardPane/MainDashboardHeader";
 import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboardPane";
 import Spinner from "@/components/others/Spinner";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketHandler";
@@ -13,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useCreateProject } from "@/services/private/project/mutation";
 import { useCreateWorkspace } from "@/services/private/workspace/mutation";
 import { useGetUserWorkspaces } from "@/services/private/workspace/query";
-import { useGlobalsStore } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
 import { useContext, useState } from "react";
 import { Outlet, useNavigate } from "react-router";
 
@@ -49,7 +48,14 @@ const MainPage = () => {
     const {
         mutateAsync : createProject,
         isPending : isCreatingProject,
-    } = useCreateProject()
+    } = useCreateProject( ( response ) => {
+        if ( !selectedWorkspace ) return
+        setProjectName("")
+        updateGlobalsStore({
+            noProjects : false
+        })
+        navigate(`/p/w/${selectedWorkspace.workspace_slug}/d/${response.project_slug}`)
+    } )
 
     const onSubmitCreateWorkspace = async ( workspaceName : string ) => {
         const response = await createWorkspace({
@@ -63,14 +69,12 @@ const MainPage = () => {
 
     const onSubmitCreateProject = async ( projectName : string ) => {
         if ( !selectedWorkspace ) return
-        const response = await createProject({
+        await createProject({
             body : {
                 project_name : projectName,
                 workspace_id : selectedWorkspace.workspace_id
             }
         })
-        setProjectName("")
-        navigate(`/p/w/${selectedWorkspace.workspace_slug}/d/${response.project_slug}`)
     }
 
     return (
@@ -185,8 +189,7 @@ const MainPage = () => {
                                 </Card>
                             </div>
                             :
-                            <>
-                                <MainDashboardHeader/>                    
+                            <>                  
                                 <Outlet/>
                             </>
                         }

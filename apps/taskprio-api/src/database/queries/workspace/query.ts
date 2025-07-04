@@ -33,9 +33,9 @@ export const getUserWorkspace = async ( workspace_id : string, user_id : string,
                 JOIN
                     workspace."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
                 JOIN
-                    worksapce."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
+                    workspace."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
                 JOIN
-                    tp_user."user" all_members_u ON all_memberS_wm.user_id = all_members_u.user_id
+                    tp_user."user" all_members_u ON all_members_wm.user_id = all_members_u.user_id
                 WHERE
                     w.workspace_id = $1 AND querying_user_wm.user_id = $2
                 GROUP BY
@@ -120,12 +120,12 @@ export const getWorkspaceMember = async ( workspace_id : string, user_id : strin
                     wm.user_id,
                     wm.workspace_role,
                     wm.joined_at,
-                    wm.invited_by
+                    wm.invited_by,
                     u.email,
                     u.firstname,
-                    u.lastname,
+                    u.lastname
                 FROM
-                    workspace."workspace_member" wm,
+                    workspace."workspace_members" wm
                 JOIN
                     tp_user."user" u ON wm.user_id = u.user_id
                 WHERE

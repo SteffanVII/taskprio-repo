@@ -9,7 +9,7 @@ export const useAcceptInvitation = ( successCallback? : () => void ) => {
     return useMutation({
         mutationFn : async ( invite_token : string ) => {
             const response = await axiosInstance.post(
-                `/private/invitation/workspace/accept/${invite_token}`
+                `/invitation/workspace/accept/${invite_token}`
             )
             return response.data
         },

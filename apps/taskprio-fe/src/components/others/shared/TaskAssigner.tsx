@@ -19,6 +19,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
 } ) => {
 
     const {
+        user,
         selectedProject
     } = useGlobalsStore()
 
@@ -128,7 +129,14 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                                         ` size-[1.6rem] rounded-full bg-gray-400 `
                                     )}
                                 ></span>
-                                <p>{member.firstname} {member.lastname}</p>
+                                {
+                                    member.user_id === user?.user_id ?
+                                    <>
+                                        <p>You</p> <p>{`(${ member.firstname } ${member.lastname})`}</p>
+                                    </>
+                                    :
+                                    <p>{member.firstname} {member.lastname}</p>
+                                }
                             </div>
                         ) )
                     }

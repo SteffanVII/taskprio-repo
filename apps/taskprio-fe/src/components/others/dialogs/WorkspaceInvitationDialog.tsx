@@ -16,16 +16,16 @@ import { Label } from "@/components/ui/label";
 import { useInviteToWorkspace } from "@/services/private/workspace/mutation";
 
 const EmailInputSchema = z.object({
-    email : z.string().email()
+    email : z.string().email(),
 })
 
 const WorkspaceInvitationDialog = () => {
 
-    const { selectedWorkspace } = useGlobalsStore();
+    const { selectedWorkspace, user } = useGlobalsStore();
     const { workspaceInvitationDialog } = useDialogsStore();
 
-    const [ emailInputValue, setEmailInputValue ] = useState<string>( "" );
     const [ emails, setEmails ] = useState<string[]>( [] );
+    const [ selectedProjects, setSelectedProjects ] = useState<string[]>( [] );
 
     const emailInputForm = useForm<z.infer<typeof EmailInputSchema>>({
         resolver : zodResolver( EmailInputSchema ),
@@ -52,12 +52,18 @@ const WorkspaceInvitationDialog = () => {
         emailInputForm.reset()
     } )
 
-    const projectOptions = projects?.map( ( project ) => ({
-        label : project.project_name,
-        value : project.project_id
-    }))
+    // const projectOptions = projects?.map( ( project ) => ({
+    //     label : project.project_name,
+    //     value : project.project_id
+    // }))
 
     const handleSubmit = ( data : z.infer<typeof EmailInputSchema> ) => {
+        if ( data.email === user?.email ) {
+            emailInputForm.setError( "email", {
+                message : "You cannot invite yourself to the workspace"
+            } )
+            return;
+        }
         if ( !emails.includes( data.email ) ) {
             setEmails( [ ...emails, data.email ] );
         }
@@ -65,11 +71,19 @@ const WorkspaceInvitationDialog = () => {
     }
 
     const handleSendInvitation = () => {
+
+        if ( emails.length === 0 ) {
+            emailInputForm.setError( "email", {
+                message : "You must enter at least one email"
+            } )
+            return;
+        }
+
         if ( selectedWorkspace ) {
             inviteToWorkspace({
                 workspace_id : selectedWorkspace.workspace_id,
                 body : {
-                    projects : [],
+                    projects : selectedProjects,
                     emails : emails
                 }
             })
@@ -138,6 +152,14 @@ const WorkspaceInvitationDialog = () => {
                                     >
                                         <Checkbox
                                             id={project.project_id}
+                                            checked={selectedProjects.includes( project.project_id )}
+                                            onCheckedChange={ ( checked ) => {
+                                                if ( checked ) {
+                                                    setSelectedProjects( [ ...selectedProjects, project.project_id ] );
+                                                } else {
+                                                    setSelectedProjects( selectedProjects.filter( ( id ) => id !== project.project_id ) );
+                                                }
+                                            } }
                                         />
                                         <Label htmlFor={project.project_id} >{ project.project_name }</Label>
                                     </div>

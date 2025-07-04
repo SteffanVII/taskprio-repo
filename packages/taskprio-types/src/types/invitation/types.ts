@@ -17,3 +17,9 @@ export type TWorkspaceInvitation = {
     accepted : boolean,
     created_at : string
 }
+
+export type IGetInvitationInfoResponseData = Pick< TInvitationTokenDecoded, "sender_id" | "email" > & {
+    is_invitation_exists : boolean,
+    is_user_exists : boolean,
+    accepted : boolean
+}

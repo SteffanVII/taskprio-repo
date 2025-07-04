@@ -35,17 +35,21 @@ const router = createBrowserRouter([
 									{
 										path : "t/:task_board_slug?/:task_id?",
 										element : <TaskboardPage/>
+									},
+									{
+										path : "project_settings",
+										element : <p>Project Settings</p>
 									}
 								]
 							}
 						]
-					},
-                    {
-                        path : "accept",
-                        element : <AcceptRoute/>
-                    }
+					}
 				]
 			},
+			{
+				path : "accept",
+				element : <AcceptRoute/>
+			}
 		]
 	}
 ])
