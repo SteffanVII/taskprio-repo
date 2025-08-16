@@ -8,7 +8,8 @@ export interface ILoginRequest extends Request {
 export interface IGoogleLoginRequest extends Request {
     body : {
         credential : string,
-        client_id : string
+        client_id : string,
+        for_invitation_purpose? : boolean
     },
     user : {
         google_user_id : string,
@@ -17,8 +18,8 @@ export interface IGoogleLoginRequest extends Request {
         name : string,
         given_name : string,
         family_name : string,
-        picture? : string
-    }
+        picture? : string,
+    },
 }
 
 export interface IRegisterRequest extends Request {

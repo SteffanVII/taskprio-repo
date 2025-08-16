@@ -4,8 +4,12 @@ import { getPoolClient } from "../../database/postgresql.js";
 import { addTaskAssignee, arrangeTask, createTask, logTaskTime, removeTaskAssignee, transferTaskToTrash, updateTaskPrimitiveFields } from "../../database/queries/task/mutation.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
 import { getTask, getTaskPath } from "../../database/queries/task/query.js";
-import { TTaskCreateWebSocketMessage } from "../../websocket/types.js";
+import { TTaskCreateWebSocketMessageSimple } from "@repo/taskprio-types";
 import { getProjectMemberByTaskId } from "../../database/queries/project/query.js";
+import { WebSocketConnectionsManagerSimple } from "../../websocket/connectionsManager.js";
+import { EWebSocketEventType } from "@repo/taskprio-types";
+import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
+import { verifyProjectMemberMiddleware } from "../../middlewares/authentication.js";
 
 export const registerTaskRoutes = ( router : Router ) => {
 
@@ -45,16 +49,21 @@ export const registerTaskRoutes = ( router : Router ) => {
     // Create task
     router.post(
         `/`,
+        verifyProjectMemberMiddleware,
         async ( req : ICreateTaskRequest, res : Response ) => {
             const body = req.body
 
             const {
                 client,
-                release
+                release,
+                begin,
+                commit,
+                rollback
             } = await getPoolClient()
 
             try {
-                await client.query("BEGIN")
+
+                await begin()
 
                 const createdTask = await createTask(
                     body.task_section_id,
@@ -63,24 +72,29 @@ export const registerTaskRoutes = ( router : Router ) => {
                     client
                 )
 
-                await client.query("COMMIT")
+                await commit()
 
-                const path = await getTaskPath( createdTask.task_id, client )
+                const workspaceId = await getWorkspaceIdFromProjectId( req.projectId );
 
-                const message : TTaskCreateWebSocketMessage = {
+                const message : TTaskCreateWebSocketMessageSimple = {
                     task : createdTask,
-                    path : {
-                        workspace_id : path.workspace_id,
-                        project_id : path.project_id,
-                        board_id : path.task_board_id
-                    }
+                    workspace_id : workspaceId
                 }
+
+                wsConnectionsManagerSimple.sendMessage(
+                    {
+                        type : EWebSocketEventType.TASK_CREATED,
+                        data : message
+                    },
+                    [ req.user.user_id ],
+                    workspaceId
+                )
 
                 res.status(201).json(createdTask)
 
             } catch (error) {
                 console.log(error)
-                await client.query("ROLLBACK")
+                rollback()
                 res.status(500).json({
                     message : "Internal server error"
                 })
@@ -135,7 +149,7 @@ export const registerTaskRoutes = ( router : Router ) => {
                 await addTaskAssignee( task_id, target_user_id )
 
                 res.status(200).json({
-                    message : "Task assignee added"
+                    message : "Task assignee added",
                 })
 
             } catch (error) {
@@ -266,11 +280,13 @@ export const registerTaskRoutes = ( router : Router ) => {
     // Update task primitive fields
     router.patch(
         `/primitive-fields/:task_id`,
+        verifyProjectMemberMiddleware,
         async ( req : IUpdateTaskPrimitiveFieldsRequest, res : Response ) => {
 
             const { task_id } = req.params
             const body = req.body
             const { user_id } = req.user
+            const projectId = req.projectId;
 
             if ( !task_id ) {
                 res.status(400).json({
@@ -295,18 +311,20 @@ export const registerTaskRoutes = ( router : Router ) => {
 
             try {
                 
-                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
-
-                if ( !projectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
-                
                 const updatedTask = await updateTaskPrimitiveFields(
                     task_id,
                     body
+                )
+
+                const workspaceId = await getWorkspaceIdFromProjectId( projectId );
+
+                wsConnectionsManagerSimple.sendMessage(
+                    {
+                        type : EWebSocketEventType.TASK_UPDATED,
+                        data : updatedTask
+                    },
+                    [ user_id ],
+                    workspaceId
                 )
 
                 res.status(200).json( updatedTask )

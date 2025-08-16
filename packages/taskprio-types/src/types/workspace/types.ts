@@ -1,4 +1,4 @@
-import { EWorkspaceRole } from "../../utilities/enums"
+import { EWorkspaceRole } from "./enums"
 
 export type TCreateWorkspaceBody = {
     workspace_name : string

@@ -13,7 +13,8 @@ import { GoogleLogin } from "@react-oauth/google"
 
 type TLoginFormProps = {
     setRegisterFormOpen : ( isRegister : boolean ) => void,
-    dontNavigate? : boolean
+    dontNavigate? : boolean,
+    invitationPurpose? : boolean
 }
 
 const loginFormSchema = z.object({
@@ -21,7 +22,11 @@ const loginFormSchema = z.object({
     password : z.string(),
 })
 
-const LoginForm : React.FC<TLoginFormProps> = ({ setRegisterFormOpen, dontNavigate = false }) => {
+const LoginForm : React.FC<TLoginFormProps> = ({
+    setRegisterFormOpen,
+    dontNavigate = false,
+    invitationPurpose = false
+}) => {
 
     const navigate = useNavigate()
 
@@ -60,7 +65,10 @@ const LoginForm : React.FC<TLoginFormProps> = ({ setRegisterFormOpen, dontNaviga
 
     const onSubmitLogin = async (data: z.infer<typeof loginFormSchema>) => {
         login({
-            body: data,
+            body: {
+                ...data,
+                for_invitation_purpose : invitationPurpose
+            },
         })
     }
 
@@ -136,7 +144,8 @@ const LoginForm : React.FC<TLoginFormProps> = ({ setRegisterFormOpen, dontNaviga
                         }
                         googleLoginT({
                             clientId : credentialResponse.clientId,
-                            credential : credentialResponse.credential
+                            credential : credentialResponse.credential,
+                            for_invitation_purpose : invitationPurpose
                         })
                     }}
                     auto_select={true}

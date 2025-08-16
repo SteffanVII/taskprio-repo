@@ -11,7 +11,8 @@ import Spinner from "../Spinner"
 
 type TRegisterFormProps = {
     setRegisterFormOpen : ( isRegister : boolean ) => void,
-    dontNavigate? : boolean
+    dontNavigate? : boolean,
+    invitationPurpose? : boolean
 }
 
 const registerFormSchema = z.object({

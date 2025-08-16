@@ -131,7 +131,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                         const displayOrderBottom = lastTask ? task.display_order - 100 : ( adjacentBottom!.display_order + task.display_order ) / 2
 
                         return (
-                            <>
+                            <React.Fragment key={task.task_id}>
                                 {
                                     firstTask &&
                                     <TaskboardTaskDrop
@@ -151,7 +151,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                                     bottomTaskId={adjacentBottom?.task_id}
                                     fullSize={lastTask}
                                 />
-                            </>
+                            </React.Fragment>
                         )
                     } )
                 }

@@ -1,3 +1,4 @@
+import { TTag } from "@repo/taskprio-types/src";
 import { Store, useStore } from "@tanstack/react-store";
 
 export type TDialogStore = {
@@ -9,6 +10,10 @@ export type TDialogStore = {
     },
     workspaceInvitationDialog : {
         open : boolean
+    },
+    tagDialog : {
+        open : boolean,
+        tag : TTag | null
     }
 }
 
@@ -21,6 +26,10 @@ const DialogsStore = new Store<TDialogStore>({
     },
     workspaceInvitationDialog : {
         open : false
+    },
+    tagDialog : {
+        open : false,
+        tag : null
     }
 })
 

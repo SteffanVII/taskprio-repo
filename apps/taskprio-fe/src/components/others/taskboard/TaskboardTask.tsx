@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { TTaskForCardView } from "@repo/taskprio-types/src/index"
 import { updateGlobalsStore } from "@/stores/globals"
 import { useNavigate, useParams } from "react-router"
-import TaskAssigner from "../shared/TaskAssigner"
+import TaskAssigner from "../shared/task/TaskAssigner"
 import { useState } from "react"
 
 export type TTaskboardTaskProps = {

@@ -8,6 +8,8 @@ import ProjectPage from './routes/private/project/projectPage'
 import MainPage from './routes/private/mainPage'
 import TaskboardPage from './routes/private/project/taskboard/taskboardPage'
 import AcceptRoute from './routes/public/accept'
+import { ThemeProvider } from './lib/utils/themeProvider'
+import ProjectSettingsPage from './routes/private/project/settings/projectSettingsPage'
 
 const queryClient = new QueryClient()
 
@@ -38,7 +40,7 @@ const router = createBrowserRouter([
 									},
 									{
 										path : "project_settings",
-										element : <p>Project Settings</p>
+										element : <ProjectSettingsPage/>
 									}
 								]
 							}
@@ -57,9 +59,11 @@ const router = createBrowserRouter([
 function App() {
 
 	return (
-		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
-		</QueryClientProvider>
+		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider router={router} />
+			</QueryClientProvider>
+		</ThemeProvider>
 	)
 }
 

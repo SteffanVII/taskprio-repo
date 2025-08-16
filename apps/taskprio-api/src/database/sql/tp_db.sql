@@ -13,35 +13,3 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 \i tp_invitation_schema.sql
 
 COMMIT;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

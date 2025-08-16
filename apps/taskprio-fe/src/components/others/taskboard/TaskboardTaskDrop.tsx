@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 import { useArrangeTask } from "@/services/private/task/mutation"
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore } from "@/stores/globals"
 import React, { useState } from "react"
 
 export type TTaskboardTaskDrop = {

@@ -8,7 +8,7 @@ import { useAddTaskTimeLog } from "@/services/private/task/mutation"
 import { TTaskTimeLog } from "@repo/taskprio-types/src/index"
 import { Timer } from "lucide-react"
 import React, { useMemo, useState } from "react"
-import Spinner from "../Spinner"
+import Spinner from "../../Spinner"
 import { Badge } from "@/components/ui/badge"
 import useGetWorkspaceMemberDetails from "@/lib/hooks/useGetWorkspaceMemberDetails"
 import dayjs from "@/lib/dayjs"
@@ -65,7 +65,7 @@ const TaskTimeLogger : React.FC<TTaskTimerLoggerProps> = ({
             )}
         >
             <Popover
-                modal
+                modal={false}
             >
                 <PopoverTrigger
                     asChild

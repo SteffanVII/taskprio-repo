@@ -1,4 +1,4 @@
-import MainDashboardHeader from "@/components/others/mainDashboardPane/MainDashboardHeader";
+import MainDashboardHeader from "@/components/others/mainDashboardHeader/MainDashboardHeader";
 import { cn } from "@/lib/utils";
 import { Outlet } from "react-router";
 

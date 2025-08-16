@@ -55,7 +55,12 @@ FOR EACH ROW
 EXECUTE FUNCTION public.update_last_modified_timestamp();
 -- Task
 
+
 -- Task Assignee
+-- Affected functions:
+--		Mutations:
+--			addTaskAssignee
+--			removeTaskAssignee
 DROP TABLE IF EXISTS taskboard."task_assignee" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_assignee" (
 	task_id UUID NOT NULL REFERENCES taskboard."task",

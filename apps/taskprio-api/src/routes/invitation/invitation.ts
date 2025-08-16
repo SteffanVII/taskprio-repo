@@ -11,56 +11,7 @@ import { addWorkspaceMember } from "../../database/queries/workspace/mutation.js
 import { acceptInvitation } from "../../database/queries/invitation/mutation.js";
 import { addMemberToProjects, addProjectMember } from "../../database/queries/project/mutation.js";
 
-const registerInvitationRoutes = ( router : Router ) => {
-
-    router.get(
-        "/workspace/info/:token",
-        async ( req : IGetInvitationInfoRequest, res : Response ) => {
-
-            const { token } = req.params;
-
-            try {
-
-                const decodedToken = jwt.verify(token, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenDecoded;
-
-                const user = await getUserByEmail(
-                    decodedToken.email
-                )
-
-                const invitation = await getInvitationByToken_WorkspaceId_Recipient(
-                    token,
-                    decodedToken.workspace_id,
-                    decodedToken.email
-                )
-
-                const returnData : IGetInvitationInfoResponseData = {
-                    sender_id : decodedToken.sender_id,
-                    email : decodedToken.email,
-                    is_invitation_exists : true,
-                    is_user_exists : true,
-                    accepted : false
-                }
-
-                if ( !user ) {
-                    returnData.is_user_exists = false
-                }
-
-                if ( !invitation ) {
-                    returnData.is_invitation_exists = false
-                }
-
-                if ( invitation && invitation.accepted ) {
-                    returnData.accepted = true
-                }
-
-                res.status(200).json(returnData)
-
-            } catch (error) {
-                res.status(500).json({ message : "Invalid token or expired" });
-            }
-
-        }
-    )
+export const registerInvitationPrivateRoutes = ( router : Router ) => {
 
     router.post(
         "/workspace/:workspace_id",
@@ -227,8 +178,6 @@ const registerInvitationRoutes = ( router : Router ) => {
                     decodedToken.workspace_id,
                     decodedToken.email
                 )
-
-                console.log("Checkpoint 1");
                 
                 await addWorkspaceMember(
                     invitation.workspace_id,
@@ -238,10 +187,6 @@ const registerInvitationRoutes = ( router : Router ) => {
                     invitation.sender_id
                 )
 
-                console.log("Checkpoint 2");
-
-                console.log(decodedToken.projects);
-
                 await addMemberToProjects(
                     user.user_id,
                     invitation.sender_id,
@@ -249,11 +194,11 @@ const registerInvitationRoutes = ( router : Router ) => {
                     decodedToken.projects
                 )
 
-                res.status(200).json({ message : "Invitation accepted" })
+                res.status(200).clearCookie( process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME ).json({ message : "Invitation accepted" })
 
             } catch (error) {
                 console.error(error);
-                res.status(500).json({ message : "Internal server error" });
+                res.status(500).clearCookie( process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME ).json({ message : "Internal server error" });
             }
 
         }
@@ -261,4 +206,55 @@ const registerInvitationRoutes = ( router : Router ) => {
 
 }
 
-export default registerInvitationRoutes
+export const registerInvitationPublicRoutes = ( router : Router ) => {
+
+    router.get(
+        "/workspace/info/:token",
+        async ( req : IGetInvitationInfoRequest, res : Response ) => {
+
+            const { token } = req.params;
+
+            try {
+
+                const decodedToken = jwt.verify(token, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenDecoded;
+
+                const user = await getUserByEmail(
+                    decodedToken.email
+                )
+
+                const invitation = await getInvitationByToken_WorkspaceId_Recipient(
+                    token,
+                    decodedToken.workspace_id,
+                    decodedToken.email
+                )
+
+                const returnData : IGetInvitationInfoResponseData = {
+                    sender_id : decodedToken.sender_id,
+                    email : decodedToken.email,
+                    is_invitation_exists : true,
+                    is_user_exists : true,
+                    accepted : false
+                }
+
+                if ( !user ) {
+                    returnData.is_user_exists = false
+                }
+
+                if ( !invitation ) {
+                    returnData.is_invitation_exists = false
+                }
+
+                if ( invitation && invitation.accepted ) {
+                    returnData.accepted = true
+                }
+
+                res.status(200).json(returnData)
+
+            } catch (error) {
+                res.status(500).json({ message : "Invalid token or expired" });
+            }
+
+        }
+    )
+
+}

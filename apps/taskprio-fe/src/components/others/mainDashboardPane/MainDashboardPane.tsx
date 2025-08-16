@@ -5,9 +5,14 @@ import ProjectsList_MainDashboardPane from "./ProjectsList_MainDashboardPane";
 import WorkspaceDropdown_MainDashboardPane from "./WorkspaceDropdown_MainDashboardPane";
 import { updateDialogsStore } from "@/stores/dialogs";
 import GeneralButtons from "./GeneralButtons_MainDashboardPane";
-import LogoutTrigger from "../shared/LogoutTrigger";
+import { useTheme } from "@/lib/utils/themeProvider";
 
 const MainDashboardPane = () => {
+
+    const {
+        theme,
+        setTheme
+    } = useTheme()
 
     return (
         <div
@@ -54,7 +59,6 @@ const MainDashboardPane = () => {
                 )}
             >
                 <div className=" flex items-center gap-2 " >
-                    <LogoutTrigger/>
                     <Button
                         size={"sm"}
                         variant={"outline"}
@@ -73,6 +77,9 @@ const MainDashboardPane = () => {
                 <Button
                     size={"icon"}
                     variant={"outline"}
+                    onClick={() => {
+                        setTheme( theme === "dark" ? "light" : "dark" )
+                    }}
                 >
                     <Sun className=" size-4 "/>
                 </Button>

@@ -1,7 +1,9 @@
-import { EWebSocketEventType } from "@/services/private/websocket/enums"
-import { TWebSocketMessage, TWebSocketMessagePathChange } from "@/services/private/websocket/types"
-import { useGlobalsStore } from "@/stores/globals"
+import { TGetTaskboardSectionsResponse } from "@/services/private/tasksection/types"
+import { TGlobalsStore, useGlobalsStore } from "@/stores/globals"
+import { EWebSocketEventType, TTask, TTaskSectionWithTasks, TTaskUpdateWebSocketMessageSimple, TWebSocketChangePathMessageSimple, TWebSocketMessage } from "@repo/taskprio-types/src"
+import { QueryClient, useQueryClient } from "@tanstack/react-query"
 import { createContext, useLayoutEffect, useRef, useState } from "react"
+import { produce } from "immer"
 
 type TWebSocketContext = {
     connected : boolean,
@@ -9,8 +11,8 @@ type TWebSocketContext = {
     closeWebSocketConnection : () => void,
     pathChangeMethods : {
         updateWorkspacePath : ( workspace_id : string ) => void,
-        updateProjectPath : ( project_id : string ) => void,
-        updateBoardPath : ( board_id : string ) => void
+        // updateProjectPath : ( project_id : string ) => void,
+        // updateBoardPath : ( board_id : string ) => void
     }
 }
 
@@ -20,8 +22,8 @@ export const WebSocketContext = createContext<TWebSocketContext>({
     closeWebSocketConnection : () => {},
     pathChangeMethods : {
         updateWorkspacePath : () => {},
-        updateProjectPath : () => {},
-        updateBoardPath : () => {}
+        // updateProjectPath : () => {},
+        // updateBoardPath : () => {}
     }
 })
 
@@ -31,59 +33,20 @@ type TWebSocketProviderProps = {
 
 export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
 
-    const {
-        authenticated,
-        selectedWorkspace,
-        selectedProject,
-        selectedTaskboard
-    } = useGlobalsStore()
+    const globalsStore = useGlobalsStore()
+
+    const queryClient = useQueryClient()
 
     const [ connected, setConnected ] = useState(false)
     const socket = useRef<WebSocket | null>(null)
 
     const updateWorkspacePath = ( workspace_id : string ) => {
-        const message : TWebSocketMessage<TWebSocketMessagePathChange> = {
+        const message : TWebSocketMessage<TWebSocketChangePathMessageSimple> = {
             type : EWebSocketEventType.PATH_CHANGE,
             data : {
-                previous_path : {
-                    workspace_id : selectedWorkspace?.workspace_id,
-                    project_id : selectedProject?.project_id,
-                    board_id : selectedTaskboard?.task_board_id
-                },
+                // The previous workspace id is the workspace id of the currently loaded workspace
+                previous_workspace_id : globalsStore.selectedWorkspace?.workspace_id,
                 workspace_id : workspace_id
-            }
-        }
-        sendWebSocketMessage(message)
-    }
-
-    const updateProjectPath = ( project_id : string ) => {
-        const message : TWebSocketMessage<TWebSocketMessagePathChange> = {
-            type : EWebSocketEventType.PATH_CHANGE,
-            data : {
-                previous_path : {
-                    workspace_id : selectedWorkspace?.workspace_id,
-                    project_id : selectedProject?.project_id,
-                    board_id : selectedTaskboard?.task_board_id
-                },
-                workspace_id : selectedWorkspace?.workspace_id!,
-                project_id : project_id
-            }
-        }
-        sendWebSocketMessage(message)
-    }
-
-    const updateBoardPath = ( board_id : string ) => {
-        const message : TWebSocketMessage<TWebSocketMessagePathChange> = {
-            type : EWebSocketEventType.PATH_CHANGE,
-            data : {
-                previous_path : {
-                    workspace_id : selectedWorkspace?.workspace_id,
-                    project_id : selectedProject?.project_id,
-                    board_id : selectedTaskboard?.task_board_id
-                },
-                workspace_id : selectedWorkspace?.workspace_id!,
-                project_id : selectedProject?.project_id!,
-                board_id : board_id
             }
         }
         sendWebSocketMessage(message)
@@ -101,9 +64,21 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         setConnected(false)
     }
 
+    const websocketEventHandlers = ( message : TWebSocketMessage ) => {
+
+        switch ( message.type ) {
+            case EWebSocketEventType.TASK_UPDATED:
+                taskUpdateWebSocketMessageHandler( message, queryClient, globalsStore )
+                break;
+            default:
+                break;
+        }
+    
+    }
+
     useLayoutEffect(() => {
         if ( socket.current ) return
-        if ( !authenticated ) return
+        if ( !globalsStore.authenticated ) return
         socket.current = new WebSocket(
             `${import.meta.env.VITE_TASKPRIO_WSS_URL}`
         )
@@ -113,7 +88,16 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         socket.current.onclose = () => {
             setConnected(false)
         }
-    }, [ authenticated ] )
+    }, [ globalsStore.authenticated ] )
+
+    useLayoutEffect(() => {
+        if ( !connected ) return
+        if ( !socket.current ) return
+        socket.current!.onmessage = ( event ) => {
+            const message = JSON.parse(event.data) as TWebSocketMessage
+            websocketEventHandlers( message )
+        }
+    }, [ connected, globalsStore ])
 
     return (
         <WebSocketContext.Provider
@@ -123,13 +107,42 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
                 closeWebSocketConnection,
                 pathChangeMethods : {
                     updateWorkspacePath,
-                    updateProjectPath,
-                    updateBoardPath
                 }
             }}
         >
             { children }
         </WebSocketContext.Provider>
+    )
+
+}
+
+const taskUpdateWebSocketMessageHandler = (
+    message : TWebSocketMessage<TTask>,
+    queryClient : QueryClient,
+    globalsStore : TGlobalsStore
+) => {
+
+    const {
+        selectedTaskboard
+    } = globalsStore;
+
+    queryClient.setQueryData(
+        [ "get_taskboard_sections", selectedTaskboard?.task_board_id, true ],
+        ( oldData : TGetTaskboardSectionsResponse ) => produce( oldData, draft => {
+            draft.forEach( section => {
+                if ( section.task_section_id === message.data.task_section_id ) {
+                    (section as TTaskSectionWithTasks).tasks = (section as TTaskSectionWithTasks).tasks.map( task => {
+                        if ( task.task_id === message.data.task_id ) {
+                            return {
+                                ...message.data,
+                                assignees : task.assignees
+                            }
+                        }
+                        return task
+                    } )
+                }
+            } )
+        } )
     )
 
 }

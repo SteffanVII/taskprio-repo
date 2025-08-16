@@ -50,3 +50,13 @@ CREATE INDEX idx_project_members_user_id ON project."project_members"(user_id);
 DROP INDEX IF EXISTS idx_project_members_project_id;
 CREATE INDEX idx_project_members_project_id ON project."project_members"(project_id);
 -- Project members
+
+-- Project tags
+DROP TABLE IF EXISTS project."project_tags" CASCADE;
+CREATE TABLE IF NOT EXISTS project."project_tags" (
+	tag_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	tag_name VARCHAR(255) NOT NULL,
+	tag_color VARCHAR(255) NOT NULL,
+	project_id UUID NOT NULL REFERENCES project."project"(project_id) ON DELETE CASCADE
+);
+-- Project tags

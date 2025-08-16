@@ -1,6 +1,7 @@
 import CreateProjectDialog from "@/components/others/dialogs/CreateProjectDialog";
 import CreateTaskboardDialog from "@/components/others/dialogs/CreateTaskboardDialog";
 import CreateWorkspaceDialog from "@/components/others/dialogs/CreateWorkspaceDialog";
+import TagDialog from "@/components/others/dialogs/TagDialog";
 import WorkspaceInvitationDialog from "@/components/others/dialogs/WorkspaceInvitationDialog";
 import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboardPane";
 import Spinner from "@/components/others/Spinner";
@@ -198,6 +199,7 @@ const MainPage = () => {
                     <CreateWorkspaceDialog/>
                     <CreateTaskboardDialog/>
                     <WorkspaceInvitationDialog/>
+                    <TagDialog/>
                 </div>
             }
         </>

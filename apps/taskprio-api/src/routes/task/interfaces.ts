@@ -1,7 +1,7 @@
 import { TArrangeTaskRequestBody, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
-import { IAuthenticatedRequest } from "../../middlewares/interfaces.js"
+import { IAuthenticatedProjectMemberRequest, IAuthenticatedRequest } from "../../middlewares/interfaces.js"
 
-export interface ICreateTaskRequest extends IAuthenticatedRequest {
+export interface ICreateTaskRequest extends IAuthenticatedProjectMemberRequest {
     body : {
         task_section_id : string,
         task_title : string
@@ -17,7 +17,7 @@ export interface ITransferTaskToTrashRequest extends IAuthenticatedRequest {
     params : { task_id : string }
 }
 
-export interface IUpdateTaskPrimitiveFieldsRequest extends IAuthenticatedRequest {
+export interface IUpdateTaskPrimitiveFieldsRequest extends IAuthenticatedProjectMemberRequest {
     params : { task_id : string },
     body : TUpdateTaskPrimitiveFieldsRequestBody
 }

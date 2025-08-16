@@ -4,9 +4,9 @@ import { useGlobalsStore } from "@/stores/globals";
 import TaskboardSection from "./TaskboardSection";
 import { TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
-import { useParams } from "react-router";
 import TaskboardSectionDrop from "./TaskboardSectionDrop";
-import { TaskboardTaskDialog } from "../dialogs/TaskboardTaskdialog";
+import { TaskboardTaskDialog } from "../dialogs/TaskboardTaskDialog";
+import React from "react";
 
 
 export const Taskboard = () => {
@@ -17,7 +17,6 @@ export const Taskboard = () => {
 
     const {
         data : taskboardSections,
-        isLoading : isLoadingTaskboardSections
     } = useGetTaskboardSections({
         pathParameter : {
             task_board_id : selectedTaskboard?.task_board_id
@@ -70,7 +69,7 @@ export const Taskboard = () => {
                     const displayOrderBottom = lastSection ? taskboardSection.display_order + 100 : ( adjacentBottom!.display_order + taskboardSection.display_order ) / 2
 
                     return (
-                        <>
+                        <React.Fragment key={taskboardSection.task_section_id}>
                             {
                                 firstSection &&
                                 <TaskboardSectionDrop
@@ -87,7 +86,7 @@ export const Taskboard = () => {
                                 topTaskSectionId={ taskboardSection.task_section_id }
                                 bottomTaskSectionId={ adjacentBottom?.task_section_id }
                             />
-                        </>
+                        </React.Fragment>
                     )
                 } )
             }

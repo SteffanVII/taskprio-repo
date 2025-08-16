@@ -1,5 +1,5 @@
 import { PoolClient } from "pg";
-import { getPoolClient } from "../../postgresql.js";
+import { databaseFunctionWrapper, getPoolClient } from "../../postgresql.js";
 import { TWorkspace, TWorkspaceMember } from "@repo/taskprio-types";
 
 export const getUserWorkspace = async ( workspace_id : string, user_id : string, postgreClient? : PoolClient ) : Promise<TWorkspace | undefined> => {
@@ -144,3 +144,32 @@ export const getWorkspaceMember = async ( workspace_id : string, user_id : strin
     }
 
 }
+
+/**
+ * @description Get the workspace id from a project id
+ * @param project_id - The project id
+ * @returns The workspace id
+ */
+export const getWorkspaceIdFromProjectId = databaseFunctionWrapper(
+    async (
+        client,
+        project_id : string,
+    ) : Promise<string | undefined> => {
+
+        const workspaceId = await client.query({
+            text : `--sql
+                SELECT w.workspace_id
+                FROM project."workspace_projects" wp
+                JOIN workspace."workspace" w ON wp.workspace_id = w.workspace_id
+                WHERE 
+                    wp.project_id = $1
+            `,
+            values : [
+                project_id
+            ]
+        })
+
+        return workspaceId.rows[0]?.workspace_id;
+
+    }
+)

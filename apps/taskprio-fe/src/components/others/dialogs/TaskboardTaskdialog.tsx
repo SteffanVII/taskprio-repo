@@ -13,10 +13,10 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebounce } from "use-debounce"
 import { useUpdateTaskPrimitiveFields } from "@/services/private/task/mutation"
-import TaskAssigner from "../shared/TaskAssigner"
+import TaskAssigner from "../shared/task/TaskAssigner"
 import { TUpdateTaskPrimitiveFieldsPayload } from "@/services/private/task/types"
-import TaskEstimateInput from "../shared/TaskEstimateInput"
-import TaskTimeLogger from "../shared/TaskTimeLogger"
+import TaskEstimateInput from "../shared/task/TaskEstimateInput"
+import TaskTimeLogger from "../shared/task/TaskTimeLogger"
 import { MakeOptional } from "@/lib/utils/shared"
 import { TTaskTimeLog } from "@repo/taskprio-types/src"
 
@@ -148,40 +148,43 @@ export const TaskboardTaskDialog = () => {
                 if ( !value ) {
                     console.log("Data loaded set to false");
                     setDataLoaded( false )
+                    closeHandler()
                 }
             } }
         >
             <DialogContent
                 noCloseButton={ true }
                 className={cn(
-                    ` !max-w-screen w-fit h-fit `,
+                    ` !max-w-screen !max-h-screen w-fit h-fit `,
                     ` shadow-none !border-none !bg-transparent !p-0 `
                 )}
             >
                 <div
                     className={cn(
                         // ` absolute bottom-0 right-[1rem] `,
-                        ` w-[80rem] h-fit min-h-[60rem] `,
+                        ` w-[80rem] h-fit min-h-[60rem] max-h-screen `,
                         ` flex flex-col `,
                         ` bg-background border border-border rounded-md shadow `,
                         ` animate-in fade-in slide-in-from-bottom-60 duration-200 ease-out `,
                     )}
-                    ref={(node) => {
-                        // Add click outside detection
-                        const handleClickOutside = (e: MouseEvent) => {
-                            if (node && !node.contains(e.target as Node) && task_id) {
-                                closeHandler()
-                            }
-                        };
+                    // ref={(node) => {
+
+                    //     // Add click outside detection
+                    //     const handleClickOutside = (e: MouseEvent) => {
+                    //         if (node && !node.contains(e.target as Node) && task_id) {
+                    //             closeHandler()
+                    //         }
+                    //     };
                         
-                        // Add event listener when component mounts
-                        document.addEventListener("mousedown", handleClickOutside);
+                    //     // Add event listener when component mounts
+                    //     document.addEventListener("mousedown", handleClickOutside);
                         
-                        // Return cleanup function
-                        return () => {
-                            document.removeEventListener("mousedown", handleClickOutside);
-                        };
-                    }}
+                    //     // Return cleanup function
+                    //     return () => {
+                    //         document.removeEventListener("mousedown", handleClickOutside);
+                    //     };
+
+                    // }}
                 >
                     {
                         isLoadingTask || isLoadingTaskboardSections ? 

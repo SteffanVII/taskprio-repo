@@ -11,8 +11,6 @@ import { useNavigate, useParams } from "react-router";
 import { WebSocketContext } from "../websocket/WebsocketHandler";
 import { Skeleton } from "@/components/ui/skeleton";
 
-
-
 const WorkspaceDropdown_MainDashboardPane = () => {
 
     const navigate = useNavigate()
@@ -116,7 +114,6 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                                     className=" justify-between gap-2 "
                                     onClick={() => {
                                         navigate(`/p/w/${workspace.workspace_slug}`)
-
                                     }}
                                     disabled={selectedWorkspace?.workspace_id === workspace.workspace_id}
                                 >

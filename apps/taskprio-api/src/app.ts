@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { createPostgrePool, getPostgrePool } from "./database/postgresql.js";
+import { createPostgrePool, getPostgrePool, testDatabaseConnection } from "./database/postgresql.js";
 import reigsterAuthenticationRoutes from "./routes/authentication/authentication.js";
 import cookieParser from "cookie-parser";
 import registerProjectRoutes from "./routes/project/project.js";
@@ -13,10 +13,12 @@ import { registerTaskRoutes } from "./routes/task/task.js";
 import http from "http";
 import WebSocket, { WebSocketServer } from "ws";
 import { registerWebSocketLogic } from "./websocket/index.js";
-import WebSocketConnectionsManager from "./websocket/connectionsManager.js";
+import { WebSocketConnectionsManagerSimple } from "./websocket/connectionsManager.js";
 import { OAuth2Client } from "google-auth-library";
 import { Resend } from "resend";
-import registerInvitationRoutes from "./routes/invitation/invitation.js";
+import { registerInvitationPrivateRoutes, registerInvitationPublicRoutes } from "./routes/invitation/invitation.js";
+import { registerTagRoutes } from "./routes/tag/tag.js";
+import { redisConnect } from "./redis/index.js";
 dotenv.config();
 
 const resendApiKey = process.env.RESEND_API_KEY
@@ -43,11 +45,13 @@ APP.use(express.urlencoded({ extended : true }));
 
 // Websocket server
 export const SERVER = http.createServer(APP)
-const wss = new WebSocketServer({ server : SERVER })
-export const wsConnectionsManager = new WebSocketConnectionsManager( wss );
+// const wss = new WebSocketServer({ server : SERVER })
+// export const wsConnectionsManager = new WebSocketConnectionsManager( wss );
+// export const wsConnectionsManagerSimple = new WebSocketConnectionsManagerSimple( wss )
 
 // Create the pool for postgre clients
-createPostgrePool()
+// createPostgrePool()
+// testDatabaseConnection()
 
 // Routes registration
 APP.get( "/", ( req : Request, res : Response ) => {
@@ -79,9 +83,17 @@ registerTaskSectionRoutes(taskSectionRoutes)
 const taskRoutes = express.Router()
 registerTaskRoutes(taskRoutes)
 
-// Invitation routes
+// Invitation private routes
 const invitationRoutes = express.Router()
-registerInvitationRoutes(invitationRoutes)
+registerInvitationPrivateRoutes(invitationRoutes)
+
+// Invitation public routes
+const invitationPublicRoutes = express.Router()
+registerInvitationPublicRoutes(invitationPublicRoutes)
+
+// Tag routes
+const tagRoutes = express.Router()
+registerTagRoutes(tagRoutes)
 
 // Mount the private routes
 privateRoutes.use("/workspace", workspaceRoutes)
@@ -89,11 +101,16 @@ privateRoutes.use("/project", projectRoutes)
 privateRoutes.use("/taskboard", taskBoardRoutes)
 privateRoutes.use("/tasksection", taskSectionRoutes)
 privateRoutes.use("/task", taskRoutes)
+privateRoutes.use("/invitation", invitationRoutes)
+privateRoutes.use("/tag", tagRoutes)
 APP.use("/private", privateRoutes)
-APP.use("/invitation", invitationRoutes)
+APP.use("/invitation", invitationPublicRoutes)
 
 // Mount the websocket
-registerWebSocketLogic(wss)
+// registerWebSocketLogic(wss)
+
+// Connect to redis
+// redisConnect()
 
 // Start the server
 // APP.listen(PORT, () => {
@@ -106,13 +123,26 @@ SERVER.listen(PORT, () => {
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
-function gracefulShutdown() {
+async function gracefulShutdown() {
     console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
-    // some other closing procedures go here
+
+    // wss.clients.forEach( client => {
+    //     client.close()
+    // } )
+    // wss.close()
+
+    // await getPostgrePool()?.end()
+
+    console.log('Active handles:', process._getActiveHandles());
+    console.log('Active requests:', process._getActiveRequests());
+
     SERVER.close( () => {   
         console.log( "Server closed" );
         process.exit(0);
     })
+
+    SERVER.closeAllConnections()
+
     setTimeout( () => {
         console.log( "Could not close server, forcefully shutting down" );
         process.exit(1);

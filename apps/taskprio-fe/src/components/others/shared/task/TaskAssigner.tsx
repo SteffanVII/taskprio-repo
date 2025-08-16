@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { useGlobalsStore } from "@/stores/globals";
 import { Plus } from "lucide-react"
 import React from "react";
-import UserAvatar from "./UserAvatar";
+import UserAvatar from "../UserAvatar";
 import { useAddTaskAssignee, useRemoveTaskAssignee } from "@/services/private/task/mutation";
 
 export type TTaskAssignerProps = {
@@ -56,7 +56,9 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
     }
 
     return (
-        <Popover modal >
+        <Popover
+            modal={false}
+        >
             <PopoverTrigger
                 asChild
                 onClick={ e => {
@@ -69,7 +71,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                         className={cn(
                             ` h-[1.6rem] `,
                             ` flex items-center gap-2 text-sm text-blue-400 cursor-pointer `,
-                            ` hover:text-blue-800 `
+                            ` hover:text-blue-800 hover:underline `
                         )}
                         onClick={ e => {
                             e.stopPropagation()
@@ -87,6 +89,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                         {
                             assignees.map( ( assignee ) => (
                                 <UserAvatar
+                                    key={assignee}
                                     user_id={assignee}
                                 />
                             ) )

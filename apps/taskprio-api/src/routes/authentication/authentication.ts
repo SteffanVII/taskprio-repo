@@ -1,23 +1,23 @@
-import slugify from "slugify";
 import { APP } from "../../app.js";
 import { getPoolClient, getPostgrePool } from "../../database/postgresql.js";
 import { hashPassword, verifyPassword } from "../../utilities/hashPassword.js";
 import { IGoogleLoginRequest, ILoginRequest, IRegisterRequest } from "./interfaces.js";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import https from "https";
-import axios from "axios";
 import { verifyGoogleCredentialdMiddleware } from "../../middlewares/authentication.js";
 import { getUserByEmail, getUserByGoogleUserId } from "../../database/queries/user/query.js";
 import { createUser } from "../../database/queries/user/mutation.js";
 import { TJWTPayload } from "../../middlewares/types.js";
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 function reigsterAuthenticationRoutes() {
 
     APP.post(
         "/login",
         async ( req : ILoginRequest, res : Response ) => {
-            const { email, password } = req.body;
+            const { email, password, for_invitation_purpose } = req.body;
 
             if ( !email || !password ) {
                 res.status(400).json({ message: "Email and password are required" });
@@ -38,12 +38,12 @@ function reigsterAuthenticationRoutes() {
                     } else {
                         const accessToken = jwt.sign({ email : email, user_id : user.user_id }, process.env.JSONWEBTOKEN_SECRET);
                         res.cookie(
-                            "access_token",
+                            for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                             accessToken,
                             {
                                 httpOnly : true,
                                 secure : true,
-                                sameSite : 'none',
+                                sameSite : 'lax',
                             }
                         )
                         res.status(200).json({ message: "Login successful", access_token : accessToken, user });
@@ -57,9 +57,11 @@ function reigsterAuthenticationRoutes() {
 
     APP.post(
         "/login/google",
+        // This middleware is used to verify the google credential.
+        // It is used to add the user object to the request object
         verifyGoogleCredentialdMiddleware,
         async ( req : IGoogleLoginRequest, res : Response ) => {
-            const { user } = req;
+            const { user, body } = req;
 
             if ( !user ) {
                 res.status(400).json({ message : "Access token is required" });
@@ -76,11 +78,11 @@ function reigsterAuthenticationRoutes() {
                         user_id : existingUser.user_id
                     }, process.env.JSONWEBTOKEN_SECRET);
                     res.cookie(
-                        "accessToken",
+                        body.for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                         accessToken,
                         {
                             httpOnly : true,
-                            sameSite : "none",
+                            sameSite : "lax",
                             secure : true,
                             maxAge: 1000 * 60 * 60 * 24   
                         }
@@ -101,7 +103,7 @@ function reigsterAuthenticationRoutes() {
                     }, process.env.JSONWEBTOKEN_SECRET);
 
                     res.cookie(
-                        "accessToken",
+                        body.for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                         accessToken,
                         {
                             httpOnly : true,
@@ -127,7 +129,7 @@ function reigsterAuthenticationRoutes() {
         "/register",
         async ( req : IRegisterRequest, res : Response ) => {
 
-            const { email, password, firstname, lastname } = req.body || {};
+            const { email, password, firstname, lastname, for_invitation_purpose } = req.body || {};
 
             if ( !email || !password || !firstname || !lastname ) {
                 res.status(400).json({ message: "Email, password, firstname and lastname are required" });
@@ -161,7 +163,17 @@ function reigsterAuthenticationRoutes() {
                 if ( createUserResult.rowCount === 1 ) {
                     const accessToken = jwt.sign({ email : email, user_id : createUserResult.rows[0].user_id }, process.env.JSONWEBTOKEN_SECRET);
                     const userObject = await getUserByEmail(email)
-                    res.status(201).json({ message: "User created successfully", access_token : accessToken, user : userObject });
+                    res.status(201)
+                        .cookie(
+                            for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
+                            accessToken,
+                            {
+                                httpOnly : true,
+                                sameSite : "lax",
+                                secure : true
+                            }
+                        )
+                        .json({ message: "User created successfully", access_token : accessToken, user : userObject });
                 } else {
                     res.status(500).json({ message: "Failed to create user" });
                 }
@@ -183,7 +195,7 @@ function reigsterAuthenticationRoutes() {
         `/auth`,
         async ( req : Request, res : Response ) => {
 
-            const accessToken = req.cookies["accessToken"];
+            const accessToken = req.cookies[process.env.ACCESS_TOKEN_COOKIE_NAME];
 
             if ( !accessToken ) {
                 res.status(401).json({ message : "Unauthorized" });
@@ -212,7 +224,7 @@ function reigsterAuthenticationRoutes() {
     APP.post(
         `/logout`,
         async ( _req : Request, res : Response ) => {
-            res.clearCookie("accessToken").status(200).json({ message : "Logged out" });
+            res.clearCookie(process.env.ACCESS_TOKEN_COOKIE_NAME).status(200).json({ message : "Logged out" });
         }
     )
 

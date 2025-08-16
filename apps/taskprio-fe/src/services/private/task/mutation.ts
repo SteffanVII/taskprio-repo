@@ -3,6 +3,8 @@ import { TAddTaskAssigneePayload, TAddTaskTimeLogPayload, TAddTaskTimeLogRespons
 import { axiosInstance } from "@/services/axios"
 import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
 import { TTask, TTaskForCardView, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index"
+import { TGetTaskboardSectionsResponse } from "../tasksection/types"
+import { produce } from "immer"
 
 export const useCreateTask = () => {
     const queryClient = useQueryClient()
@@ -128,6 +130,13 @@ export const useUpdateTaskPrimitiveFields = () => {
 }
 
 export const useAddTaskAssignee = () => {
+
+    const {
+        selectedTaskboard
+    } = useGlobalsStore()
+
+    const queryClient = useQueryClient()
+
     return useMutation<any, Error, TAddTaskAssigneePayload>({
         mutationFn : async ( payload : TAddTaskAssigneePayload ) => {
             const response = await axiosInstance.post(
@@ -135,6 +144,20 @@ export const useAddTaskAssignee = () => {
                 payload.body
             )
             return response.data
+        },
+        onSuccess : ( data, variables ) => {
+            queryClient.setQueryData(
+                [ "get_taskboard_sections", selectedTaskboard?.task_board_id, true ],
+                ( oldData : TGetTaskboardSectionsResponse ) => produce( oldData, draft => {
+                    draft.forEach( section => {
+                        (section as TTaskSectionWithTasks).tasks.forEach( task => {
+                            if ( task.task_id === variables.task_id ) {
+                                
+                            }
+                        } )
+                    } )
+                } )
+            )
         }
     })
 }
@@ -157,6 +180,7 @@ export const useRemoveTaskAssignee = () => {
 export const useAddTaskTimeLog = (
     onSuccess? : ( data : TAddTaskTimeLogResponse) => void
 ) => {
+
     return useMutation<TAddTaskTimeLogResponse, Error, TAddTaskTimeLogPayload>({
         mutationFn : async ( payload : TAddTaskTimeLogPayload ) => {
             const response = await axiosInstance.post<TAddTaskTimeLogResponse>(

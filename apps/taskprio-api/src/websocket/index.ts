@@ -1,21 +1,22 @@
 import { WebSocketServer } from "ws"
 import { WebSocket } from "ws"
-import { wsConnectionsManager } from "../app.js"
 import { IncomingMessage } from "http"
-import { TWebSocketMessage } from "./types.js"
-import { EWebSocketEventType } from "./enums.js"
-import { pathUpdateEventHandler } from "./eventHandlers/pathUpdateEventHandler.js"
+import { TWebSocketMessage } from "@repo/taskprio-types"
+import { pathUpdateEventHandlerSimple } from "./eventHandlers/pathUpdateEventHandler.js"
 import cookie from "cookie"
 import { TJWTPayload } from "../middlewares/types.js"
 import jwt from "jsonwebtoken"
-export const registerWebSocketLogic = ( wss : WebSocketServer ) => {
+import { EWebSocketEventType } from "@repo/taskprio-types"
+import { WebSocketConnectionsManagerSimple } from "./connectionsManager.js"
+
+export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsManagerSimple : WebSocketConnectionsManagerSimple ) => {
     
-    wsConnectionsManager.addEventHandler( EWebSocketEventType.PATH_CHANGE, pathUpdateEventHandler )
+    wsConnectionsManagerSimple.addEventHandler( EWebSocketEventType.PATH_CHANGE, pathUpdateEventHandlerSimple )
 
     // Connection event
     wss.on("connection", ( ws : WebSocket, req : IncomingMessage ) => {
         const cookies = cookie.parse(req.headers.cookie || "")
-        const accessToken = cookies.accessToken
+        const accessToken = cookies["access_token"]
 
         console.log(accessToken);
         console.log(process.env.JSONWEBTOKEN_SECRET);
@@ -32,17 +33,20 @@ export const registerWebSocketLogic = ( wss : WebSocketServer ) => {
         ws.user_id = decodedToken.user_id;
 
         // Add the WebSocket to list of connections in the connections manager
-        wsConnectionsManager.addConnection(ws);
+        // wsConnectionsManager.addConnection(ws);
+        wsConnectionsManagerSimple.addConnection( ws )
 
         ws.on( "message" , ( _message ) => {
             const messageString = _message.toString()
             const message = JSON.parse(messageString) as TWebSocketMessage
-            const handler = wsConnectionsManager.getEventHandler( message.type )
+            // const handler = wsConnectionsManager.getEventHandler( message.type )
+            // Get the handler from the connections manager base on the message type
+            const handler = wsConnectionsManagerSimple.getEventHandler( message.type )
             if ( handler ) handler( ws, message )
         } )
 
         ws.on( "close" , () => {
-            wsConnectionsManager.removeConnection( decodedToken.user_id )
+            wsConnectionsManagerSimple.removeConnection( decodedToken.user_id )
             console.log("Client disconnected")
         } )
 

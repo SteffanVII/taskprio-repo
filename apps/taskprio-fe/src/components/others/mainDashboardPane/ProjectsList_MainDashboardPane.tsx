@@ -6,9 +6,8 @@ import { useGetProjects } from "@/services/private/project/query"
 import { updateDialogsStore } from "@/stores/dialogs"
 import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
 import { CheckCircle2, Plus } from "lucide-react"
-import { useContext, useLayoutEffect } from "react"
+import { useLayoutEffect } from "react"
 import { useNavigate, useParams } from "react-router"
-import { WebSocketContext } from "../websocket/WebsocketHandler"
 
 const ProjectsList_MainDashboardPane = () => {
 
@@ -19,10 +18,6 @@ const ProjectsList_MainDashboardPane = () => {
         selectedWorkspace,
         selectedProject
     } = useGlobalsStore()
-
-    const {
-        pathChangeMethods
-    } = useContext(WebSocketContext)
 
     const {
         data : projects,
@@ -44,9 +39,6 @@ const ProjectsList_MainDashboardPane = () => {
     
     useLayoutEffect(() => {
         const project = projects?.find((project) => project.project_slug === project_slug )
-        if ( project && project.project_id !== selectedProject?.project_id ) {
-            pathChangeMethods.updateProjectPath(project.project_id)
-        }
         updateGlobalsStore({
             selectedProject : project || null
         })
@@ -135,6 +127,7 @@ const ProjectsList_MainDashboardPane = () => {
                     ( !isProjectsLoading && projects ) &&
                     projects.map((project) => 
                         <button
+                            key={project.project_id}
                             className={cn(
                                 ` w-full h-8 px-4 `,
                                 ` flex items-center justify-between `,

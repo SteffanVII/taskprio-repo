@@ -26,11 +26,17 @@ export const useLogin = ( successCallback : ( data : TLoginResponse ) => void ) 
             return response.data
             
         },
-        onSuccess : ( data ) => {
-            updateGlobalsStore({
-                authenticated : true,
-                user : data.user
-            })
+        onSuccess : ( data, variables ) => {
+            if ( !variables.body.for_invitation_purpose ) {
+                updateGlobalsStore({
+                    authenticated : true,
+                    user : data.user
+                })
+            } else {
+                updateGlobalsStore({
+                    invitationRecipient : data.user
+                })
+            }
         }
     })
 
@@ -42,23 +48,30 @@ export const useLogin = ( successCallback : ( data : TLoginResponse ) => void ) 
  * @returns A mutation object with the google login mutation function
  */
 export const useGoogleLoginT = ( successCallback : ( data : TLoginResponse ) => void ) => {
-    return useMutation<TLoginResponse, any, { clientId : string, credential : string }>({
-        mutationFn : async ( payload : { clientId : string, credential : string } ) => {
+    return useMutation<TLoginResponse, any, { clientId : string, credential : string, for_invitation_purpose? : boolean }>({
+        mutationFn : async ( payload : { clientId : string, credential : string, for_invitation_purpose? : boolean } ) => {
             const response = await axiosInstance.post<TLoginResponse>(
                 `/login/google`,
                 {
                     client_id : payload.clientId,
-                    credential : payload.credential
+                    credential : payload.credential,
+                    for_invitation_purpose : payload.for_invitation_purpose
                 }
             )
             return response.data
         },
-        onSuccess : ( data ) => {
+        onSuccess : ( data, variables ) => {
             successCallback( data )
-            updateGlobalsStore({
-                authenticated : true,
-                user : data.user
-            })
+            if ( !variables.for_invitation_purpose ) {
+                updateGlobalsStore({
+                    authenticated : true,
+                    user : data.user
+                })
+            } else {
+                updateGlobalsStore({
+                    invitationRecipient : data.user
+                })
+            }
         }
     })
 }
@@ -84,11 +97,17 @@ export const useRegister = ( successCallback : ( data : TRegisterResponse ) => v
 
             return response.data
         },
-        onSuccess : ( data ) => {
-            updateGlobalsStore({
-                authenticated : true,
-                user : data.user
-            })
+        onSuccess : ( data, variables ) => {
+            if ( !variables.body.for_invitation_purpose ) {
+                updateGlobalsStore({
+                    authenticated : true,
+                    user : data.user
+                })
+            } else {
+                updateGlobalsStore({
+                    invitationRecipient : data.user
+                })
+            }
         }
     })
     

@@ -1,5 +1,5 @@
 import { PoolClient } from "pg";
-import { getPoolClient, getPostgrePool } from "../../postgresql.js";
+import { databaseFunctionWrapper, getPoolClient, getPostgrePool } from "../../postgresql.js";
 import { TProjectMember } from "@repo/taskprio-types";
 
 export const getProject = async ( project_id : string, postgreClient? : PoolClient ) => {
@@ -159,7 +159,7 @@ export const getUserProjects = async ( user_id : string, postgreClient? : PoolCl
 
 }
 
-export const getProjectMember = async ( project_id : string, user_id : string, poolClient? : PoolClient ) => {
+export const getProjectMember = async ( project_id : string, user_id : string, poolClient? : PoolClient ) : Promise<TProjectMember | undefined> => {
     const {
         client,
         release
@@ -219,14 +219,12 @@ export const getProjectMemberByTaskboardId = async ( task_board_id : string, use
 
 }
 
-export const getProjectMemberByTaskSectionId = async ( task_section_id : string, user_id : string, poolClient? : PoolClient ) : Promise<TProjectMember | undefined> => {
-
-    const {
-        client,
-        release
-    } = await getPoolClient(poolClient)
-
-    try {
+export const getProjectMemberByTaskSectionId = databaseFunctionWrapper(
+    async (
+        client : PoolClient,
+        taskSectionId : string,
+        userId : string
+    ) : Promise<TProjectMember | undefined> => {
         const projectMember = await client.query({
             text : `--sql
                 SELECT
@@ -242,30 +240,61 @@ export const getProjectMemberByTaskSectionId = async ( task_section_id : string,
                 WHERE
                     ts.task_section_id = $1 AND pm.user_id = $2;
             `,
-            values : [ task_section_id, user_id ]
+            values : [ taskSectionId, userId ]
         })   
-        return projectMember.rows[0]
-    } catch (error) {
-        console.log(error);
-        throw error;
-    } finally {
-        release()
+        return projectMember.rows[0]  
     }
+)
 
-}
+// export const getProjectMemberByTaskId = async (
+//     task_id : string,
+//     user_id : string,
+//     poolClient? : PoolClient
+// ) : Promise<TProjectMember | undefined> => {
 
-export const getProjectMemberByTaskId = async (
-    task_id : string,
-    user_id : string,
-    poolClient? : PoolClient
-) : Promise<TProjectMember | undefined> => {
+//     const {
+//         client,
+//         release
+//     } = await getPoolClient(poolClient)
 
-    const {
-        client,
-        release
-    } = await getPoolClient(poolClient)
+//     try {
+//         const projectMember = await client.query({
+//             text : `--sql
+//                 SELECT
+//                     pm.*
+//                 FROM
+//                     taskboard."task" t
+//                 JOIN
+//                     taskboard."task_section" ts ON ts.task_section_id = t.task_section_id
+//                 JOIN
+//                     taskboard."task_board" tb ON tb.task_board_id = ts.task_board_id
+//                 JOIN
+//                     project."project" p ON tb.project_id = p.project_id
+//                 JOIN
+//                     project."project_members" pm ON p.project_id = pm.project_id
+//                 WHERE
+//                     t.task_id = $1 AND pm.user_id = $2;
+//             `,
+//             values : [ task_id, user_id ]
+//         })
+//         return projectMember.rows[0]
+//     } catch (error) {
+//         console.log(error)
+//         throw error
+//     } finally {
+//         release()
+//     }
 
-    try {
+// }
+
+
+export const getProjectMemberByTaskId = databaseFunctionWrapper(
+    async (
+        client : PoolClient,
+        taskId : string,
+        userId : string
+    ) : Promise<TProjectMember | undefined> => {
+
         const projectMember = await client.query({
             text : `--sql
                 SELECT
@@ -283,14 +312,9 @@ export const getProjectMemberByTaskId = async (
                 WHERE
                     t.task_id = $1 AND pm.user_id = $2;
             `,
-            values : [ task_id, user_id ]
+            values : [ taskId, userId ]
         })
         return projectMember.rows[0]
-    } catch (error) {
-        console.log(error)
-        throw error
-    } finally {
-        release()
-    }
 
-}
+    }
+)

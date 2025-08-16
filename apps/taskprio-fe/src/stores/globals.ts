@@ -17,6 +17,8 @@ export type TGlobalsStore = {
     authenticated : boolean,
     user : TUserSecure | null,
 
+    invitationRecipient : TUserSecure | null,
+
     selectedWorkspace : TWorkspace | null,
     selectedProject : TProject | null,   
     selectedTaskboard : TTaskboard | null,
@@ -32,6 +34,8 @@ export type TGlobalsStore = {
 const GlobalsStore = new Store<TGlobalsStore>({
     authenticated : false,
     user : null,
+
+    invitationRecipient : null,
 
     selectedWorkspace : null,
     selectedProject : null,
@@ -60,12 +64,17 @@ export const resetGlobalsStore = () => {
     GlobalsStore.setState( () => ({
         authenticated : false,
         user : null,
+
+        invitationRecipient : null,
+
         selectedWorkspace : null,
         selectedProject : null,
         selectedTaskboard : null,
         selectedTask : null,
+
         projectsIsLoading : false,
         noProjects : false,
+
         taskboardSectionDrag : {
             taskboardSection : null
         },

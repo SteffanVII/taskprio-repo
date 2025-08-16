@@ -6,7 +6,8 @@ export type TLoginPayload = {
 
 export type TLoginBody = {
     email : string,
-    password : string
+    password : string,
+    for_invitation_purpose? : boolean
 }
 
 export type TLoginResponse = {
@@ -23,7 +24,8 @@ export type TRegisterBody = {
     email : string,
     firstname : string,
     lastname : string,
-    password : string
+    password : string,
+    for_invitation_purpose? : boolean
 }
 
 

@@ -2,9 +2,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGetProjectTaskboards } from "@/services/private/taskboard/query";
 import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
-import { useContext, useLayoutEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { WebSocketContext } from "../websocket/WebsocketHandler";
 
 
 const TaskboardList = () => {
@@ -20,10 +19,6 @@ const TaskboardList = () => {
         selectedProject,
         selectedTaskboard
     } = useGlobalsStore()
-
-    const {
-        pathChangeMethods
-    } = useContext(WebSocketContext)
     
     const {
         data : taskboards,
@@ -48,11 +43,9 @@ const TaskboardList = () => {
         }
     }, [ taskboards, task_board_slug, selectedProject, selectedWorkspace ])
 
+    // Update the selected taskboard in the globals store
     useLayoutEffect(() => {
         const taskboard = taskboards?.find( taskboard => taskboard.task_board_slug === task_board_slug ) || null
-        if ( taskboard && taskboard.task_board_id !== selectedTaskboard?.task_board_id ) {
-            pathChangeMethods.updateBoardPath(taskboard.task_board_id)
-        }
         updateGlobalsStore({
             selectedTaskboard : taskboard || null
         })

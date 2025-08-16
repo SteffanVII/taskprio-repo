@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useGlobalsStore } from "@/stores/globals";
-import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
+import UserPopoverMenu from "./UserPopoverMenu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation, useNavigate } from "react-router";
 import { useMemo } from "react";
@@ -58,8 +58,10 @@ const MainDashboardHeader = () => {
                                     }}
                                 >
                                     <Tooltip>
-                                        <TooltipTrigger>
-                                            <Settings2/>
+                                        <TooltipTrigger asChild >
+                                            <div>
+                                                <Settings2/>
+                                            </div>
                                         </TooltipTrigger>
                                         <TooltipContent
                                             side="bottom"

@@ -1,4 +1,4 @@
-import { EProjectRole } from "../../utilities/enums"
+import { EProjectRole } from "./enums"
 
 export type TCreateProjectRequestBody = {
     project_name : string,
