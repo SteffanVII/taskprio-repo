@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useGetProjects } from "@/services/private/project/query";
+import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
 import { updateDialogsStore, useDialogsStore } from "@/stores/dialogs";
 import { useGlobalsStore } from "@/stores/globals";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +37,7 @@ const WorkspaceInvitationDialog = () => {
     const {
         data : projects,
         isLoading : isProjectsLoading,
-    } = useGetProjects( selectedWorkspace?.workspace_id )
+    } = useGetUserProjectsByWorkspace( selectedWorkspace?.workspace_id )
 
     const {
         mutateAsync : inviteToWorkspace,
@@ -52,17 +52,19 @@ const WorkspaceInvitationDialog = () => {
         emailInputForm.reset()
     } )
 
-    // const projectOptions = projects?.map( ( project ) => ({
-    //     label : project.project_name,
-    //     value : project.project_id
-    // }))
-
     const handleSubmit = ( data : z.infer<typeof EmailInputSchema> ) => {
         if ( data.email === user?.email ) {
             emailInputForm.setError( "email", {
                 message : "You cannot invite yourself to the workspace"
             } )
             return;
+        }
+        console.log(selectedWorkspace?.workspace_members.some( member => member.email === data.email ));
+        if ( selectedWorkspace?.workspace_members.some( member => member.email === data.email ) ) {
+            emailInputForm.setError( "email", {
+                message : "This email is already a member of the workspace"
+            } )
+            return
         }
         if ( !emails.includes( data.email ) ) {
             setEmails( [ ...emails, data.email ] );

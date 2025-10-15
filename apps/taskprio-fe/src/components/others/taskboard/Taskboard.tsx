@@ -5,8 +5,9 @@ import TaskboardSection from "./TaskboardSection";
 import { TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
 import TaskboardSectionDrop from "./TaskboardSectionDrop";
-import { TaskboardTaskDialog } from "../dialogs/TaskboardTaskDialog";
+import { TaskboardTaskDialog } from "../dialogs/taskboardTaskDialog/TaskboardTaskdialog";
 import React from "react";
+import TaskboardSidebar from "./TaskboardSidebar";
 
 
 export const Taskboard = () => {
@@ -29,69 +30,81 @@ export const Taskboard = () => {
     return (
         <div
             className={cn(
-                ` relative`,
-                ` size-full py-4 overflow-x-auto overflow-y-hidden `,
-                ` flex grow flex-nowrap `,
-                ` cursor-grab active:cursor-grabbing select-none `
+                `grid min-w-0 min-h-0 `
             )}
-            onMouseDown={ e => {
-                const el = e.currentTarget
-                const startX = e.pageX
-                const scrollLeft = el.scrollLeft
-
-                const onMouseMove = ( e : MouseEvent ) => {
-                    const dx = e.pageX - startX
-                    el.scrollLeft = scrollLeft - dx
-                }
-
-                const onMouseUp = () => {
-                    document.removeEventListener("mousemove", onMouseMove)
-                    document.removeEventListener("mouseup", onMouseUp)
-                }
-
-                document.addEventListener("mousemove", onMouseMove)
-                document.addEventListener("mouseup", onMouseUp)
-                
-            } }
+            style={{
+                gridTemplateColumns : "1fr min-content"
+            }}
         >
-            {
-                ( taskboardSections && taskboardSections.length > 0 ) &&
-                taskboardSections?.map( ( taskboardSection, taskboardSectionIndex ) => {
+            <div
+                className={cn(
+                    ` relative`,
+                    ` size-full min-h-0 pt-4 overflow-x-auto overflow-y-hidden `,
+                    ` flex grow flex-nowrap `,
+                    ` cursor-grab active:cursor-grabbing select-none `,
+                    // ` border border-red-500 `
+                )}
+                onMouseDown={ e => {
+                    
+                    const el = e.currentTarget
+                    const startX = e.pageX
+                    const scrollLeft = el.scrollLeft
 
-                    const singleSection = taskboardSections.length === 1
-                    const firstSection = taskboardSectionIndex === 0
-                    const lastSection = taskboardSectionIndex === taskboardSections.length - 1
+                    const onMouseMove = ( e : MouseEvent ) => {
+                        const dx = e.pageX - startX
+                        el.scrollLeft = scrollLeft - dx
+                    }
 
-                    const adjacentTop = firstSection && !singleSection ? null : taskboardSections[taskboardSectionIndex - 1]
-                    const adjacentBottom = lastSection && !singleSection ? null : taskboardSections[taskboardSectionIndex + 1]
+                    const onMouseUp = () => {
+                        document.removeEventListener("mousemove", onMouseMove)
+                        document.removeEventListener("mouseup", onMouseUp)
+                    }
 
-                    const displayOrderTop = firstSection ? taskboardSection.display_order - 100 : ( adjacentTop!.display_order + taskboardSection.display_order ) / 2
-                    const displayOrderBottom = lastSection ? taskboardSection.display_order + 100 : ( adjacentBottom!.display_order + taskboardSection.display_order ) / 2
+                    document.addEventListener("mousemove", onMouseMove)
+                    document.addEventListener("mouseup", onMouseUp)
+                    
+                } }
+            >
+                {
+                    ( taskboardSections && taskboardSections.length > 0 ) &&
+                    taskboardSections?.map( ( taskboardSection, taskboardSectionIndex ) => {
 
-                    return (
-                        <React.Fragment key={taskboardSection.task_section_id}>
-                            {
-                                firstSection &&
-                                <TaskboardSectionDrop
-                                    displayOrder={ displayOrderTop }
-                                    bottomTaskSectionId={ taskboardSection.task_section_id }
+                        const singleSection = taskboardSections.length === 1
+                        const firstSection = taskboardSectionIndex === 0
+                        const lastSection = taskboardSectionIndex === taskboardSections.length - 1
+
+                        const adjacentTop = firstSection && !singleSection ? null : taskboardSections[taskboardSectionIndex - 1]
+                        const adjacentBottom = lastSection && !singleSection ? null : taskboardSections[taskboardSectionIndex + 1]
+
+                        const displayOrderTop = firstSection ? taskboardSection.display_order - 100 : ( adjacentTop!.display_order + taskboardSection.display_order ) / 2
+                        const displayOrderBottom = lastSection ? taskboardSection.display_order + 100 : ( adjacentBottom!.display_order + taskboardSection.display_order ) / 2
+
+                        return (
+                            <React.Fragment key={taskboardSection.task_section_id}>
+                                {
+                                    firstSection &&
+                                    <TaskboardSectionDrop
+                                        displayOrder={ displayOrderTop }
+                                        bottomTaskSectionId={ taskboardSection.task_section_id }
+                                    />
+                                }
+                                <TaskboardSection
+                                    key={taskboardSection.task_section_id}
+                                    taskSection={{...taskboardSection as TTaskSectionWithTasks}}
                                 />
-                            }
-                            <TaskboardSection
-                                key={taskboardSection.task_section_id}
-                                taskSection={taskboardSection as TTaskSectionWithTasks}
-                            />
-                            <TaskboardSectionDrop
-                                displayOrder={ displayOrderBottom}
-                                topTaskSectionId={ taskboardSection.task_section_id }
-                                bottomTaskSectionId={ adjacentBottom?.task_section_id }
-                            />
-                        </React.Fragment>
-                    )
-                } )
-            }
-            <TaskboardSectionCreator/>
-            <TaskboardTaskDialog/>
+                                <TaskboardSectionDrop
+                                    displayOrder={ displayOrderBottom}
+                                    topTaskSectionId={ taskboardSection.task_section_id }
+                                    bottomTaskSectionId={ adjacentBottom?.task_section_id }
+                                />
+                            </React.Fragment>
+                        )
+                    } )
+                }
+                <TaskboardSectionCreator/>
+                <TaskboardTaskDialog/>
+            </div>
+            <TaskboardSidebar/>
         </div>
     )
 

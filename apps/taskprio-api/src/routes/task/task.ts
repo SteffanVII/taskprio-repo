@@ -1,22 +1,26 @@
 import { Response, Router } from "express";
-import { IAddTaskAssigneeRequest, IArrangeTaskRequest, ICreateTaskRequest, ILogTaskTimeRequest, IRemoveTaskAssigneeRequest, ITransferTaskToTrashRequest, IUpdateTaskPrimitiveFieldsRequest } from "./interfaces.js";
+import { IAddTaskAssigneeRequest, IAddTaskCommentRequest, IAddTaskTagRequest, IArrangeTaskRequest, ICreateTaskRequest, IGetTaskCommentsRequest, IGetTaskRequest, ILogTaskTimeRequest, IMoveTaskToTrashRequest, IRemoveTaskAssigneeRequest, IRemoveTaskTagRequest, IRestoreTaskFromTrashRequest, ITransferTaskToTrashRequest, IUpdateTaskPrimitiveFieldsRequest } from "./interfaces.js";
 import { getPoolClient } from "../../database/postgresql.js";
-import { addTaskAssignee, arrangeTask, createTask, logTaskTime, removeTaskAssignee, transferTaskToTrash, updateTaskPrimitiveFields } from "../../database/queries/task/mutation.js";
+import { addTaskAssignee, addTaskComment, arrangeTask, createTask, logTaskTime, removeTaskAssignee, restoreTaskFromTrash, transferTaskToTrash, updateTaskPrimitiveFields } from "../../database/queries/task/mutation.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
-import { getTask, getTaskPath } from "../../database/queries/task/query.js";
-import { TTaskCreateWebSocketMessageSimple } from "@repo/taskprio-types";
+import { getTask, getTaskComments } from "../../database/queries/task/query.js";
+import { TTask, TTaskCreateWebSocketMessageSimple } from "@repo/taskprio-types";
 import { getProjectMemberByTaskId } from "../../database/queries/project/query.js";
-import { WebSocketConnectionsManagerSimple } from "../../websocket/connectionsManager.js";
 import { EWebSocketEventType } from "@repo/taskprio-types";
 import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
 import { verifyProjectMemberMiddleware } from "../../middlewares/authentication.js";
+import { WebSocketConnectionsManagerSimple } from "../../websocket/connectionsManager.js";
+import { taskprioKysely } from "../../database/kysely/kysely.js";
+import { addTaskTag, removeTaskTag } from "../../database/queries/tag/mutation.js";
 
-export const registerTaskRoutes = ( router : Router ) => {
+export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple : WebSocketConnectionsManagerSimple ) => {
 
+    // GET Routes
     // Get Task
     router.get(
         `/:task_id`,
-        async ( req : IAuthenticatedRequest, res : Response ) => {
+        verifyProjectMemberMiddleware,
+        async ( req : IGetTaskRequest, res : Response ) => {
             const { task_id } = req.params;
             const { user_id } = req.user;
 
@@ -28,13 +32,6 @@ export const registerTaskRoutes = ( router : Router ) => {
             }
 
             try {
-                const projectMember = await getProjectMemberByTaskId( task_id, req.user.user_id )
-                if ( !projectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
                 const task = await getTask(task_id, user_id)
                 res.status(200).json(task)
             } catch (error) {
@@ -46,6 +43,35 @@ export const registerTaskRoutes = ( router : Router ) => {
         }
     )
 
+    // Get task comments
+    router.get(
+        `/comments/:task_id`,
+        verifyProjectMemberMiddleware,
+        async ( req : IGetTaskCommentsRequest, res : Response ) => {
+
+            const { task_id } = req.params
+
+            if ( !task_id ) {
+                res.status(400).json({
+                    message : "Task ID is required"
+                })
+                return
+            }
+
+            try {
+                const comments = await getTaskComments( task_id )
+                res.status(200).json(comments)
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({
+                    message : "Internal server error"
+                })
+            }
+
+        }
+    )
+
+    // POST Routes
     // Create task
     router.post(
         `/`,
@@ -53,32 +79,34 @@ export const registerTaskRoutes = ( router : Router ) => {
         async ( req : ICreateTaskRequest, res : Response ) => {
             const body = req.body
 
-            const {
-                client,
-                release,
-                begin,
-                commit,
-                rollback
-            } = await getPoolClient()
-
             try {
 
-                await begin()
+                let transactionReturn : {
+                    createdTask : TTask,
+                    workspaceId : string
+                }
 
-                const createdTask = await createTask(
-                    body.task_section_id,
-                    body.task_title,
-                    req.user.user_id,
-                    client
-                )
+                transactionReturn = await taskprioKysely.transaction().execute( async trx => {
 
-                await commit()
+                    const createdTask = await createTask(
+                        body.task_section_id,
+                        body.task_title,
+                        req.user.user_id,
+                        trx
+                    )
 
-                const workspaceId = await getWorkspaceIdFromProjectId( req.projectId );
+                    const workspaceId = await getWorkspaceIdFromProjectId( req.projectId, trx );
+
+                    return {
+                        createdTask,
+                        workspaceId
+                    }
+
+                } )
 
                 const message : TTaskCreateWebSocketMessageSimple = {
-                    task : createdTask,
-                    workspace_id : workspaceId
+                    data : transactionReturn.createdTask,
+                    workspace_id : transactionReturn.workspaceId
                 }
 
                 wsConnectionsManagerSimple.sendMessage(
@@ -87,19 +115,16 @@ export const registerTaskRoutes = ( router : Router ) => {
                         data : message
                     },
                     [ req.user.user_id ],
-                    workspaceId
+                    transactionReturn.workspaceId
                 )
 
-                res.status(201).json(createdTask)
+                res.status(201).json(transactionReturn.createdTask)
 
             } catch (error) {
                 console.log(error)
-                rollback()
                 res.status(500).json({
                     message : "Internal server error"
                 })
-            } finally {
-                release()
             }
 
         }
@@ -192,18 +217,10 @@ export const registerTaskRoutes = ( router : Router ) => {
                 return
             }
 
-            let release : () => void
-            
             try {
-                
-                const {
-                    client,
-                    release : clientRelease
-                } = await getPoolClient()
 
-                release = clientRelease;
 
-                const projectMember = await getProjectMemberByTaskId( task_id, user_id, client )
+                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
 
                 if ( !projectMember ) {
                     res.status(403).json({
@@ -212,16 +229,11 @@ export const registerTaskRoutes = ( router : Router ) => {
                     return
                 }
 
-                await client.query("BEGIN")
-
                 const loggedTaskTime = await logTaskTime(
                     task_id,
                     user_id,
-                    time_spent,
-                    client
+                    time_spent
                 )
-
-                await client.query("COMMIT")
 
                 res.status(200).json( loggedTaskTime )
 
@@ -230,15 +242,101 @@ export const registerTaskRoutes = ( router : Router ) => {
                 res.status(500).json({
                     message : "Internal server error"
                 })
-            } finally {
-                release?.()
             }
         }
     )
 
+    // Add task tag
+    router.post(
+        `/tag`,
+        async ( req : IAddTaskTagRequest, res : Response ) => {
+            
+            const { task_id, tag_id } = req.body
+            const { user_id } = req.user
+
+            if ( !task_id ) {
+                res.status(400).json({
+                    message : "Task ID is required"
+                })
+                return
+            }
+
+            if ( !tag_id ) {
+                res.status(400).json({
+                    message : "Tag ID is required"
+                })
+                return
+            }
+
+            try {
+
+                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
+
+                if ( !projectMember ) {
+                    res.status(403).json({
+                        message : "Forbidden"
+                    })
+                    return
+                }
+
+                const addedTaskTag = await addTaskTag( task_id, tag_id )
+
+                res.status(200).json(addedTaskTag)
+                
+
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({
+                    message : error
+                })
+            }
+
+        }
+    )
+
+    // Add task comment
+    router.post(
+        `/comment/:task_id`,
+        verifyProjectMemberMiddleware,
+        async ( req : IAddTaskCommentRequest, res : Response ) => {
+
+            const { task_id } = req.params
+            const { comment_content, replying_to_task_comment_id } = req.body
+            const { user_id } = req.user
+
+            if ( !task_id ) {
+                res.status(400).json({
+                    message : "Task ID is required"
+                })
+                return
+            }
+
+            if ( !comment_content ) {
+                res.status(400).json({
+                    message : "Comment content is required"
+                })
+                return
+            }
+
+            try {
+                await addTaskComment( task_id, user_id, comment_content, replying_to_task_comment_id )
+                res.status(200).json({
+                    message : "Task comment added"
+                })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({
+                    message : "Internal server error"
+                })
+            }
+
+        }
+    )
+
+    // PATCH Routes
     // Arrange task
     router.patch(
-        `/:task_id`,
+        `/move/:task_id`,
         async ( req : IArrangeTaskRequest, res : Response ) => {
             const { task_id } = req.params
             const body = req.body
@@ -339,41 +437,49 @@ export const registerTaskRoutes = ( router : Router ) => {
         }
     )
 
-    // Transfer task to trash
+    // Restore task from trash
     router.patch(
-        `/trash/:task_id`,
-        async ( req : ITransferTaskToTrashRequest, res : Response ) => {
+        `/restore-from-trash/:task_id/:taskboard_id`,
+        async ( req : IRestoreTaskFromTrashRequest, res : Response ) => {
 
-            const { task_id } = req.params
-            const { user_id } = req.user
+            const { task_id, taskboard_id } = req.params
+
+            if ( !task_id ) {
+                res.status(400).json({
+                    message : "Task ID is required"
+                })
+                return
+            }
+
+            if ( !taskboard_id ) {
+                res.status(400).json({
+                    message : "Taskboard ID is required"
+                })
+                return
+            }
 
             try {
-
-                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
-
-                if ( !projectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
-
-                await transferTaskToTrash( task_id )
-
+                await restoreTaskFromTrash( task_id, taskboard_id )
                 res.status(200).json({
-                    message : "Task moved to trash"
+                    message : "Task restored from trash"
                 })
-
             } catch (error) {
                 console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
+                if ( error.message === "There is no task section available to restore the task to" || error.message === "Task not found" ) {
+                    res.status(404).json({
+                        message : error.message
+                    })
+                } else {
+                    res.status(500).json({
+                        message : "Internal server error"
+                    })
+                }
             }
 
         }
     )
 
+    // DELETE Routes
     // Remove task assignee
     router.delete(
         `/assignee/:task_id`,
@@ -427,6 +533,77 @@ export const registerTaskRoutes = ( router : Router ) => {
                     message : "Internal server error"
                 })
             }
+        }
+    )
+
+    // Remove task tag
+    router.delete(
+        `/tag`,
+        async ( req : IRemoveTaskTagRequest, res : Response ) => {
+
+            const { task_id, tag_id } = req.body
+            const { user_id } = req.user
+
+            if ( !task_id ) {
+                res.status(400).json({
+                    message : "Task ID is required"
+                })
+                return
+            }
+
+            if ( !tag_id ) {
+                res.status(400).json({
+                    message : "Tag ID is required"
+                })
+                return
+            }
+
+            try {
+
+                await removeTaskTag( task_id, tag_id )
+
+                res.status(200).json({
+                    message : "Task tag removed"
+                })
+
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({
+                    message : error
+                })
+            }
+
+        }
+    )
+
+    // Move task to trash
+    router.delete(
+        `/trash/:task_id`,
+        async ( req : IMoveTaskToTrashRequest, res : Response ) => {
+
+            const {
+                task_id
+            } = req.params
+
+            if ( !task_id ) {
+                res.status(400).json({
+                    message : "Task ID is required"
+                })
+                return
+            }
+            
+            try {
+                await transferTaskToTrash( task_id )
+                res.status(200).json({
+                    message : "Task moved to trash"
+                })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({
+                    message : "Internal server error"
+                })
+            }
+
         }
     )
 

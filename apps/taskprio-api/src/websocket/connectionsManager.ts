@@ -281,11 +281,12 @@ export class WebSocketConnectionsManagerSimple {
     // On initial connection, the user is not in any workspace so we add the connection to the allConnections map
     // The client needs to call a switch workspace event to be subscribe to the workspace they currently in
     public addConnection( webSocket : WebSocket ) {
+        console.log("Adding connection", webSocket.user_id);
         this.allConnections.set( webSocket.user_id, webSocket )
     }
 
     public removeConnection( userId : string ) {
-        this.allConnections.delete( userId)
+        this.allConnections.delete( userId )
         this.workspaceClientGroups.forEach( workspaceClientGroup => {
             workspaceClientGroup.removeConnection( userId )
         } )
@@ -352,15 +353,12 @@ class WorkspaceWebSocketClientGroup {
     }
 
     public getConnection( userId : string ) : WebSocket | undefined {
-        console.log(this.connections);
-        console.log(userId);
         return this.connections.get( userId );
     }
 
     public removeConnection( userId : string ) {
         const connection = this.getConnection( userId );
         if ( connection ) {
-            connection.close();
             this.connections.delete( userId )
         }
     }

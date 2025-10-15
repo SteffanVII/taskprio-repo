@@ -100,33 +100,30 @@ const TagDialog = () => {
                 tag : null
             }
         })
-        form.reset()
     }
 
     useLayoutEffect(() => {
-
-        if ( tag ) {
-            form.reset({
-                name : tag.tag_name,
-                color : tag.tag_color
-            })
-        } else {
-            form.reset()
+        if ( open ) {
+            if ( tag ) {
+                form.reset({
+                    name : tag.tag_name,
+                    color : tag.tag_color
+                })
+            } else {
+                form.reset({
+                    name : "",
+                    color : "#FFFFFF"
+                })
+            }
         }
-
-    }, [ tag ])
+    }, [ open, tag ])
 
     return (
         <Dialog
             open={open}
             onOpenChange={ open => {
                 if ( !open ) {
-                    updateDialogsStore({
-                        tagDialog : {
-                            open : false,
-                            tag
-                        }
-                    })
+                    closeTagDialog()
                 }
             } }
         >

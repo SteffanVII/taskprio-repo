@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useMemo } from "react";
 import { Settings2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import getHexLuminance from "@/lib/utils/hexColorLuminance";
 
 
 const MainDashboardHeader = () => {
@@ -32,18 +33,33 @@ const MainDashboardHeader = () => {
             selectedProject &&
             <div
                 className={cn(
-                    ` w-full p-3 `,
-                    ` flex items-center gap-4 `,
+                    ` relative w-full p-3 `,
+                    ` flex items-center gap-4 `
                 )}
             >
+                
                 {
                     selectedProject &&
                     <>
-                        <h3 className=" text-lg font-medium " >{selectedProject.project_name}</h3>
+                        {/* <h3
+                            className={cn(
+                                `text-lg font-bold`,
+                                `h-full px-4`,
+                                `flex items-center`,
+                                `rounded-r-md`,
+                                `shadow-md`,
+                                getHexLuminance(selectedProject.project_color) > 0.4 ?
+                                `text-black` :
+                                `text-white`
+                            )}
+                            style={{
+                                backgroundColor : selectedProject.project_color
+                            }}
+                        >{selectedProject.project_name}</h3> */}
                         <Tabs
                             value={projectRoute}
                         >
-                            <TabsList>
+                            <TabsList className="border z-10">
                                 <TabsTrigger
                                     value="boards"
                                     onClick={() => {
@@ -75,7 +91,6 @@ const MainDashboardHeader = () => {
                     </>
                 }
                 <div className=" ml-auto " ></div>
-                <UserPopoverMenu/>
             </div>
         }
         </>

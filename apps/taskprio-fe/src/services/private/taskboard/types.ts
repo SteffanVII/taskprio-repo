@@ -1,4 +1,4 @@
-import { TTaskboard } from "@repo/taskprio-types/src"
+import { TGetTaskboardTrashTasksRequestParams, TTaskboard } from "@repo/taskprio-types/src"
 
 export type TGetProjectTaskboardsPayload = {
     query : {
@@ -7,6 +7,10 @@ export type TGetProjectTaskboardsPayload = {
 }
 
 export type TGetProjectTaskboardsResponse = TTaskboard[]
+
+export type TGetTaskboardTrashTasksPayload = {
+    params : Partial<TGetTaskboardTrashTasksRequestParams>
+}
 
 // Taskboard
 

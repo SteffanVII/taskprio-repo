@@ -5,7 +5,7 @@ import { IGoogleLoginRequest, ILoginRequest, IRegisterRequest } from "./interfac
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { verifyGoogleCredentialdMiddleware } from "../../middlewares/authentication.js";
-import { getUserByEmail, getUserByGoogleUserId } from "../../database/queries/user/query.js";
+import { getUserByEmail, getUserByGoogleUserIdKysely } from "../../database/queries/user/query.js";
 import { createUser } from "../../database/queries/user/mutation.js";
 import { TJWTPayload } from "../../middlewares/types.js";
 import { configDotenv } from "dotenv";
@@ -70,7 +70,7 @@ function reigsterAuthenticationRoutes() {
 
             try {
 
-                const existingUser = await getUserByGoogleUserId( user.google_user_id )
+                const existingUser = await getUserByGoogleUserIdKysely( user.google_user_id )
 
                 if ( existingUser ) {
                     const accessToken = jwt.sign({
@@ -87,14 +87,17 @@ function reigsterAuthenticationRoutes() {
                             maxAge: 1000 * 60 * 60 * 24   
                         }
                     )
+
                     res.status(200).json({ message : "Login successful", access_token : accessToken, user : existingUser });
+
                 } else {
 
                     const createdUser = await createUser({
                         email : user.email,
                         firstname : user.given_name,
                         lastname : user.family_name,
-                        google_user_id : user.google_user_id
+                        google_user_id : user.google_user_id,
+                        password_hashed : null
                     })
 
                     const accessToken = jwt.sign({
@@ -145,7 +148,7 @@ function reigsterAuthenticationRoutes() {
 
                 await client.query("BEGIN")
 
-                const existingUser = await getUserByEmail(email, true, client)
+                const existingUser = await getUserByEmail(email, true)
 
                 if ( existingUser ) {
                     res.status(400).json({ message: "This email is already in use" });

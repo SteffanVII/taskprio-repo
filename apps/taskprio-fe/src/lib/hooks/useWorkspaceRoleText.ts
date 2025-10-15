@@ -1,5 +1,4 @@
-import { EWorkspaceRole } from "../enums"
-
+import { EWorkspaceRole } from "@repo/taskprio-types/src"
 
 const useWorkspaceRoleText = () => {
 

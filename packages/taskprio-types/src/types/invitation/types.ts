@@ -1,3 +1,6 @@
+import { Selectable } from "kysely"
+import { InvitationWorkspaceInvitation } from "../../db"
+
 export type TInvitationTokenPayload = {
     sender_id : string,
     email : string,
@@ -9,14 +12,7 @@ export type TInvitationTokenDecoded = TInvitationTokenPayload & {
     exp : number
 }
 
-export type TWorkspaceInvitation = {
-    workspace_id : string,
-    sender_id : string,
-    email : string,
-    token_string : string,
-    accepted : boolean,
-    created_at : string
-}
+export type TWorkspaceInvitation = Selectable<InvitationWorkspaceInvitation>;
 
 export type IGetInvitationInfoResponseData = Pick< TInvitationTokenDecoded, "sender_id" | "email" > & {
     is_invitation_exists : boolean,

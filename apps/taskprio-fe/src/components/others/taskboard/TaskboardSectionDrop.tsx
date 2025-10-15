@@ -59,7 +59,7 @@ export const TaskboardSectionDrop : React.FC<TTaskboardSectionDropProps> = ({ di
     return (
         <div
             className={cn(
-                ` flex-shrink-0 w-[1.6rem] h-full transition-all duration-200 `,
+                ` flex-shrink-0 w-[1.6rem] h-full min-h-0 max-h-full transition-all duration-200 `,
                 draggedOver && ` w-[1.9rem] `
             )}
             onDragOver={ onDragOverHandler }

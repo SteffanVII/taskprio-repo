@@ -1,6 +1,7 @@
 import { WebSocketContext } from "@/components/others/websocket/WebsocketHandler"
 import { useLogoutRequest } from "@/services/authentication"
 import { resetGlobalsStore } from "@/stores/globals"
+import { useQueryClient } from "@tanstack/react-query"
 import Cookies from "js-cookie"
 import { useContext } from "react"
 import { useNavigate } from "react-router"
@@ -14,6 +15,8 @@ export type TUseLogout = {
 export const useLogout = () : TUseLogout => {
 
     const navigate = useNavigate()
+
+    const queryClient = useQueryClient()
 
     const {
         connected,
@@ -30,10 +33,11 @@ export const useLogout = () : TUseLogout => {
         logout : async () => {
             console.log("logging out");
             if ( connected ) closeWebSocketConnection()
-            Cookies.remove("accessToken")
+            Cookies.remove("access_token")
             await logout()
             resetGlobalsStore()
             navigate("/login")
+            queryClient.clear()
         },
         isLogoutPending,
         isLogoutError

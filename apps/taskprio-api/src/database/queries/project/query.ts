@@ -1,132 +1,145 @@
 import { PoolClient } from "pg";
-import { databaseFunctionWrapper, getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { TProjectMember } from "@repo/taskprio-types";
+import { databaseFunctionWrapper, EDatabaseFunction, getPoolClient, getPostgrePool } from "../../postgresql.js";
+import { DB, TProject, TProjectMember } from "@repo/taskprio-types";
+import { Transaction } from "kysely";
+import { taskprioKysely } from "../../kysely/kysely.js";
+import { sql } from "kysely";
+import { jsonArrayFrom, jsonBuildObject } from "kysely/helpers/postgres";
 
-export const getProject = async ( project_id : string, postgreClient? : PoolClient ) => {
+export const getProject = async (
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<TProject | undefined> => {
 
-    try {
-        const {
-            client,
-            release
-        } = await getPoolClient(postgreClient);
+    const query = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
 
-        const project = await client.query({
-            text : `--sql
-                SELECT
-                    p.project_id,
-                    p.project_slug,
-                    p.project_name,
-                    json_agg(
-                        json_build_object(
-                            'user_id', u.user_id,
-                            'email', u.email,
-                            'firstname', u.firstname,
-                            'lastname', u.lastname,
-                            'project_role', pm.project_role,
-                            'joined_at', pm.joined_at,
-                            'is_active', pm.is_active
-                        )
-                    ) as project_members
-                FROM
-                    project."project" p
-                JOIN
-                    project."project_members" pm ON p.project_id = pm.project_id
-                JOIN
-                    tp_user."user" u ON pm.user_id = u.user_id
-                WHERE
-                    p.project_id = $1
-                GROUP BY
-                    p.project_id, p.project_name;
-            `,
-            values : [ project_id ]
-        })
+    const project = await query
+    .leftJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
+    .leftJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+    .select( (eb) => [
+        sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" ),
+        "project.project.project_name",
+        "project.project.created_at",
+        "project.project.project_abbreviation",
+        "project.project.project_color",
+        "project.project.active",
+        eb.fn.jsonAgg(
+            jsonBuildObject({
+                "user_id" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`,
+                "email" : eb.ref( "tp_user.user.email" ),
+                "firstname" : eb.ref( "tp_user.user.firstname" ),
+                "lastname" : eb.ref( "tp_user.user.lastname" ),
+                "project_id" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.project_id)`,
+                "invited_by" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`,
+                "project_role" : eb.ref( "project.project_members.project_role" ),
+                "joined_at" : eb.ref( "project.project_members.joined_at" ),
+                "is_active" : eb.ref( "project.project_members.is_active" ),
+            })
+        ).as( "project_members" ),
+        jsonArrayFrom(
+            eb.selectFrom( "project.project_tags" )
+            .select([
+                "tag_name",
+                "tag_color",
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.tag_id)`.as( "tag_id" ),
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.project_id)`.as( "project_id" )
+            ])
+            .where( "project.project_tags.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId}::text)` )
+        ).as( "project_tags" )
+    ] )
+    .where( "project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+    .where( "tp_user.user.user_id", "is not", null )
+    .groupBy( [
+        "project.project.project_id",
+        "project.project.project_name",
+        "project.project.project_abbreviation",
+        "project.project.project_color",
+        "project.project.active"
+    ] )
+    .executeTakeFirst()
 
-        release()
-
-        return project.rows[0]
-
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-
+    return project
 }
 
-export const getUserWorkspaceProjects = async ( workspace_id : string, user_id : string, poolClient? : PoolClient ) => {
+export const getUserWorkspaceProjects = async (
+    workspaceId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TProject[]> => {
 
-    const {
+    const query = trx ? trx.selectFrom( "project.workspace_projects" ) : taskprioKysely.selectFrom( "project.workspace_projects" )
+
+    const projects = await query
+        .innerJoin( "project.project", "project.project.project_id", "project.workspace_projects.project_id" )
+        .leftJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
+        .leftJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select( (eb) => [
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
+            "project.project.created_at",
+            "project.project.project_name",
+            "project.project.project_abbreviation",
+            "project.project.project_color",
+            "project.project.active",
+            eb.fn.jsonAgg(
+                jsonBuildObject({
+                    "user_id" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`,
+                    "email" : eb.ref( "tp_user.user.email" ),
+                    "firstname" : eb.ref( "tp_user.user.firstname" ),
+                    "lastname" : eb.ref( "tp_user.user.lastname" ),
+                    "project_id" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.project_id)`,
+                    "invited_by" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`,
+                    "project_role" : eb.ref( "project.project_members.project_role" ),
+                    "joined_at" : eb.ref( "project.project_members.joined_at" ),
+                    "is_active" : eb.ref( "project.project_members.is_active" ),
+                })
+            ).as( "project_members" ),
+            jsonArrayFrom(
+                eb.selectFrom( "project.project_tags" )
+                .select([
+                    "tag_name",
+                    "tag_color",
+                    sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.tag_id)`.as( "tag_id" ),
+                    sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.project_id)`.as( "project_id" )
+                ])
+                .where( "project.project_tags.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(project_id::text)` )
+            ).as( "project_tags" )
+        ] )
+        .where( eb => eb.and([
+            eb("project.workspace_projects.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`),
+            // If the requesting user exists in the project members table, then the project is returned
+            eb.exists(
+                eb.selectFrom( "project.project_members" )
+                .whereRef( "project.project_members.project_id", "=", "project.project.project_id" )
+                .where( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+            ),
+            eb("tp_user.user.user_id", "is not", null)
+        ]) )
+        .groupBy([
+            "project.project.project_id",
+            "project.project.project_name",
+            "project.project.project_abbreviation",
+            "project.project.project_color",
+            "project.project.active"
+        ])
+        .execute()
+
+    return projects
+}
+
+export const getUserProjects = databaseFunctionWrapper(
+    async (
         client,
-        release
-    } = await getPoolClient(poolClient);
-
-    try {
-
+        userId : string
+    ) :  Promise<TProject[]> => {
         const projects = await client.query({
             text : `--sql
                 SELECT
-                    p.project_id,
-                    p.project_slug,
+                    public.uuid_to_base64(p.project_id) AS project_id,
                     p.project_name,
+                    p.project_color,
                     json_agg(
                         json_build_object(
-                            'user_id', u.user_id,
-                            'email', u.email,
-                            'firstname', u.firstname,
-                            'lastname', u.lastname,
-                            'project_role', pm.project_role,
-                            'joined_at', pm.joined_at,
-                            'is_active', pm.is_active
-                        )
-                    ) as project_members
-                FROM
-                    project."workspace_projects" wp
-                JOIN
-                    project."project" p ON wp.project_id = p.project_id
-                JOIN
-                    project."project_members" pm ON p.project_id = pm.project_id
-                JOIN
-                    tp_user."user" u ON pm.user_id = u.user_id
-                WHERE
-                    wp.workspace_id = $1
-                    AND EXISTS (
-                        SELECT 1
-                        FROM project."project_members" pm2
-                        WHERE pm2.project_id = p.project_id
-                        AND pm2.user_id = $2
-                    )
-                GROUP BY
-                    p.project_id, p.project_name;
-            `,
-            values : [ workspace_id, user_id ]
-        })
-
-        return projects.rows;
-
-    } catch (error) {
-        console.log(error);
-        throw error;
-    } finally {
-        release()
-    }
-
-}
-
-export const getUserProjects = async ( user_id : string, postgreClient? : PoolClient ) => {
-
-    try {
-        const {
-            client,
-            release
-        } = await getPoolClient(postgreClient);
-
-        const projects = await client.query({
-            text : `--sql
-                SELECT
-                    p.project_id,
-                    p.project_name,
-                    json_agg(
-                        json_build_object(
-                            'user_id', u.user_id,
+                            'user_id', public.uuid_to_base64(u.user_id),
                             'email', u.email,
                             'firstname', u.firstname,
                             'lastname', u.lastname,
@@ -142,179 +155,197 @@ export const getUserProjects = async ( user_id : string, postgreClient? : PoolCl
                 JOIN
                     tp_user."user" u ON pm.user_id = u.user_id
                 WHERE
-                    pm.user_id = $1
+                    pm.user_id = public.detect_and_convert_to_uuid($1)
                 GROUP BY
-                    p.project_id, p.project_name;
+                    p.project_id, p.project_name, p.project_color;
             `,
-            values : [ user_id ]
+            values : [ userId ]
         })
-
-        release()
 
         return projects.rows;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-
-}
-
-export const getProjectMember = async ( project_id : string, user_id : string, poolClient? : PoolClient ) : Promise<TProjectMember | undefined> => {
-    const {
-        client,
-        release
-    } = await getPoolClient(poolClient)
-
-    try {
-        const projectMember = await client.query({
-            text : `--sql
-                SELECT
-                    *
-                FROM
-                    project."project_members"
-                WHERE
-                    project_id = $1 AND user_id = $2
-            `,
-            values : [ project_id, user_id ]
-        })
-        return projectMember.rows[0]
-    } catch (error) {
-        console.log(error);
-        throw error;
-    } finally {
-        release()
-    }
-}
-
-export const getProjectMemberByTaskboardId = async ( task_board_id : string, user_id : string, poolClient? : PoolClient ) : Promise<TProjectMember | undefined> => {
-
-    const {
-        client,
-        release
-    } = await getPoolClient(poolClient)
-
-    try {
-        const projectMember = await client.query({
-            text : `--sql
-                SELECT
-                    pm.*
-                FROM
-                    taskboard."task_board" tb
-                JOIN
-                    project."project" p ON tb.project_id = p.project_id
-                JOIN
-                    project."project_members" pm ON p.project_id = pm.project_id
-                WHERE
-                    tb.task_board_id = $1 AND pm.user_id = $2
-            `,
-            values : [ task_board_id, user_id ]
-        })
-        return projectMember.rows[0]
-    } catch (error) {
-        console.log(error);
-        throw error;
-    } finally {
-        release()
-    }
-
-}
-
-export const getProjectMemberByTaskSectionId = databaseFunctionWrapper(
-    async (
-        client : PoolClient,
-        taskSectionId : string,
-        userId : string
-    ) : Promise<TProjectMember | undefined> => {
-        const projectMember = await client.query({
-            text : `--sql
-                SELECT
-                    pm.*
-                FROM
-                    taskboard."task_section" ts
-                JOIN
-                    taskboard."task_board" tb ON tb.task_board_id = ts.task_board_id
-                JOIN
-                    project."project" p ON tb.project_id = p.project_id
-                JOIN
-                    project."project_members" pm ON p.project_id = pm.project_id
-                WHERE
-                    ts.task_section_id = $1 AND pm.user_id = $2;
-            `,
-            values : [ taskSectionId, userId ]
-        })   
-        return projectMember.rows[0]  
     }
 )
 
-// export const getProjectMemberByTaskId = async (
-//     task_id : string,
-//     user_id : string,
-//     poolClient? : PoolClient
-// ) : Promise<TProjectMember | undefined> => {
+export const getProjectMember = async (
+    projectId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectMember | undefined> => {
 
-//     const {
-//         client,
-//         release
-//     } = await getPoolClient(poolClient)
+    const queryBuilder = trx ? trx.selectFrom( "project.project_members" ) : taskprioKysely.selectFrom( "project.project_members" )
 
-//     try {
-//         const projectMember = await client.query({
-//             text : `--sql
-//                 SELECT
-//                     pm.*
-//                 FROM
-//                     taskboard."task" t
-//                 JOIN
-//                     taskboard."task_section" ts ON ts.task_section_id = t.task_section_id
-//                 JOIN
-//                     taskboard."task_board" tb ON tb.task_board_id = ts.task_board_id
-//                 JOIN
-//                     project."project" p ON tb.project_id = p.project_id
-//                 JOIN
-//                     project."project_members" pm ON p.project_id = pm.project_id
-//                 WHERE
-//                     t.task_id = $1 AND pm.user_id = $2;
-//             `,
-//             values : [ task_id, user_id ]
-//         })
-//         return projectMember.rows[0]
-//     } catch (error) {
-//         console.log(error)
-//         throw error
-//     } finally {
-//         release()
-//     }
+    const projectMember = await queryBuilder
+        .innerJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select([
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`.as("invited_by"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`.as("user_id"),
+            "project.project_members.project_role",
+            "project.project_members.joined_at",
+            "project.project_members.is_active",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname"
+        ])
+        .where( "project.project_members.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+        .where( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .where( "tp_user.user.user_id", "is not", null )
+        .executeTakeFirst()
 
-// }
+    return projectMember;
 
+}
 
-export const getProjectMemberByTaskId = databaseFunctionWrapper(
-    async (
-        client : PoolClient,
-        taskId : string,
-        userId : string
-    ) : Promise<TProjectMember | undefined> => {
+export const getProjectMembersByTheirUserId = async (
+    userIds : string[],
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectMember[]> => {
 
-        const projectMember = await client.query({
-            text : `--sql
-                SELECT
-                    pm.*
-                FROM
-                    taskboard."task" t
-                JOIN
-                    taskboard."task_section" ts ON ts.task_section_id = t.task_section_id
-                JOIN
-                    taskboard."task_board" tb ON tb.task_board_id = ts.task_board_id
-                JOIN
-                    project."project" p ON tb.project_id = p.project_id
-                JOIN
-                    project."project_members" pm ON p.project_id = pm.project_id
-                WHERE
-                    t.task_id = $1 AND pm.user_id = $2;
-            `,
-            values : [ taskId, userId ]
-        })
-        return projectMember.rows[0]
+    const queryBuilder = trx ? trx.selectFrom( "project.project_members" ) : taskprioKysely.selectFrom( "project.project_members" )
 
-    }
-)
+    return await queryBuilder
+        .innerJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select( eb => [
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`.as("invited_by"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`.as("user_id"),
+            "project.project_members.project_role",
+            "project.project_members.joined_at",
+            "project.project_members.is_active",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname"
+        ])
+        .where( eb => eb.or(
+            userIds.map( userId => eb( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` ) )
+        ))
+        .where( "project.project_members.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+        .where( "tp_user.user.user_id", "is not", null )
+        .execute()
+
+}
+
+export const getProjectMemberByTaskboardId = async (
+    taskboardId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectMember | undefined> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "taskboard.task_board" ) : taskprioKysely.selectFrom( "taskboard.task_board" )
+
+    const projectMember = await queryBuilder
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
+        .innerJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select([
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`.as("invited_by"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`.as("user_id"),
+            "project.project_members.project_role",
+            "project.project_members.joined_at",
+            "project.project_members.is_active",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname"
+        ])
+        .where( "taskboard.task_board.task_board_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskboardId})` )
+        .where( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .where( "tp_user.user.user_id", "is not", null )
+        .executeTakeFirst()
+
+    return projectMember;
+
+}
+
+export const getProjectMemberByTaskSectionId = async (
+    taskSectionId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectMember | undefined> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "taskboard.task_section" ) : taskprioKysely.selectFrom( "taskboard.task_section" )
+
+    const projectMember = await queryBuilder
+        .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
+        .innerJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select([
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`.as("invited_by"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`.as("user_id"),
+            "project_role",
+            "joined_at",
+            "is_active",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname"
+        ])
+        .where( "taskboard.task_section.task_section_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskSectionId})` )
+        .where( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .where( "tp_user.user.user_id", "is not", null )
+        .executeTakeFirst()
+
+    return projectMember;
+
+}
+
+export const getProjectMemberByTaskId = async (
+    taskId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectMember | undefined> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "taskboard.task" ) : taskprioKysely.selectFrom( "taskboard.task" )
+
+    const projectMember = await queryBuilder
+        .innerJoin( "taskboard.task_section", "taskboard.task_section.task_section_id", "taskboard.task.task_section_id" )
+        .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
+        .innerJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select([
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`.as("invited_by"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`.as("user_id"),
+            "project.project_members.project_role",
+            "project.project_members.joined_at",
+            "project.project_members.is_active",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname"
+        ])
+        .where( "taskboard.task.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+        .where( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .where( "tp_user.user.user_id", "is not", null )
+        .executeTakeFirst()
+
+    return projectMember;
+}
+
+export const getProjectMembers = async (
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectMember[]> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "project.project_members" ) : taskprioKysely.selectFrom( "project.project_members" )
+
+    return await queryBuilder
+        .innerJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select([
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.invited_by)`.as("invited_by"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_members.user_id)`.as("user_id"),
+            "project.project_members.project_role",
+            "project.project_members.joined_at",
+            "project.project_members.is_active",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname"
+        ])
+        .where( "project.project_members.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+        .where( "tp_user.user.user_id", "is not", null )
+        .execute()
+
+}

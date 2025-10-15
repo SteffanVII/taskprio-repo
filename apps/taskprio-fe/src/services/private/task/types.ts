@@ -1,8 +1,11 @@
-import { TTask, TTaskTimeLog } from "@repo/taskprio-types/src";
+import { TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRemoveTaskTagRequestBody, TRestoreTaskFromTrashRequestParams, TTask, TTaskAssignee, TTaskTimeLog } from "@repo/taskprio-types/src";
 
 // Query
 export type TGetTaskResponse = TTask
 
+export type TGetTaskCommentsPayload = {
+    pathParameter : Partial<TGetTaskCommentsRequestPathParams>
+}
 // Mutation
 
 export type TCreateTaskPayload = {
@@ -37,12 +40,13 @@ export type TArrangeTaskResponse = TTask;
 
 export type TAddTaskAssigneePayload = {
     task_id : string,
+    optimisticData? : TTaskAssignee,
     body : {
         user_id : string
     }
 }
 
-export type TRemoveTaskAssigneePayload = TAddTaskAssigneePayload
+export type TRemoveTaskAssigneePayload = Omit<TAddTaskAssigneePayload, "optimisticData">
 
 export type TAddTaskTimeLogPayload = {
     task_id : string,
@@ -52,6 +56,30 @@ export type TAddTaskTimeLogPayload = {
 }
 
 export type TAddTaskTimeLogResponse = TTaskTimeLog;
+
+export type TAddTaskTagPayload = {
+    body : {
+        tag_id : string,
+        task_id : string
+    }
+}
+
+export type TRemoveTaskTagPayload = {
+    body : TRemoveTaskTagRequestBody
+}
+
+export type TAddTaskCommentPayload = {
+    pathParameter : TAddTaskCommentRequestPathParams,
+    body : TAddTaskCommentRequestBody
+}
+
+export type TMoveTaskToTrashPayload = {
+    params : TMoveTaskToTrashRequestParams
+}
+
+export type TRestoreTaskFromTrashPayload = {
+    params : TRestoreTaskFromTrashRequestParams
+}
 
 // Task
 

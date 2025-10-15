@@ -1,10 +1,11 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils"
 import { useGlobalsStore } from "@/stores/globals";
-import { Plus } from "lucide-react"
+import { Check, Plus } from "lucide-react"
 import React from "react";
 import UserAvatar from "../UserAvatar";
 import { useAddTaskAssignee, useRemoveTaskAssignee } from "@/services/private/task/mutation";
+import { TProjectMember } from "@repo/taskprio-types/src";
 
 export type TTaskAssignerProps = {
     task_id? : string,
@@ -31,24 +32,29 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
         mutateAsync : removeTaskAssignee
     } = useRemoveTaskAssignee()
 
-    const handleAssigning = ( user_id : string) => {
-        if ( assignees.includes( user_id ) ) {
-            onAssigneesChange( assignees.filter( ( id ) => id !== user_id ) )
+    const handleAssigning = ( projectMember : TProjectMember ) => {
+        if ( assignees.includes( projectMember.user_id ) ) {
+            onAssigneesChange( assignees.filter( ( id ) => id !== projectMember.user_id ) )
             if ( task_id ) {
                 removeTaskAssignee( {
                     task_id,
                     body : {
-                        user_id
+                        user_id : projectMember.user_id
                     }
                 } )
             }
         } else {
-            onAssigneesChange( [ ...assignees, user_id ] )
+            onAssigneesChange( [ ...assignees, projectMember.user_id ] )
             if ( task_id ) {
                 addTaskAssignee( {
                     task_id,
+                    optimisticData : {
+                        user_id : projectMember.user_id,
+                        firstname : projectMember.firstname,
+                        lastname : projectMember.lastname
+                    },
                     body : {
-                        user_id
+                        user_id : projectMember.user_id
                     }
                 } )
             }
@@ -90,7 +96,8 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                             assignees.map( ( assignee ) => (
                                 <UserAvatar
                                     key={assignee}
-                                    user_id={assignee}
+                                    user_id_or_email={assignee}
+                                    size="sm"
                                 />
                             ) )
                         }
@@ -115,6 +122,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                     {
                         selectedProject?.project_members.map( ( member ) => (
                             <div
+                                key={member.user_id}
                                 role="button"
                                 className={cn(
                                     ` p-2 `,
@@ -123,15 +131,11 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                                     assignees.includes( member.user_id ) && ` bg-blue-400 `
                                 )}
                                 onClick={() => {
-                                    handleAssigning( member.user_id )
+                                    handleAssigning( member )
                                 }}
                             >
                                 {/* Create profile picture component later */}
-                                <span
-                                    className={cn(
-                                        ` size-[1.6rem] rounded-full bg-gray-400 `
-                                    )}
-                                ></span>
+                                <UserAvatar user_id_or_email={member.user_id} size="sm" />
                                 {
                                     member.user_id === user?.user_id ?
                                     <>
@@ -139,6 +143,10 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                                     </>
                                     :
                                     <p>{member.firstname} {member.lastname}</p>
+                                }
+                                {
+                                    assignees.includes( member.user_id ) &&
+                                    <Check className=" text-background size-4 ml-auto mr-2 " />
                                 }
                             </div>
                         ) )

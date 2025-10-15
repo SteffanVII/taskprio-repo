@@ -7,9 +7,12 @@ const TaskboardPage = () => {
     return (
         <div
             className={cn(
-                ` size-full `,
-                ` flex flex-col grow `
+                `relative size-full max-h-full min-h-0 `,
+                `grid grow `
             )}
+            style={{
+                gridTemplateRows : "min-content 1fr"
+            }}
         >
             <TaskboardList/>
             <Taskboard/>

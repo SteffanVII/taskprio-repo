@@ -1,4 +1,4 @@
-import { TProject } from "@repo/taskprio-types/src/index"
+import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TGetProjectMemberRequestParams, TProject, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams } from "@repo/taskprio-types/src/index"
 
 export type TCreateProjectPayload = {
     body : TCreateProjectBody
@@ -10,6 +10,20 @@ export type TCreateProjectBody = {
 }
 
 export type TCreateProjectResponse = TProject
+
+export type TUpdateProjectCustomizationPayload = {
+    params : TUpdateProjectCustomizationRequestParams,
+    body : TUpdateProjectCustomizationRequestBody
+}
+
+export type TAddMembersToProjectPayload = {
+    params : TAddProjectMembersRequestParams,
+    body : TAddProjectMembersRequestBody
+}
+
+export type TGetProjectMemberPayload = {
+    params : Partial<TGetProjectMemberRequestParams>
+}
 
 // Project
 

@@ -1,5 +1,10 @@
 import { PoolClient } from "pg"
-import { getPoolClient } from "../../postgresql.js"
+import { databaseFunctionWrapper, EDatabaseFunction, EDatabaseFunctionWrapperMode, getPoolClient } from "../../postgresql.js"
+import { EProjectRole, EWorkspaceRole, TWorkspaceInvitation } from "@repo/taskprio-types"
+import { taskprioKysely } from "../../kysely/kysely.js"
+import { sql } from "kysely"
+import { addWorkspaceMember } from "../workspace/mutation.js"
+import { addMemberToProjects } from "../project/mutation.js"
 
 /**
  * Updates the invitation to accepted.
@@ -8,45 +13,114 @@ import { getPoolClient } from "../../postgresql.js"
  * @param workspaceId - The id of the workspace
  * @param email - The email of the recipient
  */
+
 export const acceptInvitation = async (
     token : string,
     workspaceId : string,
     email : string,
-    poolClient? : PoolClient
-) => {
+    userId : string,
+    senderId : string,
+    projects : string[]
+) : Promise<void> => {
 
-    const {
-        internalClient,
-        client,
-        release
-    } = await getPoolClient(poolClient)
-    
-    try {
+    await taskprioKysely.transaction().execute( async (trx) => {
 
-        if ( internalClient ) client.query("BEGIN")
+        await trx.updateTable( "invitation.workspace_invitation" )
+            .set( {
+                accepted : true
+            } )
+            .where( "invitation.workspace_invitation.token_string", "=", token )
+            .where( "invitation.workspace_invitation.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "invitation.workspace_invitation.email", "=", email )
+            .executeTakeFirstOrThrow()
 
-        await client.query({
-            text : `--sql
-                UPDATE invitation."workspace_invitation"
-                SET accepted = TRUE
-                WHERE token_string = $1
-                AND workspace_id = $2
-                AND email = $3
-            `,
-            values : [
-                token,
-                workspaceId,
-                email
-            ]
+        await addWorkspaceMember(
+            workspaceId,
+            userId,
+            EWorkspaceRole.MEMBER,
+            senderId,
+            trx
+        )
+
+        await addMemberToProjects(
+            userId,
+            senderId,
+            EProjectRole.MEMBER,
+            projects,
+            trx
+        )
+        
+    } )
+
+}
+
+export const createInvitation = async (
+    workspaceId : string,
+    senderId : string,
+    email : string,
+    tokenString : string
+) : Promise<TWorkspaceInvitation> => {
+
+    return await taskprioKysely.transaction().execute( async (trx) => {
+
+        const query = trx.insertInto( "invitation.workspace_invitation" )
+        .values({
+            workspace_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`,
+            sender_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${senderId})`,
+            email,
+            token_string : tokenString
+
         })
+        .returningAll()
 
-        if ( internalClient ) client.query("COMMIT")
+        const invitation = await query.executeTakeFirstOrThrow()
 
-    } catch (error) {
-        console.log(error)
-        if ( internalClient ) client.query("ROLLBACK")
-    } finally {
-        release()
-    }
+        const invitationBase64 = await trx.selectFrom( "invitation.workspace_invitation_base64" )
+            .selectAll()
+            .where( "token_string", "=", invitation.token_string )
+            .executeTakeFirstOrThrow()
+
+        return invitationBase64
+
+    } )
+
+}
+
+export const createInvitationBatch = async (
+    batch : {
+        workspaceId : string,
+        senderId : string,
+        email : string,
+        tokenString : string
+    }[]
+) : Promise<TWorkspaceInvitation[]> => {
+
+    return await taskprioKysely.transaction().execute( async (trx) => {
+
+        const invitations = await Promise.all( batch.map( async ( item ) => {
+
+            const query = trx.insertInto( "invitation.workspace_invitation" )
+            .values({
+                workspace_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${item.workspaceId})`,
+                sender_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${item.senderId})`,
+                email : item.email,
+                token_string : item.tokenString
+            })
+            .returningAll()
+
+            console.log( query.compile().sql )
+
+            await query.executeTakeFirstOrThrow()
+
+            return await trx.selectFrom( "invitation.workspace_invitation_base64" )
+                .selectAll()
+                .where( "token_string", "=", item.tokenString )
+                .executeTakeFirstOrThrow()
+
+        } ) )
+
+        return invitations
+
+    } )
 
 }

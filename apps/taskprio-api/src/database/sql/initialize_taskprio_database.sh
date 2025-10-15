@@ -42,14 +42,14 @@ if [ ! -f "$SQL_FILE" ]; then
     exit 1
 fi
 
-# Database connection parameters (can be set as environment variables)
-DB_PASSWORD="${SUPABASE_TP_DB_PASSWORD:-}"
+# # Database connection parameters (can be set as environment variables)
+# DB_PASSWORD="${SUPABASE_TP_DB_PASSWORD:-}"
 
-if [ -z "$DB_PASSWORD" ]; then
-    echo -n "Enter database password: "
-    read -s DB_PASSWORD
-    echo
-fi
+# if [ -z "$DB_PASSWORD" ]; then
+#     echo -n "Enter database password: "
+#     read -s DB_PASSWORD
+#     echo
+# fi
 
 print_status "Connecting to Supabase database..."
 

@@ -56,6 +56,7 @@ const AcceptRoute = () => {
     }, [ searchParams ])
 
     useEffect( () => {
+        console.log(invitationRecipient);
         if ( searchParams.get("invite_token") && invitationInfo && !invitationInfo.accepted ) {
             if ( user?.email === invitationInfo.email ) {
                 acceptInvitation( searchParams.get("invite_token") as string )
@@ -170,11 +171,7 @@ const AcceptRoute = () => {
     if ( invitationInfo ) {
 
         if ( !invitationInfo.is_invitation_exists ) {
-            return (
-                <div className="size-full flex items-center justify-center">
-                    <p>Invitation not found</p>
-                </div>
-            )
+            return invitationNotFoundElement()
         }
 
         if ( invitationInfo.accepted ) {
@@ -224,7 +221,8 @@ const AcceptRoute = () => {
 
     if ( !authenticated || !invitationRecipient ) {
         return (
-            <div className="size-full flex items-center justify-center">
+            <div className="size-full flex flex-col space-y-16 items-center justify-center">
+                <h1 className="text-2xl font-bold">Please login or register to accept the invitation</h1>
                 <div className={`${registerFormOpen ? 'hidden' : 'block'}`}>
                     <LoginForm
                         dontNavigate={true}

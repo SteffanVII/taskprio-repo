@@ -6,6 +6,8 @@ import WorkspaceDropdown_MainDashboardPane from "./WorkspaceDropdown_MainDashboa
 import { updateDialogsStore } from "@/stores/dialogs";
 import GeneralButtons from "./GeneralButtons_MainDashboardPane";
 import { useTheme } from "@/lib/utils/themeProvider";
+import TodoCard_MainDashboardPane from "./TodoCard_MainDashboardPane";
+import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
 
 const MainDashboardPane = () => {
 
@@ -28,13 +30,6 @@ const MainDashboardPane = () => {
                     ` p-4 `
                 )}
             >
-                {/* <h1
-                    className={cn(
-                        ` text-2xl font-bold `
-                    )}
-                >
-                    Taskprio
-                </h1> */}
                 <WorkspaceDropdown_MainDashboardPane/>
             </div>
 
@@ -54,36 +49,31 @@ const MainDashboardPane = () => {
 
             <div
                 className={cn(
-                    ` w-full p-4 mt-auto `,
-                    ` flex items-center justify-between gap-2 `
+                    `w-full mt-auto`
                 )}
             >
-                <div className=" flex items-center gap-2 " >
+
+                <TodoCard_MainDashboardPane/>
+
+                <div
+                    className={cn(
+                        ` w-full p-4 `,
+                        ` flex items-center justify-between gap-2 `
+                    )}
+                >
+                    <UserPopoverMenu/>
                     <Button
-                        size={"sm"}
+                        size={"icon"}
                         variant={"outline"}
                         onClick={() => {
-                            updateDialogsStore({
-                                workspaceInvitationDialog : {
-                                    open : true
-                                }
-                            })
-                        }}  
+                            setTheme( theme === "dark" ? "light" : "dark" )
+                        }}
                     >
-                        <Mail className=" size-4 "/>
-                        Invite
+                        <Sun className=" size-4 "/>
                     </Button>
                 </div>
-                <Button
-                    size={"icon"}
-                    variant={"outline"}
-                    onClick={() => {
-                        setTheme( theme === "dark" ? "light" : "dark" )
-                    }}
-                >
-                    <Sun className=" size-4 "/>
-                </Button>
             </div>
+
 
         </div>
     )

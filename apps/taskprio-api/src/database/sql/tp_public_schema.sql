@@ -25,3 +25,92 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+-- Convert UUID to base64
+CREATE OR REPLACE FUNCTION public.uuid_to_base64(uuid_value UUID)
+RETURNS TEXT AS $$
+DECLARE
+    base64_value TEXT;
+BEGIN
+    base64_value := ENCODE(DECODE(REPLACE(CAST(uuid_value AS TEXT),'-',''), 'hex'), 'base64');
+    base64_value := replace(base64_value, '+', '-');
+    base64_value := replace(base64_value, '/', '_');
+    base64_value := replace(base64_value, '=', '');
+    RETURN base64_value;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Convert base64 back to UUID
+CREATE OR REPLACE FUNCTION public.base64_to_uuid(base64_value TEXT)
+RETURNS UUID AS $$
+DECLARE
+    base64_value_corrected TEXT;
+BEGIN
+    -- Convert URL-safe base64 back to standard base64
+    base64_value_corrected := replace(base64_value, '-', '+');
+    base64_value_corrected := replace(base64_value_corrected, '_', '/');
+    -- Add padding if needed
+    base64_value_corrected := base64_value_corrected || repeat('=', (4 - (length(base64_value_corrected) % 4)) % 4);
+
+    -- Decode base64 to hex, then convert to UUID
+    RETURN CAST(ENCODE(DECODE(base64_value_corrected, 'base64'), 'hex') AS UUID);
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Check if string is a valid UUID
+CREATE OR REPLACE FUNCTION public.is_uuid(uuid_string TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Check if it matches UUID pattern: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    RETURN uuid_string ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Check if string is base64 (URL-safe)
+CREATE OR REPLACE FUNCTION public.is_base64(base64_string TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Check if it matches base64 pattern: [A-Za-z0-9_-]+
+    -- For UUID conversion, it should be 22 characters
+    RETURN base64_string ~ '^[A-Za-z0-9_-]+$' AND length(base64_string) = 22;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Smart function that tries to convert and determines format
+CREATE OR REPLACE FUNCTION public.detect_and_convert_to_uuid(id_string TEXT)
+RETURNS UUID AS $$
+DECLARE
+    result_uuid UUID;
+BEGIN
+    -- Try to convert as base64 first
+    BEGIN
+        result_uuid := public.base64_to_uuid(id_string);
+        RETURN result_uuid;
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- If base64 conversion fails, try as UUID
+            BEGIN
+                result_uuid := id_string::UUID;
+                RETURN result_uuid;
+            EXCEPTION
+                WHEN OTHERS THEN
+                    RAISE EXCEPTION 'String is neither valid base64 nor UUID: %', id_string;
+            END;
+    END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Smart function that tries to convert and determines format of an array of id strings
+CREATE OR REPLACE FUNCTION public.detect_and_convert_to_uuid_array(id_strings TEXT[])
+RETURNS UUID[] as $$
+DECLARE
+    result_uuids UUID[] := '{}';
+    id TEXT;
+BEGIN
+    FOREACH id IN ARRAY id_strings LOOP
+        result_uuids := result_uuids || public.detect_and_convert_to_uuid(id);
+    END LOOP;
+    RETURN result_uuids;
+
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT;

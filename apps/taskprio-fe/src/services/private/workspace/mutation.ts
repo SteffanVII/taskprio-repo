@@ -1,6 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { TCreateWorkspacePayload, TCreateWorkspaceResponse, TGetUserWorkspacesResponse, TInviteToWorkspacePayload } from "./types"
+import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query"
+import { TCreateWorkspacePayload, TCreateWorkspaceResponse, TGetUserWorkspacesResponse, TInviteToWorkspacePayload, TUpdateWorkspaceMemberRolePayload } from "./types"
 import { axiosInstance } from "@/services/axios"
+import { QueryKeys } from "@/services/enum"
 
 
 export const useCreateWorkspace = ( onSuccess? : () => void ) => {
@@ -16,7 +17,7 @@ export const useCreateWorkspace = ( onSuccess? : () => void ) => {
             return response.data
         },
         onSuccess : ( data ) => {
-            queryClient.setQueryData<TGetUserWorkspacesResponse>( [ "get_user_workspaces" ], old => {
+            queryClient.setQueryData<TGetUserWorkspacesResponse>( [ ...QueryKeys.GET_USER_WORKSPACES.split ], old => {
                 if ( !old ) return [ data ]
                 console.log(data);
                 return [ data, ...old ]
@@ -38,6 +39,33 @@ export const useInviteToWorkspace = ( onSuccess? : () => void ) => {
         },
         onSuccess : () => {
             if ( onSuccess ) onSuccess()
+        }
+    })
+
+}
+
+type TUpdateWorkspaceMemberRoleOptions = UseMutationOptions<any, Error, TUpdateWorkspaceMemberRolePayload>
+
+export const useUpdateWorkspaceMemberRole = ( options? : TUpdateWorkspaceMemberRoleOptions ) => {
+
+    const queryClient = useQueryClient()
+
+    return useMutation<any, Error, TUpdateWorkspaceMemberRolePayload>({
+        mutationFn : async ( payload ) => {
+            const response = await axiosInstance.patch<any>(
+                `/private/workspace/member-role/${payload.params.workspace_id}/${payload.params.member_id}`,
+                payload.body
+            )
+            return response.data
+        },
+        onSuccess : ( data, variables, context ) => {
+            options?.onSuccess?.( data, variables, context )
+            queryClient.invalidateQueries({
+                queryKey : [ ...QueryKeys.GET_USER_WORKSPACE.split, variables.params.workspace_id ]
+            })
+            queryClient.invalidateQueries({
+                queryKey : [ ...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.params.workspace_id, variables.params.member_id ]
+            })
         }
     })
 

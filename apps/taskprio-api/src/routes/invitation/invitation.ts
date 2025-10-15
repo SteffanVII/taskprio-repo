@@ -6,10 +6,11 @@ import { getUserByEmail } from "../../database/queries/user/query.js";
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../database/postgresql.js";
 import { EProjectRole, EWorkspaceRole, IGetInvitationInfoResponseData, TInvitationTokenDecoded } from "@repo/taskprio-types";
-import { getInvitationByToken_WorkspaceId_Recipient } from "../../database/queries/invitation/query.js";
+import { getInvitation } from "../../database/queries/invitation/query.js";
 import { addWorkspaceMember } from "../../database/queries/workspace/mutation.js";
-import { acceptInvitation } from "../../database/queries/invitation/mutation.js";
+import { acceptInvitation, createInvitationBatch } from "../../database/queries/invitation/mutation.js";
 import { addMemberToProjects, addProjectMember } from "../../database/queries/project/mutation.js";
+import { getWorkspaceMember } from "../../database/queries/workspace/query.js";
 
 export const registerInvitationPrivateRoutes = ( router : Router ) => {
 
@@ -26,14 +27,10 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                 return;
             }
 
-            let client : PoolClient;
-            let releaseClient : () => void;
-
             try {
 
                 // Convert emails string array to a array of objects with email and token
                 const emailsWithToken = emails.map( email => {
-
                     const token = jwt.sign(
                         {
                             sender_id : user_id,
@@ -78,49 +75,19 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                     return;
                 }
 
-
-                const {
-                    client : newClient,
-                    release
-                } = await getPoolClient()
-                
-                client = newClient;
-                releaseClient = release;
-
                 // Insert the invitations into the database
-                await Promise.all( emailsWithToken.map( async email => {
-
-                    await client.query({
-                        text : `--sql
-                            INSERT INTO invitation."workspace_invitation" (
-                                workspace_id,
-                                sender_id,
-                                email,
-                                token_string,
-                                accepted
-                            ) VALUES (
-                                $1, $2, $3, $4, $5
-                            )
-                        `,
-                        values : [
-                            workspace_id,
-                            user_id,
-                            email.email,
-                            email.token,
-                            false
-                        ]
-                    })
-
-                } ) )
+                await createInvitationBatch( emailsWithToken.map( email => ({
+                    workspaceId : workspace_id,
+                    senderId : user_id,
+                    email : email.email,
+                    tokenString : email.token
+                }) ) ) 
 
                 res.status(200).json({ message : "Invitation sent" });
 
             } catch (error) {
                 console.error(error);
-                if ( client ) await client.query("ROLLBACK");
                 res.status(500).json({ message : "There was an error sending the invitations" });
-            } finally {
-                releaseClient?.();
             }
         }
     )
@@ -158,7 +125,7 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                 }
 
                 // Get the invitation by token, workspace_id and email
-                const invitation = await getInvitationByToken_WorkspaceId_Recipient(
+                const invitation = await getInvitation(
                     invitationToken,
                     decodedToken.workspace_id,
                     decodedToken.email
@@ -176,21 +143,9 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                 await acceptInvitation(
                     invitationToken,
                     decodedToken.workspace_id,
-                    decodedToken.email
-                )
-                
-                await addWorkspaceMember(
-                    invitation.workspace_id,
+                    decodedToken.email,
                     user.user_id,
-                    invitation.email,
-                    EWorkspaceRole.MEMBER,
-                    invitation.sender_id
-                )
-
-                await addMemberToProjects(
-                    user.user_id,
-                    invitation.sender_id,
-                    EProjectRole.MEMBER,
+                    decodedToken.sender_id,
                     decodedToken.projects
                 )
 
@@ -222,7 +177,7 @@ export const registerInvitationPublicRoutes = ( router : Router ) => {
                     decodedToken.email
                 )
 
-                const invitation = await getInvitationByToken_WorkspaceId_Recipient(
+                const invitation = await getInvitation(
                     token,
                     decodedToken.workspace_id,
                     decodedToken.email
@@ -251,6 +206,7 @@ export const registerInvitationPublicRoutes = ( router : Router ) => {
                 res.status(200).json(returnData)
 
             } catch (error) {
+                console.log(error);
                 res.status(500).json({ message : "Invalid token or expired" });
             }
 

@@ -1,146 +1,237 @@
-import { PoolClient } from "pg";
-import { getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { getUserWorkspace, getWorkspaceMember } from "./query.js";
-import slugify from "slugify";
-import { Request } from "express";
-import { EWorkspaceRole, TCreateWorkspaceBody, TWorkspace, TWorkspaceMember } from "@repo/taskprio-types";
+import { sql, Transaction } from "kysely";
+import { taskprioKysely } from "../../kysely/kysely.js";
+import { EDatabaseFunction } from "../../postgresql.js";
+import { DB, EWorkspaceRole, TCreateWorkspaceBody, TWorkspace, TWorkspaceMember } from "@repo/taskprio-types";
+import { getUserWorkspace } from "./query.js";
+import { jsonBuildObject } from "kysely/helpers/postgres";
 
-export const createWorkspace = async ( body : TCreateWorkspaceBody, user_id : string, request : Request, postgreClient? : PoolClient ) : Promise<TWorkspace | undefined> => {
-    
-    const {
-        client,
-        release
-    } = await getPoolClient(postgreClient);
+export const createWorkspace = async (
+    body : TCreateWorkspaceBody,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TWorkspace> => {
 
-    try {
+    let workspace : TWorkspace;
 
-        await client.query("BEGIN")
+    const query = async ( finalTrx : Transaction<DB> ) => {
 
-        const workspaceSlug = slugify.default(
-            `${body.workspace_name}${Date.now()}`,
-            {
-                lower : true,
-                strict : true,
-                locale : request.headers['accept-language']?.split(',')[0] || 'en',
-                remove : /[*+~.()'"!:@]/g,
-            }
-        )
+        const createdWorkspace = await finalTrx
+            .insertInto( "workspace.workspace" )
+            .values({
+                workspace_name : body.workspace_name
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
 
-        const createdWorkspace = await client.query({
-            text : `--sql
-                INSERT INTO workspace."workspace" (
-                    workspace_name,
-                    workspace_slug
-                )
-                VALUES (
-                    $1,
-                    $2
-                )
-                RETURNING *
-            `,
-            values : [ body.workspace_name, workspaceSlug ]
-        })
+        await finalTrx.insertInto( "workspace.workspace_members" )
+            .values({
+                workspace_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdWorkspace.workspace_id})`,
+                user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
+                workspace_role : EWorkspaceRole.OWNER + 1,
+                invited_by : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`
+            })
+            .executeTakeFirstOrThrow();
 
-        if ( !createdWorkspace.rows[0] ) {
-            client.query("ROLLBACK")
-            throw new Error("Failed to create workspace");
-        }
+        const returnValue = await getUserWorkspace( createdWorkspace.workspace_id, userId, finalTrx )
 
-        const createdWorkspaceMember = await client.query({
-            text : `--sql
-                INSERT INTO workspace."workspace_members" (
-                    workspace_id,
-                    user_id,
-                    workspace_role,
-                    invited_by
-                )
-                VALUES ($1, $2, $3, $4) RETURNING *
-            `,
-            values : [ createdWorkspace.rows[0].workspace_id, user_id, EWorkspaceRole.OWNER + 1, user_id ]
-        })
-
-        if ( !createdWorkspaceMember.rows[0] ) {
-            client.query("ROLLBACK")
-            throw new Error("Failed to create workspace member");
-        }
-
-        await client.query("COMMIT")
-        
-        const workspace = await getUserWorkspace( createdWorkspace.rows[0].workspace_id, user_id, client )
-
-        return workspace;
-
-    } catch (error) {
-        client.query("ROLLBACK")
-        console.log(error);
-        throw error;
-    } finally {
-        release()
+        return returnValue;
     }
+
+    if ( trx ) {
+        workspace = await query( trx )
+    } else {
+        workspace = await taskprioKysely.transaction().execute( async trx1 => {
+            return await query( trx1 )
+        } )
+    }
+
+    return workspace
 
 }
 
+// export const createWorkspace = databaseFunctionWrapper(
+//     async (
+//         client,
+//         body : TCreateWorkspaceBody,
+//         userId : string
+//     ) : Promise<TWorkspace | undefined> => {
+
+//         const createdWorkspace = await client.query({
+//             text : `--sql
+//                 INSERT INTO workspace."workspace" (
+//                     workspace_name
+//                 )
+//                 VALUES ( $1 )
+//                 RETURNING * ;
+//             `,
+//             values : [ body.workspace_name ]
+//         })
+
+//         await client.query({
+//             text : `--sql
+//                 INSERT INTO workspace."workspace_members" (
+//                     workspace_id,
+//                     user_id,
+//                     workspace_role,
+//                     invited_by
+//                 )
+//                 VALUES (
+//                     $1,
+//                     public.detect_and_convert_to_uuid($2),
+//                     $3,
+//                     public.detect_and_convert_to_uuid($4)
+//                 )
+//             `,
+//             values : [ createdWorkspace.rows[0].workspace_id, userId, EWorkspaceRole.OWNER + 1, userId ]
+//         })
+
+//         const workspace = await getUserWorkspace( createdWorkspace.rows[0].workspace_id, userId )
+
+//         return workspace
+
+//     },
+//     EDatabaseFunctionWrapperMode.TRANSACTION
+// )
+
+/**
+ * Add a member to a workspace
+ * @param workspaceId - The ID of the workspace
+ * @param userId - The ID of the user to add
+ * @param email - The email of the user to add
+ * @param workspaceRole - The role of the user to add
+ * @param invitedBy - The ID of the user who invited the user
+ * @returns The workspace member
+ */
 export const addWorkspaceMember = async (
-    workspace_id : string,
-    user_id : string,
-    email : string,
-    workspace_role : EWorkspaceRole,
-    invited_by : string,
-    postgreClient? : PoolClient
+    workspaceId : string,
+    userId : string,
+    workspaceRole : EWorkspaceRole,
+    invitedBy : string,
+    trx? : Transaction<DB>
 ) : Promise<TWorkspaceMember | undefined> => {
 
-    const {
-        client,
-        release,
-        internalClient
-    } = await getPoolClient(postgreClient)
+    const query = async ( trx : Transaction<DB> ) => {
+        await trx.insertInto( "workspace.workspace_members" )
+            .values({
+                workspace_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`,
+                user_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
+                workspace_role : workspaceRole,
+                invited_by : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${invitedBy})`
+            })
+            .executeTakeFirstOrThrow()
 
-    try {
+        return await trx.selectFrom( "workspace.workspace_members" )
+            .leftJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
+            .leftJoin( "tp_user.user_profile_photo", "tp_user.user_profile_photo.user_id", "workspace.workspace_members.user_id" )
+            .select( eb => [
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.workspace_id)`.as( "workspace_id" ),
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.user_id)`.as( "user_id" ),
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.invited_by)`.as( "invited_by" ),
+                "workspace.workspace_members.workspace_role",
+                "workspace.workspace_members.joined_at",
+                "tp_user.user.email",
+                "tp_user.user.firstname",
+                "tp_user.user.lastname",
+                eb.case()
+                    .when( "tp_user.user_profile_photo.photo_file_name", "is not", null )
+                    .then( jsonBuildObject({
+                        photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
+                        image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    }) )
+                    .else( sql<null>`null` )
+                    .end()
+                    .as( "profile_photo" )
+            ])
+            .where( "workspace.workspace_members.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+            .executeTakeFirstOrThrow()
+    }
 
-        if ( internalClient ) await client.query("BEGIN")
+    if ( trx ) {
+        return await query( trx )
+    } else {
+        return await taskprioKysely.transaction().execute( async trx1 => {
+            return await query( trx1 )
+        } )
+    }
 
-        await client.query({
-            text : `--sql
-                INSERT INTO workspace."workspace_members" (
-                    workspace_id,
-                    user_id,
-                    workspace_role,
-                    invited_by
-                ) VALUES ($1, $2, $3, $4)
-            `,
-            values : [
-                workspace_id,
-                user_id,
-                workspace_role,
-                invited_by
-            ]
-        })
 
-        await client.query({
-            text : `--sql
-                UPDATE invitation."workspace_invitation" 
-                SET accepted = TRUE 
-                WHERE workspace_id = $1 
-                AND email = $2
-            `,
-            values : [
-                workspace_id,
-                email
-            ]
-        })
+}
 
-        if ( internalClient ) await client.query("COMMIT")
+// export const addWorkspaceMember = databaseFunctionWrapper(
+//     async (
+//         client,
+//         workspaceId : string,
+//         userId : string,
+//         email : string,
+//         workspaceRole : EWorkspaceRole,
+//         invitedBy : string
+//     ) : Promise<TWorkspaceMember | undefined> => {
 
-        const workspaceMember = await getWorkspaceMember( workspace_id, user_id, client )
+//         await client.query({
+//             text : `--sql
+//                 INSERT INTO workspace."workspace_members" (
+//                     workspace_id,
+//                     user_id,
+//                     workspace_role,
+//                     invited_by
+//                 ) VALUES (
+//                     public.detect_and_convert_to_uuid($1),
+//                     public.detect_and_convert_to_uuid($2),
+//                     $3,
+//                     public.detect_and_convert_to_uuid($4)
+//                 )
+//             `,
+//             values : [
+//                 workspaceId,
+//                 userId,
+//                 workspaceRole,
+//                 invitedBy
+//             ]
+//         })
 
-        return workspaceMember
+//         await client.query({
+//             text : `--sql
+//                 UPDATE invitation."workspace_invitation" 
+//                 SET accepted = TRUE 
+//                 WHERE workspace_id = public.detect_and_convert_to_uuid($1) 
+//                 AND email = $2
+//             `,
+//             values : [
+//                 workspaceId,
+//                 email
+//             ]
+//         })
 
-    } catch (error) {
-        if ( internalClient ) await client.query("ROLLBACK")
-        console.log(error)
-        throw error
-    } finally {
-        release()
+//         const workspaceMember = await getWorkspaceMember( workspaceId, userId, client )
+
+//         return workspaceMember
+
+//     },
+//     EDatabaseFunctionWrapperMode.TRANSACTION
+// )
+
+export const updateWorkspaceMemberRole = async (
+    workspaceId : string,
+    memberId : string,
+    role : EWorkspaceRole,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+        await trx.updateTable( "workspace.workspace_members" )
+            .set({
+                workspace_role : role
+            })
+            .where( "workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${memberId})` )
+            .executeTakeFirstOrThrow()
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
     }
 
 }

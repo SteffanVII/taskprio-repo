@@ -27,8 +27,8 @@ export const testDatabaseConnection = async () => {
 
     try {
         const result = await client.query("SELECT CURRENT_TIMESTAMP")
-        console.log(`Database time - ${result.rows[0].current_timestamp}`)
-        console.log(`Database connection successful!`)
+        console.log(`Database time - ${result.rows[0].current_timestamp} 🗄️  ✅`)
+        console.log(`Database connection successful! 🗄️  ✅`)
     } catch (error) {
         throw error        
     } finally {
@@ -72,6 +72,11 @@ export const getPoolClient = async ( postgreClient? : PoolClient ) : Promise<{
     };
 }
 
+export enum EDatabaseFunctionWrapperMode {
+    TRANSACTION = 1,
+    DEFAULT = 0
+}
+
 /**
  * 
  * @param {Function} originalFunction The function that will be wrapped and returned. Note : If you provide a pool client when calling the wrapped function, you need to handle the transaction yourself. Like calling BEGIN and COMMIT.
@@ -79,8 +84,8 @@ export const getPoolClient = async ( postgreClient? : PoolClient ) : Promise<{
  * @returns {Function} The wrapped function.
  */
 export const databaseFunctionWrapper = <TArgs extends any[], TReturn>(
-    originalFunction : ( client : PoolClient, ...args : TArgs ) => Promise<TReturn>,
-    transaction? : boolean
+    triggerFunction : ( client : PoolClient, ...args : TArgs ) => Promise<TReturn>,
+    mode? : EDatabaseFunctionWrapperMode
 ) => {
 
     return async (
@@ -90,7 +95,7 @@ export const databaseFunctionWrapper = <TArgs extends any[], TReturn>(
         const lastArg = args[args.length - 1];
         let poolClient : PoolClient | undefined = undefined;
 
-        if ( (lastArg as PoolClient).query !== undefined ) {
+        if ( lastArg && (lastArg as PoolClient).query !== undefined ) {
             poolClient = args.pop() as PoolClient;
         }
 
@@ -104,11 +109,11 @@ export const databaseFunctionWrapper = <TArgs extends any[], TReturn>(
 
         try {
 
-            if ( transaction ) await begin() 
+            if ( mode === EDatabaseFunctionWrapperMode.TRANSACTION ) await begin() 
 
-            const result = await originalFunction( client, ...args as unknown as TArgs )
+            const result = await triggerFunction( client, ...args as unknown as TArgs )
 
-            if ( transaction ) await commit()
+            if ( mode === EDatabaseFunctionWrapperMode.TRANSACTION ) await commit()
 
             return result;
 
@@ -124,28 +129,43 @@ export const databaseFunctionWrapper = <TArgs extends any[], TReturn>(
 
 }
 
-export class ClausesOrganizer {
+export enum EDatabaseFunction {
+    UUID_TO_BASE64 = "public.uuid_to_base64",
+    BASE64_TO_UUID = "public.base64_to_uuid",
+    DETECT_AND_CONVERT_TO_UUID = "public.detect_and_convert_to_uuid",
+    DETECT_AND_CONVERT_TO_UUID_ARRAY = "public.detect_and_convert_to_uuid_array"
+}
 
+export class ClausesOrganizer {
     private clauses : string[] = [];
     private values : any[] = []
+}
 
+type TClausesOrganizerClause = {
+    propertyName : string,
+    function? : EDatabaseFunction
 }
 
 export const clausesOrganizer = () : {
-    clauses : string[],
+    clauses : TClausesOrganizerClause[],
     values : any[],
-    push : ( propertyName : string, value : any ) => void,
+    push : ( propertyName : string, value : any, clauseFunction? : EDatabaseFunction ) => void,
+    getLastIndex : () => number,
     joinClauses : () => string,
     joinValues : () => string,
     joinClausesAndValueIndex : ( condition? : string, offset? : number ) => string,
 } => {
 
-    const clauses : string[] = [];
+    const clauses : TClausesOrganizerClause[] = [];
     const values : any[] = [];
 
-    const push = ( propertyName : string, value : any ) => {
-        clauses.push(`${propertyName}`)
+    const push = ( propertyName : string, value : any, clauseFunction? : EDatabaseFunction ) => {
+        clauses.push({ propertyName, function : clauseFunction })
         values.push(value)
+    }
+
+    const getLastIndex = () => {
+        return values.length + 1
     }
 
     const joinClauses = () => {
@@ -158,7 +178,7 @@ export const clausesOrganizer = () : {
 
     const joinClausesAndValueIndex = ( condition? : string, offset? : number ) => {
         return clauses.map( ( clause, index ) => {
-            return `${clause} = $${index + (offset || 0) + 1}`
+            return `${clause.propertyName} = ${ clause.function ? `${clause.function}($${index + (offset || 0) + 1})` : `$${index + (offset || 0) + 1}` }`
         } ).join( condition ? ` ${condition} ` : ', ' )
     }
 
@@ -166,6 +186,7 @@ export const clausesOrganizer = () : {
         clauses,
         values,
         push,
+        getLastIndex,
         joinClauses,
         joinValues,
         joinClausesAndValueIndex

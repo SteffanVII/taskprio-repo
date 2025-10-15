@@ -4,21 +4,27 @@ import { cn } from "@/lib/utils"
 import { useGetTask } from "@/services/private/task/query"
 import { useGetTaskboardSections } from "@/services/private/tasksection/query"
 import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
-import { X } from "lucide-react"
+import { Trash2, X } from "lucide-react"
 import { useLayoutEffect, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
-import Spinner from "../Spinner"
+import Spinner from "../../Spinner"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { useDebounce } from "use-debounce"
-import { useUpdateTaskPrimitiveFields } from "@/services/private/task/mutation"
-import TaskAssigner from "../shared/task/TaskAssigner"
+import { useMoveTaskToTrash, useUpdateTaskPrimitiveFields } from "@/services/private/task/mutation"
+import TaskAssigner from "../../shared/task/TaskAssigner"
 import { TUpdateTaskPrimitiveFieldsPayload } from "@/services/private/task/types"
-import TaskEstimateInput from "../shared/task/TaskEstimateInput"
-import TaskTimeLogger from "../shared/task/TaskTimeLogger"
+import TaskEstimateInput from "../../shared/task/TaskEstimateInput"
+import TaskTimeLogger from "../../shared/task/TaskTimeLogger"
 import { MakeOptional } from "@/lib/utils/shared"
 import { TTaskTimeLog } from "@repo/taskprio-types/src"
+import TaskTagEditor from "../../shared/task/TaskTagEditor"
+import CommentSection_TaskboardTaskDialog from "./CommentSection_TaskboardTaskDialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import ContentEditor_TaskboardTaskDialog from "./ContentEditor_TaskboardTaskDialog"
+import { toast } from "sonner"
+import getHexLuminance from "@/lib/utils/hexColorLuminance"
 
 export const TaskboardTaskDialog = () => {
 
@@ -36,6 +42,8 @@ export const TaskboardTaskDialog = () => {
 
     const taskIdExists = task_id !== undefined && task_id !== ""
 
+    const [ moveToTrashReady, setMoveToTrashReady ] = useState<boolean>( false )
+
     const [ selectedTaskSection, setSelectedTaskSection ] = useState<string>( selectedTask?.task_section_id ?? "" )
     
     const [ dataLoaded, setDataLoaded ] = useState<boolean>( false )
@@ -52,7 +60,8 @@ export const TaskboardTaskDialog = () => {
 
     const {
         data : task,
-        isLoading : isLoadingTask
+        isLoading : isLoadingTask,
+        isFetching : isFetchingTask
     } = useGetTask({
         pathParameter : {
             task_id : task_id
@@ -75,6 +84,26 @@ export const TaskboardTaskDialog = () => {
     const {
         mutateAsync : updateTaskPrimitiveFieldsMutateAsync
     } = useUpdateTaskPrimitiveFields()
+
+    const {
+        mutateAsync : moveTaskToTrashTrigger,
+        isPending : moveTaskToTrashIsPending
+    } = useMoveTaskToTrash({
+        onSuccess : () => {
+            toast.success("Task moved to trash")
+            setMoveToTrashReady( false )
+            closeHandler()
+        }
+    })
+
+    const moveTaskToTrashHandler = async () => {
+        if ( !task ) return
+        await moveTaskToTrashTrigger({
+            params : {
+                task_id : task.task_id
+            }
+        })
+    }
 
     const closeHandler = () => {
         navigate( pathname.split("/").slice(0, -1).join("/") )
@@ -103,14 +132,6 @@ export const TaskboardTaskDialog = () => {
 
             if ( Object.keys( body ).length > 0 ) {
                 if ( !selectedTask ) return
-                updateGlobalsStore({
-                    selectedTask : {
-                        ...selectedTask,
-                        task_title : debounceTaskTitle,
-                        task_description : debounceTaskDescription,
-                        task_estimate : debounceTaskEstimate
-                    }
-                })
                 updateTaskPrimitiveFieldsMutateAsync({
                     task_id : task_id!,
                     body
@@ -155,14 +176,14 @@ export const TaskboardTaskDialog = () => {
             <DialogContent
                 noCloseButton={ true }
                 className={cn(
-                    ` !max-w-screen !max-h-screen w-fit h-fit `,
-                    ` shadow-none !border-none !bg-transparent !p-0 `
+                    ` !max-w-screen !max-h-[calc(100vh-2rem)] w-fit h-fit `,
+                    ` shadow-none !border-none !bg-transparent !p-0 !outline-none `
                 )}
             >
                 <div
                     className={cn(
                         // ` absolute bottom-0 right-[1rem] `,
-                        ` w-[80rem] h-fit min-h-[60rem] max-h-screen `,
+                        ` w-[80rem] h-fit min-h-[60rem] max-h-[calc(100vh-2rem)] `,
                         ` flex flex-col `,
                         ` bg-background border border-border rounded-md shadow `,
                         ` animate-in fade-in slide-in-from-bottom-60 duration-200 ease-out `,
@@ -187,7 +208,7 @@ export const TaskboardTaskDialog = () => {
                     // }}
                 >
                     {
-                        isLoadingTask || isLoadingTaskboardSections ? 
+                        isLoadingTask || isFetchingTask || isLoadingTaskboardSections ? 
                         <div className=" size-full p-8 flex items-center justify-center " >
                             <Spinner size="md"/>
                         </div>
@@ -198,7 +219,6 @@ export const TaskboardTaskDialog = () => {
                                 className={cn(
                                     ` w-full h-fit p-2 `,
                                     ` flex gap-2 items-center  `,
-                                    ` border-b border-border `
                                 )}
                             >
                                 <Button
@@ -206,7 +226,43 @@ export const TaskboardTaskDialog = () => {
                                     size={"icon"}
                                     onClick={closeHandler}
                                 ><X className=" size-4 " /></Button>
-                                <div
+                                <Dialog
+                                    open={moveToTrashReady}
+                                    onOpenChange={ open => {
+                                        setMoveToTrashReady( open )
+                                    }}
+                                >
+                                    <DialogTrigger asChild >
+                                        <Button
+                                            variant={"ghost"}
+                                            size={"icon"}
+                                            className="ml-auto text-destructive"
+                                        >
+                                            <Trash2/>
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Move to trash?</DialogTitle>
+                                            <DialogDescription>
+                                                This task will be moved to the trash. They can still be restored from the trash before 30 days.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <DialogFooter>
+                                            <Button
+                                                variant={"destructive"}
+                                                isLoading={moveTaskToTrashIsPending}
+                                                onClick={moveTaskToTrashHandler}
+                                            >
+                                                Yes, move to trash
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+
+                                {/* TODO : Create the task section switcher */}
+
+                                {/* <div
                                     className={` flex items-center gap-2 ml-auto `}
                                 >
                                     <p className=" font-bold " >{selectedTaskboard?.task_board_name}</p> /
@@ -231,65 +287,89 @@ export const TaskboardTaskDialog = () => {
                                             }
                                         </SelectContent>
                                     </Select>
-                                </div>
+                                </div> */}
                             </div>
 
                             {/* Body */}
                             <div
                                 className={cn(
-                                    ` relative h-full flex grow gap-2 `
+                                    ` relative h-full grid grow `,
+                                    ` min-h-0 `
                                 )}
+                                style={{
+                                    gridTemplateColumns : "1fr min-content min-content"
+                                }}
                             >
                                 {/* Main Body */}
-                                <div
-                                    className={cn(
-                                        ` h-full grow `
-                                    )}
+                                <ScrollArea
+                                    className="h-full grow min-h-0 bg-accent rounded-tr-lg"
                                 >
                                     <div
                                         className={cn(
-                                            ` p-4 `,
-                                            ` flex flex-col gap-4 `
+                                            `flex flex-col h-full grow `
                                         )}
                                     >
-                                        <Input
+                                        <div
                                             className={cn(
-                                                ` h-fit !p-4 !py-2 `,
-                                                ` !text-2xl font-bold `,
-                                                ` border-none shadow-none `
+                                                ` p-4 `,
+                                                ` flex flex-col gap-4`
                                             )}
-                                            placeholder="Task Title"
-                                            value={ taskTitle }
-                                            onChange={ ( e ) => {
-                                                setTaskTitle( e.target.value )
-                                            } }
-                                        />
-
-                                        <Textarea
-                                            className={cn(
-                                                ` !p-4 !py-2 `,
-                                                ` border-none shadow-none `
-                                            )}
-                                            placeholder="Description"
-                                            value={ taskDescription || "" }
-                                            onChange={ ( e ) => {
-                                                setTaskDescription( e.target.value === "" ? null : e.target.value )
-                                            } }
+                                        >
+                                            <div
+                                                className={cn(
+                                                    `w-full flex gap-4 `
+                                                )}
+                                            >
+                                                <div
+                                                    className={cn(
+                                                        `w-fit`,
+                                                        `p-4 py-2 rounded-md `,
+                                                        `bg-primary text-primary-foreground`
+                                                    )}
+                                                    style={{
+                                                        backgroundColor : task?.project_color,
+                                                    }}
+                                                >
+                                                    <p className={cn(
+                                                        " text-lg font-semibold ",
+                                                        task?.project_color && getHexLuminance(task.project_color ) > 0.4 ? "text-black" : "text-white"
+                                                    )} >{task?.project_abbreviation.toUpperCase()}-{task?.task_depth}</p>
+                                                </div>
+                                                <Input
+                                                    className={cn(
+                                                        ` h-fit !p-4 !py-2 `,
+                                                        ` !text-2xl font-bold `,
+                                                        ` border-none shadow-none `
+                                                    )}
+                                                    placeholder="Task Title"
+                                                    value={ taskTitle }
+                                                    onChange={ ( e ) => {
+                                                        setTaskTitle( e.target.value )
+                                                    } }
+                                                />
+                                            </div>
+                                            <ContentEditor_TaskboardTaskDialog
+                                                content={ task?.task_description === undefined || task?.task_description === null ? "" : task?.task_description }
+                                                onContentChange={ setTaskDescription }
+                                            />
+                                        </div>
+                                        <CommentSection_TaskboardTaskDialog
+                                            taskId={ task_id! }
                                         />
                                     </div>
-                                </div>
+                                </ScrollArea>
 
-                                <div className=" w-[1px] bg-border" ></div>
+                                {/* <div className=" w-[1px] bg-border" ></div> */}
 
                                 {/* Right Body */}
                                 <div
                                     className={cn(
-                                        ` w-[20rem] p-2 pl-1 `,
+                                        ` w-[20rem] p-4 `,
                                         ` flex flex-col gap-4 `
                                     )}
                                 >
                                     <div
-                                        className=" flex justify-between gap-2 p-2"
+                                        className=" flex justify-between gap-2 p-2 "
                                     >
                                         <p className=" text-sm " >Assignees</p>
                                         <TaskAssigner
@@ -320,6 +400,21 @@ export const TaskboardTaskDialog = () => {
                                             timeLogs={ timeLogs }
                                             setTimeLogs={ setTimeLogs }
                                         />
+                                    </div>
+                                    <div
+                                        className=" grid gap-8 p-2 "
+                                        style={{
+                                            gridTemplateColumns : "min-content 1fr"
+                                        }}
+                                    >
+                                        <p className=" text-sm " >Tags</p>
+                                        {
+                                            task && (
+                                                <TaskTagEditor
+                                                    task={ task }
+                                                />
+                                            )
+                                        }
                                     </div>
                                 </div>
                             </div>

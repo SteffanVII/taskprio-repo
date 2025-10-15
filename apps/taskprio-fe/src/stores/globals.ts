@@ -1,4 +1,4 @@
-import { TProject, TUserSecure } from "@repo/taskprio-types/src/index"
+import { EProjectRole, EWorkspaceRole, TProject, TUserAvailableTaskTodo, TUserSecure, TUserTaskTodoState } from "@repo/taskprio-types/src/index"
 import { TTask, TTaskForCardView } from "@repo/taskprio-types/src/index"
 import { TTaskboard } from "@repo/taskprio-types/src/index"
 import { TTaskSection } from "@repo/taskprio-types/src/index"
@@ -13,9 +13,15 @@ export type TTaskboardTaskDrag = {
     taskboardTask : TTaskForCardView | null
 }
 
+export type TTaskboardTaskTodoDrag = {
+    taskboardTaskTodo : TUserTaskTodoState | TUserAvailableTaskTodo | null
+}
+
 export type TGlobalsStore = {
     authenticated : boolean,
     user : TUserSecure | null,
+    workspaceRole : EWorkspaceRole | null,
+    projectRole : EProjectRole | null,
 
     invitationRecipient : TUserSecure | null,
 
@@ -28,12 +34,18 @@ export type TGlobalsStore = {
     noProjects : boolean,
 
     taskboardSectionDrag : TTaskboardSectionDrag,
-    taskboardTaskDrag : TTaskboardTaskDrag
+    taskboardTaskDrag : TTaskboardTaskDrag,
+
+    taskboardTaskTodoDrag : TTaskboardTaskTodoDrag,
+
+    taskTodoPageShowAvailableTasks : boolean
 }
 
-const GlobalsStore = new Store<TGlobalsStore>({
+const initialState : TGlobalsStore = {
     authenticated : false,
     user : null,
+    workspaceRole : null,
+    projectRole : null,
 
     invitationRecipient : null,
 
@@ -50,8 +62,15 @@ const GlobalsStore = new Store<TGlobalsStore>({
     },
     taskboardTaskDrag : {
         taskboardTask : null
-    }
-})
+    },
+    taskboardTaskTodoDrag : {
+        taskboardTaskTodo : null
+    },
+
+    taskTodoPageShowAvailableTasks : false
+}
+
+const GlobalsStore = new Store<TGlobalsStore>(initialState)
 
 export const updateGlobalsStore = ( store : Partial<TGlobalsStore> ) => {
     GlobalsStore.setState( (prev) => ({
@@ -61,27 +80,7 @@ export const updateGlobalsStore = ( store : Partial<TGlobalsStore> ) => {
 }
 
 export const resetGlobalsStore = () => {
-    GlobalsStore.setState( () => ({
-        authenticated : false,
-        user : null,
-
-        invitationRecipient : null,
-
-        selectedWorkspace : null,
-        selectedProject : null,
-        selectedTaskboard : null,
-        selectedTask : null,
-
-        projectsIsLoading : false,
-        noProjects : false,
-
-        taskboardSectionDrag : {
-            taskboardSection : null
-        },
-        taskboardTaskDrag : {
-            taskboardTask : null
-        }
-    }) )
+    GlobalsStore.setState( () => (initialState) )
 }
 
 export const useGlobalsStore = () => {

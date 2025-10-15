@@ -1,3 +1,7 @@
+import { Selectable } from "kysely";
+import { ProjectProjectTags } from "../../db";
+import { TTask } from "../task/types";
+
 
 export type TCreateProjectTagRequestBody = {
     name : string,
@@ -19,9 +23,6 @@ export type TDeleteProjectTagResponse = TTag;
 
 // Tag
 
-export type TTag = {
-    tag_id : string,
-    tag_name : string,
-    tag_color : string,
-    project_id : string,
-}
+export type TTag = Selectable<ProjectProjectTags>
+
+export type TTaskTag = Omit<TTag, "project_id"> & Pick<TTask, "task_id">

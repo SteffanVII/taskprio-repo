@@ -10,7 +10,7 @@ const ProjectPage = () => {
             <MainDashboardHeader/>  
             <div
                 className={cn(
-                    ` grow bg-accent `
+                    `relative max-h-full min-h-0 grow bg-accent `
                 )}
             >
                 <Outlet/>

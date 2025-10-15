@@ -5,8 +5,12 @@ import { LogOut } from "lucide-react";
 import LogoutTrigger from "../shared/LogoutTrigger";
 import { useGlobalsStore } from "@/stores/globals";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router";
+import UserAvatar from "../shared/UserAvatar";
 
 const UserPopoverMenu = () => {
+
+    const navigate = useNavigate()
 
     const {
         user
@@ -14,16 +18,11 @@ const UserPopoverMenu = () => {
 
     return (
         <Popover>
-            <PopoverTrigger asChild >
-                <span
-                    onClick={ e => {
-                        e.stopPropagation()
-                    } }
-                    className={cn(
-                        ` flex size-[2em] rounded-full bg-gray-400 cursor-pointer `
-                    )}
-                >
-                </span>
+            <PopoverTrigger>
+                <UserAvatar
+                    user_id_or_email={user?.email || ""}
+                    disableHoverCard={true}
+                />
             </PopoverTrigger>
             <PopoverContent
                 className={cn(
@@ -37,8 +36,13 @@ const UserPopoverMenu = () => {
                 >
                     <div
                         className={cn(
-                            ` flex flex-col gapspace-y-2 `
+                            ` flex flex-col p-2 rounded-md `,
+                            ` transition-colors cursor-pointer `,
+                            ` hover:bg-muted `
                         )}
+                        onClick={ () => {
+                            navigate( "/p/profile" )
+                        } }
                     >
                         <p className=" font-medium " >{user?.firstname} {user?.lastname}</p>
                         <p className=" text-sm text-muted-foreground " >{user?.email}</p>

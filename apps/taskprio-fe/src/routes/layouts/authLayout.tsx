@@ -10,25 +10,29 @@ const AuthLayout = () => {
     const location = useLocation()
     const [ searchParams ] = useSearchParams()
 
+    const onAuthenticateSuccess = () => {
+        updateGlobalsStore({
+            authenticated : true
+        })
+        if ( searchParams.get("invite_token") ) return
+        if ( location.pathname === "/" || location.pathname === "/login" || location.pathname === "/register" ) {
+            navigate("/p/w")
+        }
+    }
+
+    const onAuthenticateError = () => {
+        updateGlobalsStore({
+            authenticated : false
+        })
+        if ( location.pathname === "/accept" ) return
+        navigate("/login")
+    }
+
     const {
         mutateAsync : authenticate
     } = useAuthenticate(
-        () => {
-            updateGlobalsStore({
-                authenticated : true
-            })
-            if ( searchParams.get("invite_token") ) return
-            if ( location.pathname === "/" || location.pathname === "/login" || location.pathname === "/register" ) {
-                navigate("/p/w")
-            }
-        },
-        () => {
-            updateGlobalsStore({
-                authenticated : false
-            })
-            if ( location.pathname === "/p/accept" ) return
-            navigate("/login")
-        }
+        onAuthenticateSuccess,
+        onAuthenticateError
     )
 
     useEffect( () => {

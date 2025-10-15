@@ -1,5 +1,6 @@
 export enum EWorkspaceRole {
-    OWNER,
-    MEMBER,
-    GUEST
+    OWNER = 1,
+    MEMBER = 2,
+    GUEST = 3,
+    ADMIN = 4
 }

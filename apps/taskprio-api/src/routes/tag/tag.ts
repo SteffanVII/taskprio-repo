@@ -150,6 +150,7 @@ export const registerTagRoutes = ( router : Router ) => {
                 res.status(200).json(deletedTag)
 
             } catch (error) {
+                console.log(error)
                 // 500
                 res.status(500).json({
                     message : "Internal server error"

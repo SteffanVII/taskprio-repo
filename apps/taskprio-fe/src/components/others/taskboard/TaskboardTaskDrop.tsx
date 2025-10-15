@@ -59,11 +59,12 @@ const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ({ task_section_id, dis
             className={cn(
                 ` relative `,
                 ` flex items-center `,
-                ` h-[1rem] w-full pointer-events-none `,
+                ` h-[1rem] w-full min-h-0 pointer-events-none `,
                 draggedOver && ` h-[6rem] `,
-                fullSize && ` h-full `,
+                fullSize && `grow h-[40rem] `,
             )}
         >
+            {/* <p className="w-full text-right" >{display_order}</p> */}
             <div
                 className={cn(
                     // ` border border-red-300 `,

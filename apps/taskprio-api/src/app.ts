@@ -5,13 +5,13 @@ import { createPostgrePool, getPostgrePool, testDatabaseConnection } from "./dat
 import reigsterAuthenticationRoutes from "./routes/authentication/authentication.js";
 import cookieParser from "cookie-parser";
 import registerProjectRoutes from "./routes/project/project.js";
-import { authenticateRequestMiddleware } from "./middlewares/authentication.js";
+import { authenticateRequestMiddleware, verifyProjectMemberMiddleware } from "./middlewares/authentication.js";
 import { registerWorkspaceRoutes } from "./routes/workspace/workspace.js";
 import { registerTaskSectionRoutes } from "./routes/tasksection/tasksection.js";
 import { registerTaskboardRoutes } from "./routes/taskboard/taskboard.js";
 import { registerTaskRoutes } from "./routes/task/task.js";
 import http from "http";
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 import { registerWebSocketLogic } from "./websocket/index.js";
 import { WebSocketConnectionsManagerSimple } from "./websocket/connectionsManager.js";
 import { OAuth2Client } from "google-auth-library";
@@ -19,6 +19,12 @@ import { Resend } from "resend";
 import { registerInvitationPrivateRoutes, registerInvitationPublicRoutes } from "./routes/invitation/invitation.js";
 import { registerTagRoutes } from "./routes/tag/tag.js";
 import { redisConnect } from "./redis/index.js";
+import { createTaskprioKyselyConnection } from "./database/kysely/kysely.js";
+import { initAWSS3, testAWSS3Connection } from "./aws/index.js";
+import { registerProfileRoutes } from "./routes/profile/profile.js";
+import multer from "multer";
+import { registerToDoRoutes } from "./routes/todo/todo.js";
+
 dotenv.config();
 
 const resendApiKey = process.env.RESEND_API_KEY
@@ -45,13 +51,29 @@ APP.use(express.urlencoded({ extended : true }));
 
 // Websocket server
 export const SERVER = http.createServer(APP)
-// const wss = new WebSocketServer({ server : SERVER })
+const wss = new WebSocketServer({ server : SERVER })
 // export const wsConnectionsManager = new WebSocketConnectionsManager( wss );
-// export const wsConnectionsManagerSimple = new WebSocketConnectionsManagerSimple( wss )
+export const wsConnectionsManagerSimple = new WebSocketConnectionsManagerSimple( wss )
 
 // Create the pool for postgre clients
-// createPostgrePool()
-// testDatabaseConnection()
+createPostgrePool()
+await testDatabaseConnection()
+await createTaskprioKyselyConnection()
+
+// Initialize AWS S3
+initAWSS3()
+await testAWSS3Connection()
+
+// Mount the websocket
+registerWebSocketLogic(wss, wsConnectionsManagerSimple)
+
+// // Connect to redis
+// redisConnect()
+
+// Initialize multer
+export const multerInstance = multer({
+    storage : multer.memoryStorage()
+})
 
 // Routes registration
 APP.get( "/", ( req : Request, res : Response ) => {
@@ -81,7 +103,7 @@ registerTaskSectionRoutes(taskSectionRoutes)
 
 // Task routes
 const taskRoutes = express.Router()
-registerTaskRoutes(taskRoutes)
+registerTaskRoutes(taskRoutes, wsConnectionsManagerSimple)
 
 // Invitation private routes
 const invitationRoutes = express.Router()
@@ -95,6 +117,14 @@ registerInvitationPublicRoutes(invitationPublicRoutes)
 const tagRoutes = express.Router()
 registerTagRoutes(tagRoutes)
 
+// Profile routes
+const profileRoutes = express.Router()
+registerProfileRoutes(profileRoutes)
+
+// Todo routes
+const toDoRoutes = express.Router()
+registerToDoRoutes(toDoRoutes)
+
 // Mount the private routes
 privateRoutes.use("/workspace", workspaceRoutes)
 privateRoutes.use("/project", projectRoutes)
@@ -103,21 +133,14 @@ privateRoutes.use("/tasksection", taskSectionRoutes)
 privateRoutes.use("/task", taskRoutes)
 privateRoutes.use("/invitation", invitationRoutes)
 privateRoutes.use("/tag", tagRoutes)
+privateRoutes.use("/profile", profileRoutes)
+privateRoutes.use("/todo", toDoRoutes)
 APP.use("/private", privateRoutes)
 APP.use("/invitation", invitationPublicRoutes)
 
-// Mount the websocket
-// registerWebSocketLogic(wss)
-
-// Connect to redis
-// redisConnect()
-
 // Start the server
-// APP.listen(PORT, () => {
-//     console.log(` Server is running on port ${PORT} `)
-// })
 SERVER.listen(PORT, () => {
-    console.log(` Server is running on port ${PORT} `)
+    console.log(`Server is running on port ${PORT} 🚀`)
 })
 
 process.on('SIGINT', gracefulShutdown);
@@ -126,15 +149,14 @@ process.on('SIGTERM', gracefulShutdown);
 async function gracefulShutdown() {
     console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
 
-    // wss.clients.forEach( client => {
-    //     client.close()
-    // } )
-    // wss.close()
+    // Close websocket connections
+    wss.clients.forEach( client => {
+        client.close()
+    } )
+    wss.close()
 
-    // await getPostgrePool()?.end()
-
-    console.log('Active handles:', process._getActiveHandles());
-    console.log('Active requests:', process._getActiveRequests());
+    // Close postgre pool
+    await getPostgrePool()?.end()
 
     SERVER.close( () => {   
         console.log( "Server closed" );

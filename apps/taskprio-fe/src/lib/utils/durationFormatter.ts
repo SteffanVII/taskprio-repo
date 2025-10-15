@@ -87,3 +87,29 @@ export const formatDurationString = (minutes: number | null): string => {
     
     return parts.join(' ');
 }
+
+// Format seconds to text like "1h 2m 3s" (max unit is hours)
+export const formatTaskTodoTimeSeconds = (seconds: number | null): string => {
+    if (!seconds || seconds <= 0) return "0s";
+    
+    let remaining = seconds;
+    const parts: string[] = [];
+    
+    // Time units in seconds: h, m, s
+    const timeUnitsInSeconds = {
+        h: 3600,  // hour = 3600 seconds
+        m: 60,    // minute = 60 seconds
+        s: 1      // second = 1 second
+    };
+    
+    // Process in order: h, m, s
+    for (const [unit, unitSeconds] of Object.entries(timeUnitsInSeconds)) {
+        if (remaining >= unitSeconds) {
+            const count = Math.floor(remaining / unitSeconds);
+            parts.push(`${count}${unit}`);
+            remaining -= count * unitSeconds;
+        }
+    }
+    
+    return parts.join(' ');
+}

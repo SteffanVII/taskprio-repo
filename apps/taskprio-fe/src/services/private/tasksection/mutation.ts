@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TCreateTaskboardSectionPayload, TCreateTaskboardSectionResponse, TGetTaskboardSectionsResponse, TUpdateTaskboardSectionPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { useGlobalsStore } from "@/stores/globals"
+import { QueryKeys } from "@/services/enum"
 
 export const useCreateTaskboardSection = () => {
 
@@ -17,7 +18,7 @@ export const useCreateTaskboardSection = () => {
         },
         onSuccess : ( data, variable ) => {
             queryClient.setQueryData(
-                [ "get_taskboard_sections", variable.body.task_board_id, true ],
+                [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, variable.body.task_board_id, true ],
                 ( oldData : TGetTaskboardSectionsResponse ) => {
                     return [ ...oldData, {
                         ...data,
@@ -47,7 +48,7 @@ export const useUpdateTaskboardSection = () => {
         },
         onMutate : async ( payload : TUpdateTaskboardSectionPayload ) => {
             queryClient.setQueryData(
-                [ "get_taskboard_sections", selectedTaskboard?.task_board_id, true ],
+                [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard?.task_board_id, true ],
                 ( oldData : TGetTaskboardSectionsResponse ) => {
                     const newData = oldData.map( ( taskSection ) => {
                         if ( taskSection.task_section_id === payload.task_section_id ) {

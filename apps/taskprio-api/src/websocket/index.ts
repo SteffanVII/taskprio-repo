@@ -18,9 +18,6 @@ export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsMana
         const cookies = cookie.parse(req.headers.cookie || "")
         const accessToken = cookies["access_token"]
 
-        console.log(accessToken);
-        console.log(process.env.JSONWEBTOKEN_SECRET);
-
         const decodedToken = jwt.verify(accessToken, process.env.JSONWEBTOKEN_SECRET) as TJWTPayload;
 
         // Close the connection if the user_id doesnt exists
@@ -49,6 +46,8 @@ export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsMana
             wsConnectionsManagerSimple.removeConnection( decodedToken.user_id )
             console.log("Client disconnected")
         } )
+
+        console.log("Client connected", decodedToken.user_id);
 
     })
 

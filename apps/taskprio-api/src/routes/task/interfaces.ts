@@ -1,5 +1,11 @@
-import { TArrangeTaskRequestBody, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
+import { TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TArrangeTaskRequestBody, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRestoreTaskFromTrashRequestParams, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
 import { IAuthenticatedProjectMemberRequest, IAuthenticatedRequest } from "../../middlewares/interfaces.js"
+
+export interface IGetTaskRequest extends IAuthenticatedRequest {
+    params : {
+        task_id : string
+    }
+}
 
 export interface ICreateTaskRequest extends IAuthenticatedProjectMemberRequest {
     body : {
@@ -41,4 +47,35 @@ export interface ILogTaskTimeRequest extends IAuthenticatedRequest {
     body : {
         time_spent : number
     }
+}
+
+export interface IAddTaskTagRequest extends IAuthenticatedRequest {
+    body : {
+        task_id : string,
+        tag_id : string
+    }
+}
+
+export interface IRemoveTaskTagRequest extends IAuthenticatedRequest {
+    body : {
+        task_id : string,
+        tag_id : string
+    }
+}
+
+export interface IAddTaskCommentRequest extends IAuthenticatedProjectMemberRequest {
+    params : TAddTaskCommentRequestPathParams,
+    body : TAddTaskCommentRequestBody
+}
+
+export interface IGetTaskCommentsRequest extends IAuthenticatedProjectMemberRequest {
+    params : TGetTaskCommentsRequestPathParams
+}
+
+export interface IMoveTaskToTrashRequest extends IAuthenticatedProjectMemberRequest {
+    params : TMoveTaskToTrashRequestParams
+}
+
+export interface IRestoreTaskFromTrashRequest extends IAuthenticatedProjectMemberRequest {
+    params : TRestoreTaskFromTrashRequestParams
 }

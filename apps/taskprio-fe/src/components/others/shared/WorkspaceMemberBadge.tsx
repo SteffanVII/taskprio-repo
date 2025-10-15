@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
-import { EWorkspaceRole } from "@/lib/enums"
 import { cn } from "@/lib/utils"
+import { EWorkspaceRole } from "@repo/taskprio-types/src"
 import React from "react"
 
 export type TWorkspaceMemberBadgeProps = {
@@ -49,6 +49,20 @@ const WorkspaceMemberBadge : React.FC<TWorkspaceMemberBadgeProps> = ({
                 )}
             >
                 Workspace Guest
+            </Badge>
+        )
+    }
+
+    if ( role === EWorkspaceRole.ADMIN ) {
+        return (
+            <Badge
+                variant="outline"
+                className={cn(
+                    ` border-none `,
+                    ` bg-purple-700 text-white `
+                )}
+            >
+                Workspace Admin
             </Badge>
         )
     }

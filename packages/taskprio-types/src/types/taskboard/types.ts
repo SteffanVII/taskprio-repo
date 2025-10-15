@@ -1,12 +1,17 @@
+import { Selectable } from "kysely";
+import { TaskboardTaskBoard } from "../../db";
+import { TTaskPrimitive } from "../task/types";
+
 export type TGetProjectTaskboardListRequestQuery = {
     project_id : string
 }
 
+export type TGetTaskboardTrashTasksRequestParams = {
+    taskboard_id : string
+}
+
+export type TGetTaskboardTrashTasksResponseData = TTaskPrimitive[]
+
 // Taskboard
 
-export type TTaskboard = {
-    task_board_id : string;
-    task_board_name : string;
-    task_board_slug : string;
-    created_at : string;
-}
+export type TTaskboard = Selectable<TaskboardTaskBoard>

@@ -53,7 +53,8 @@ export const registerTaskSectionRoutes = ( router : Router ) => {
                 const createdTaskSection = await createTaskSection(
                     body.task_board_id,
                     body.task_section_name,
-                    lastTaskboardSectionDisplayOrder + 100
+                    lastTaskboardSectionDisplayOrder + 100,
+                    body.task_section_color
                 )
 
                 res.status(201).json(createdTaskSection);

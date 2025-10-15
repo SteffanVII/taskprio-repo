@@ -1,84 +1,82 @@
-import { PoolClient } from "pg"
-import { getPoolClient } from "../../postgresql.js"
-import slugify from "slugify"
-import { Request } from "express"
+import { Transaction } from "kysely"
+import { databaseFunctionWrapper, EDatabaseFunction, EDatabaseFunctionWrapperMode } from "../../postgresql.js"
 import { createTaskSection } from "../tasksection/mutation.js"
-import { TTaskboard } from "@repo/taskprio-types"
-
+import { DB, TTaskboard } from "@repo/taskprio-types"
+import { Kysely } from "kysely"
+import { taskprioKysely } from "../../kysely/kysely.js"
+import { sql } from "kysely"
 
 export const createTaskboard = async (
-    project_id : string,
-    taskboard_name : string,
-    user_id : string,
-    req : Request,
-    poolClient? : PoolClient
+    projectId : string,
+    taskboardName : string,
+    trx? : Transaction<DB>
 ) : Promise<TTaskboard | undefined> => {
 
-    const {
-        internalClient,
-        client,
-        release
-    } = await getPoolClient(poolClient)
+    const queryBuilder = trx ? trx.insertInto( "taskboard.task_board" ) : taskprioKysely.insertInto( "taskboard.task_board" )
 
-    try {
-
-        const taskboardSlug = slugify.default(
-            `${taskboard_name}${Date.now()}`,
-            {
-                lower : true,
-                strict : true,
-                locale : req.headers['accept-language']?.split(',')[0] || 'en',
-                remove : /[*+~.()'"!:@]/g,
-            }
-        )
-
-        if ( internalClient) await client.query("BEGIN")
-
-        const createdTaskboard = await client.query({
-            text : `--sql
-                INSERT INTO taskboard."task_board" (
-                    task_board_name,
-                    task_board_slug,
-                    project_id
-                ) VALUES (
-                    $1,
-                    $2,
-                    $3
-                ) RETURNING *;
-            `,
-            values : [ taskboard_name, taskboardSlug, project_id ]
+    const taskboard = await queryBuilder
+        .values({
+            task_board_name : taskboardName,
+            project_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`
         })
+        .returning([
+            "task_board_name",
+            "created_at",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(task_board_id)`.as( "task_board_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project_id)`.as( "project_id" )
+        ])
+        .executeTakeFirstOrThrow()
 
-        const toDoTaskSection = await createTaskSection(
-            createdTaskboard.rows[0].task_board_id,
-            "To Do",
-            1,
-            client
-        )
-
-        const inProgressTaskSection = await createTaskSection(
-            createdTaskboard.rows[0].task_board_id,
-            "In Progress",
-            toDoTaskSection.display_order + 100,
-            client
-        )
-
-        await createTaskSection(
-            createdTaskboard.rows[0].task_board_id,
-            "Done",
-            inProgressTaskSection.display_order + 100,
-            client
-        )
-
-        if ( internalClient ) await client.query("COMMIT")
-
-        return createdTaskboard.rows[0] as TTaskboard;
-        
-    } catch (error) {
-        console.log(error);
-        if ( internalClient ) await client.query("ROLLBACK")
-        throw error;
-    } finally {
-        release()
-    }
+    return taskboard;
 }
+
+// export const createTaskboard = databaseFunctionWrapper(
+//     async (
+//         client,
+//         projectId : string,
+//         taskboardName : string
+//     ) : Promise<TTaskboard | undefined> => {
+
+//         const createdTaskboard = await client.query({
+//             text : `--sql
+//                 INSERT INTO taskboard."task_board" (
+//                     task_board_name,
+//                     project_id
+//                 ) VALUES (
+//                     $1,
+//                     public.detect_and_convert_to_uuid($2)
+//                 ) RETURNING
+//                     task_board_name,
+//                     created_at,
+//                     public.uuid_to_base64(task_board_id) AS task_board_id,
+//                     public.uuid_to_base64(project_id) AS project_id;
+//             `,
+//             values : [ taskboardName, projectId ]
+//         })
+
+//         const toDoTaskSection = await createTaskSection(
+//             createdTaskboard.rows[0].task_board_id,
+//             "To Do",
+//             1,
+//             client
+//         )
+
+//         const inProgressTaskSection = await createTaskSection(
+//             createdTaskboard.rows[0].task_board_id,
+//             "In Progress",
+//             toDoTaskSection.display_order + 100,
+//             client
+//         )
+
+//         await createTaskSection(
+//             createdTaskboard.rows[0].task_board_id,
+//             "Done",
+//             inProgressTaskSection.display_order + 100,
+//             client
+//         )
+
+//         return createdTaskboard.rows[0]
+
+//     },
+//     EDatabaseFunctionWrapperMode.TRANSACTION
+// )

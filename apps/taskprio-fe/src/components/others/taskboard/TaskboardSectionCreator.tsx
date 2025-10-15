@@ -6,7 +6,8 @@ import { useGlobalsStore } from "@/stores/globals"
 import { Plus } from "lucide-react"
 import { useState } from "react"
 import Spinner from "../Spinner"
-
+import { taskSectionColors } from "@/lib/utils/shared"
+import getHexLuminance from "@/lib/utils/hexColorLuminance"
 
 export const TaskboardSectionCreator = () => {
 
@@ -16,6 +17,7 @@ export const TaskboardSectionCreator = () => {
 
     const [ createSection, setCreateSection ] = useState(false)
     const [ sectionName, setSectionName ] = useState<string>("")
+    const [ sectionColor, setSectionColor ] = useState<string>("#ffffff")
 
     const {
         mutateAsync : createTaskboardSection,
@@ -28,7 +30,8 @@ export const TaskboardSectionCreator = () => {
         await createTaskboardSection({
             body : {
                 task_board_id : selectedTaskboard?.task_board_id,
-                task_section_name : sectionName
+                task_section_name : sectionName,
+                task_section_color : sectionColor
             }
         })
         setSectionName("")
@@ -65,9 +68,17 @@ export const TaskboardSectionCreator = () => {
                     className=" flex flex-col gap-4 "
                 >
                     <Input
+                        key={sectionColor}
                         placeholder="Section Name"
                         autoFocus
-                        className=" h-[2.5rem] bg-white "
+                        className={cn(
+                            ` h-[2.5rem] bg-white `,
+                            ` placeholder:text-[${getHexLuminance(sectionColor) > 0.4 ? "#000000" : "#ffffff"}] `
+                        )}
+                        style={{
+                            backgroundColor : sectionColor,
+                            color : getHexLuminance(sectionColor) > 0.4 ? "#000000" : "#ffffff"
+                        }}
                         disabled={isCreatingTaskboardSection}
                         value={sectionName}
                         onChange={e => setSectionName(e.target.value)}
@@ -75,57 +86,21 @@ export const TaskboardSectionCreator = () => {
                     <div
                         className=" flex gap-2 justify-center flex-wrap "
                     >
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-background"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-red-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-blue-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-green-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-yellow-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-purple-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-pink-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-indigo-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-teal-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-orange-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-cyan-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-lime-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-emerald-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-rose-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-amber-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-sky-500"
-                        ></button>
-                        <button
-                            className=" size-6 border border-border rounded-sm bg-slate-500"
-                        ></button>
+                        {
+                            taskSectionColors.map((color) => (
+                                <button
+                                    key={color}
+                                    className={cn(
+                                        " size-8 rounded-sm transition-all duration-200 ",
+                                        sectionColor === color && ` -translate-y-1 shadow-lg shadow-foreground/50 `
+                                    )}
+                                    style={{
+                                        backgroundColor : color
+                                    }}
+                                    onClick={() => setSectionColor(color)}
+                                ></button>
+                            ))
+                        }
                     </div>
                     <Button
                         variant={"outline"}
