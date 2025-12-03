@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "build::server": "turbo run build --filter=@repo/taskprio-types --filter=taskprio-api",
     "dev": "turbo run dev --parallel --force",
     "dev::types": "turbo run dev --filter=@repo/taskprio-types",
     "dev::server": "turbo run dev --filter=taskprio-api --filter=@repo/taskprio-types",

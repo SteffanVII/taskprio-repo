@@ -13,9 +13,9 @@
             "workspace.workspace_members_base64.workspace_role" : "EWorkspaceRole | null",
             "project.project_members.project_role" : "EProjectRole",
             "project.project_members_base64.project_role" : "EProjectRole | null"
-        },
-        "types" : {
-            "Timestamp" : "string"
         }
+    },
+    "typeMapping" : {
+        "timestamp" : "ColumnType<string, string | string, Date | string>"
     }
 }

@@ -14,11 +14,9 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
-export type Timestamp = ColumnType<string, string | string, Date | string>;
-
 export interface InvitationWorkspaceInvitation {
   accepted: Generated<boolean | null>;
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   email: string;
   sender_id: string;
   token_string: string;
@@ -27,7 +25,7 @@ export interface InvitationWorkspaceInvitation {
 
 export interface InvitationWorkspaceInvitationBase64 {
   accepted: boolean | null;
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   email: string | null;
   sender_id: string | null;
   token_string: string | null;
@@ -36,7 +34,7 @@ export interface InvitationWorkspaceInvitationBase64 {
 
 export interface ProjectProject {
   active: Generated<boolean | null>;
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   created_by: string;
   project_abbreviation: Generated<string>;
   project_color: Generated<string>;
@@ -47,7 +45,7 @@ export interface ProjectProject {
 
 export interface ProjectProjectBase64 {
   active: boolean | null;
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   created_by: string | null;
   project_abbreviation: string | null;
   project_color: string | null;
@@ -59,7 +57,7 @@ export interface ProjectProjectBase64 {
 export interface ProjectProjectMembers {
   invited_by: string;
   is_active: Generated<boolean | null>;
-  joined_at: Generated<Timestamp | null>;
+  joined_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   project_id: string;
   project_role: EProjectRole;
   user_id: string;
@@ -68,7 +66,7 @@ export interface ProjectProjectMembers {
 export interface ProjectProjectMembersBase64 {
   invited_by: string | null;
   is_active: boolean | null;
-  joined_at: Timestamp | null;
+  joined_at: ColumnType<string, string | string, Date | string> | null;
   project_id: string | null;
   project_role: EProjectRole | null;
   user_id: string | null;
@@ -94,11 +92,11 @@ export interface ProjectProjectTagsBase64 {
 }
 
 export interface TaskboardTask {
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   created_by: string;
   display_order: number;
   in_trash: Generated<boolean | null>;
-  last_modified: Generated<Timestamp | null>;
+  last_modified: Generated<ColumnType<string, string | string, Date | string> | null>;
   task_board_id: string | null;
   task_deadline: string | null;
   task_depth: Generated<number>;
@@ -120,11 +118,11 @@ export interface TaskboardTaskAssigneeBase64 {
 }
 
 export interface TaskboardTaskBase64 {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   created_by: string | null;
   display_order: number | null;
   in_trash: boolean | null;
-  last_modified: Timestamp | null;
+  last_modified: ColumnType<string, string | string, Date | string> | null;
   task_board_id: string | null;
   task_deadline: string | null;
   task_description: string | null;
@@ -135,7 +133,7 @@ export interface TaskboardTaskBase64 {
 }
 
 export interface TaskboardTaskBoard {
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   inactive: Generated<boolean | null>;
   project_id: string;
   task_board_id: Generated<string>;
@@ -143,7 +141,7 @@ export interface TaskboardTaskBoard {
 }
 
 export interface TaskboardTaskBoardBase64 {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   project_id: string | null;
   task_board_id: string | null;
   task_board_name: string | null;
@@ -151,8 +149,8 @@ export interface TaskboardTaskBoardBase64 {
 
 export interface TaskboardTaskComment {
   comment_content: string | null;
-  created_at: Generated<Timestamp | null>;
-  edited_at: Timestamp | null;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
+  edited_at: ColumnType<string, string | string, Date | string> | null;
   replying_to_task_comment_id: string | null;
   task_comment_id: Generated<string>;
   task_id: string;
@@ -160,7 +158,7 @@ export interface TaskboardTaskComment {
 }
 
 export interface TaskboardTaskSection {
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   display_order: number;
   task_board_id: string;
   task_section_color: string | null;
@@ -169,7 +167,7 @@ export interface TaskboardTaskSection {
 }
 
 export interface TaskboardTaskSectionBase64 {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   display_order: number | null;
   task_board_id: string | null;
   task_section_color: string | null;
@@ -188,7 +186,7 @@ export interface TaskboardTaskTagBase64 {
 }
 
 export interface TaskboardTaskTimeLog {
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   task_id: string;
   task_time_log_id: Generated<string>;
   time_spent: number;
@@ -196,7 +194,7 @@ export interface TaskboardTaskTimeLog {
 }
 
 export interface TaskboardTaskTimeLogBase64 {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   task_id: string | null;
   task_time_log_id: string | null;
   time_spent: number | null;
@@ -207,7 +205,7 @@ export interface TaskboardTaskTodoState {
   active: Generated<boolean | null>;
   current_work_time: Generated<Int8>;
   display_order: number;
-  session_started_at: Timestamp | null;
+  session_started_at: ColumnType<string, string | string, Date | string> | null;
   task_id: string;
   user_id: string;
   work_time_goal: Generated<Int8>;
@@ -217,38 +215,38 @@ export interface TaskboardTaskTodoStateBase64 {
   active: boolean | null;
   current_work_time: Int8 | null;
   display_order: number | null;
-  session_started_at: Timestamp | null;
+  session_started_at: ColumnType<string, string | string, Date | string> | null;
   task_id: string | null;
   user_id: string | null;
   work_time_goal: Int8 | null;
 }
 
 export interface TaskboardTaskTodoTimer {
-  last_seen: Generated<Timestamp | null>;
-  start: Generated<Timestamp>;
-  stop: Timestamp | null;
+  last_seen: Generated<ColumnType<string, string | string, Date | string> | null>;
+  start: Generated<ColumnType<string, string | string, Date | string>>;
+  stop: ColumnType<string, string | string, Date | string> | null;
   task_id: string;
   user_id: string;
   workspace_id: string;
 }
 
 export interface TpUserUser {
-  created_at: Generated<Timestamp | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   email: string;
   firstname: string;
   google_user_id: string | null;
-  last_modified: Timestamp | null;
+  last_modified: ColumnType<string, string | string, Date | string> | null;
   lastname: string;
   password_hashed: string | null;
   user_id: Generated<string>;
 }
 
 export interface TpUserUserBase64 {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   email: string | null;
   firstname: string | null;
   google_user_id: string | null;
-  last_modified: Timestamp | null;
+  last_modified: ColumnType<string, string | string, Date | string> | null;
   lastname: string | null;
   password_hashed: string | null;
   user_id: string | null;
@@ -260,7 +258,7 @@ export interface TpUserUserProfilePhoto {
   crop_x: number;
   crop_y: number;
   image_type: string;
-  last_modified: Generated<Timestamp | null>;
+  last_modified: Generated<ColumnType<string, string | string, Date | string> | null>;
   photo_file_name: string;
   user_id: string;
 }
@@ -276,19 +274,19 @@ export interface TpUserUserProfilePhotoBase64 {
 }
 
 export interface TpUserUserSecure {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   email: string | null;
   firstname: string | null;
-  last_modified: Timestamp | null;
+  last_modified: ColumnType<string, string | string, Date | string> | null;
   lastname: string | null;
   user_id: string | null;
 }
 
 export interface TpUserUserSecureBase64 {
-  created_at: Timestamp | null;
+  created_at: ColumnType<string, string | string, Date | string> | null;
   email: string | null;
   firstname: string | null;
-  last_modified: Timestamp | null;
+  last_modified: ColumnType<string, string | string, Date | string> | null;
   lastname: string | null;
   user_id: string | null;
 }
@@ -305,7 +303,7 @@ export interface WorkspaceWorkspaceBase64 {
 
 export interface WorkspaceWorkspaceMembers {
   invited_by: string;
-  joined_at: Generated<Timestamp | null>;
+  joined_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   user_id: string;
   workspace_id: string;
   workspace_role: EWorkspaceRole;
@@ -313,7 +311,7 @@ export interface WorkspaceWorkspaceMembers {
 
 export interface WorkspaceWorkspaceMembersBase64 {
   invited_by: string | null;
-  joined_at: Timestamp | null;
+  joined_at: ColumnType<string, string | string, Date | string> | null;
   user_id: string | null;
   workspace_id: string | null;
   workspace_role: EWorkspaceRole | null;
