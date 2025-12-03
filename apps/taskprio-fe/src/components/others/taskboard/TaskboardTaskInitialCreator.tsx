@@ -15,7 +15,7 @@ export const TaskboardTaskInitialCreator : React.FC<TTaskboardTaskInitialCreator
     return (
         <div
             className={cn(
-                ` w-[20rem] min-w-[20rem] h-fit mt-4 `,
+                ` w-[calc(20rem-0.4rem)] min-w-[calc(20rem-0.4rem)] h-fit mx-auto mt-4 `,
                 ` bg-background border border-border rounded-md `
             )}
         >

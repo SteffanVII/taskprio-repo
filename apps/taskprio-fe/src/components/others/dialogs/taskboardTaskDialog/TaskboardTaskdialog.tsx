@@ -1,16 +1,14 @@
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useGetTask } from "@/services/private/task/query"
-import { useGetTaskboardSections } from "@/services/private/tasksection/query"
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
+import { updateGlobalsStore, useGlobalsStore_selectedTask } from "@/stores/globals"
+
 import { Trash2, X } from "lucide-react"
 import { useLayoutEffect, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
 import Spinner from "../../Spinner"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
 import { useDebounce } from "use-debounce"
 import { useMoveTaskToTrash, useUpdateTaskPrimitiveFields } from "@/services/private/task/mutation"
 import TaskAssigner from "../../shared/task/TaskAssigner"
@@ -35,16 +33,14 @@ export const TaskboardTaskDialog = () => {
         task_id
     } = useParams()
 
-    const {
-        selectedTaskboard,
-        selectedTask
-    } = useGlobalsStore()
+    // const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedTask = useGlobalsStore_selectedTask()
 
     const taskIdExists = task_id !== undefined && task_id !== ""
 
     const [ moveToTrashReady, setMoveToTrashReady ] = useState<boolean>( false )
 
-    const [ selectedTaskSection, setSelectedTaskSection ] = useState<string>( selectedTask?.task_section_id ?? "" )
+    // const [ selectedTaskSection, setSelectedTaskSection ] = useState<string>( selectedTask?.task_section_id ?? "" )
     
     const [ dataLoaded, setDataLoaded ] = useState<boolean>( false )
     
@@ -69,17 +65,17 @@ export const TaskboardTaskDialog = () => {
         enabled : task_id !== undefined
     })
 
-    const {
-        data : taskboardSections,
-        isLoading : isLoadingTaskboardSections
-    } = useGetTaskboardSections({
-        pathParameter : {
-            task_board_id : selectedTaskboard?.task_board_id
-        },
-        pathQuery : {
-            include_tasks : false
-        }
-    })
+    // const {
+    //     data : taskboardSections,
+    //     isLoading : isLoadingTaskboardSections
+    // } = useGetTaskboardSections({
+    //     pathParameter : {
+    //         task_board_id : selectedTaskboard?.task_board_id
+    //     },
+    //     pathQuery : {
+    //         include_tasks : false
+    //     }
+    // })
 
     const {
         mutateAsync : updateTaskPrimitiveFieldsMutateAsync
@@ -159,7 +155,7 @@ export const TaskboardTaskDialog = () => {
             })
             setDataLoaded( true )
         }
-        setSelectedTaskSection( selectedTask?.task_section_id ?? "" )
+        // setSelectedTaskSection( selectedTask?.task_section_id ?? "" )
     }, [ task ])
 
     return (
@@ -177,15 +173,18 @@ export const TaskboardTaskDialog = () => {
                 noCloseButton={ true }
                 className={cn(
                     ` !max-w-screen !max-h-[calc(100vh-2rem)] w-fit h-fit `,
-                    ` shadow-none !border-none !bg-transparent !p-0 !outline-none `
+                    ` shadow-none !border-none !bg-card !p-0 !outline-none `
                 )}
+                onMouseDown={ e => {
+                    e.stopPropagation()
+                } }
             >
                 <div
                     className={cn(
                         // ` absolute bottom-0 right-[1rem] `,
                         ` w-[80rem] h-fit min-h-[60rem] max-h-[calc(100vh-2rem)] `,
                         ` flex flex-col `,
-                        ` bg-background border border-border rounded-md shadow `,
+                        ` border border-border rounded-md shadow `,
                         ` animate-in fade-in slide-in-from-bottom-60 duration-200 ease-out `,
                     )}
                     // ref={(node) => {
@@ -208,7 +207,7 @@ export const TaskboardTaskDialog = () => {
                     // }}
                 >
                     {
-                        isLoadingTask || isFetchingTask || isLoadingTaskboardSections ? 
+                        isLoadingTask || isFetchingTask ? 
                         <div className=" size-full p-8 flex items-center justify-center " >
                             <Spinner size="md"/>
                         </div>
@@ -217,7 +216,7 @@ export const TaskboardTaskDialog = () => {
                             {/* Header */}
                             <div
                                 className={cn(
-                                    ` w-full h-fit p-2 `,
+                                    ` w-full h-fit p-2 border-b `,
                                     ` flex gap-2 items-center  `,
                                 )}
                             >
@@ -302,7 +301,7 @@ export const TaskboardTaskDialog = () => {
                             >
                                 {/* Main Body */}
                                 <ScrollArea
-                                    className="h-full grow min-h-0 bg-accent rounded-tr-lg"
+                                    className="h-full grow min-h-0 rounded-tr-lg "
                                 >
                                     <div
                                         className={cn(

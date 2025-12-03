@@ -28,5 +28,5 @@ export type TWorkspace = Selectable<WorkspaceWorkspace> & {
 }
 
 export type TWorkspaceMember = Selectable<WorkspaceWorkspaceMembers> & Pick<TUser, "firstname" | "lastname" | "email"> & {
-    profile_photo : Pick<Selectable<TpUserUserProfilePhoto>, "photo_file_name" | "image_type"> | null
+    profile_photo : Pick<Selectable<TpUserUserProfilePhoto>, "photo_file_name" | "image_type" | "last_modified"> | null
 }

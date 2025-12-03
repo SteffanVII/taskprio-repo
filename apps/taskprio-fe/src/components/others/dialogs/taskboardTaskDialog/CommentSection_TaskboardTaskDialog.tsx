@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ReplyIcon, SendHorizonalIcon, Trash2Icon } from "lucide-react";
 import UserAvatar from "../../shared/UserAvatar";
@@ -8,10 +7,8 @@ import React, { useState } from "react";
 import { useGetTaskComments } from "@/services/private/task/query";
 import { useAddTaskComment } from "@/services/private/task/mutation";
 import { TTaskComment } from "@repo/taskprio-types/src";
-import { Editor, EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Badge } from "@/components/ui/badge";
-import { useGlobalsStore } from "@/stores/globals";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { useGlobalsStore_user } from "@/stores/globals";
 import dayjs from "dayjs";
 import { starterKitExtensions } from "@/lib/utils/shared";
 
@@ -95,7 +92,8 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
                 }
             </div>
 
-            <div className="sticky bottom-0 w-full flex gap-4 p-4 bg-accent rounded-lg rounded-t-none border-t" >
+            {/* <div className="sticky bottom-0 w-full flex gap-4 p-4 bg-accent rounded-lg rounded-t-none border-t" > */}
+            <div className="sticky bottom-0 w-full flex gap-4 p-4 bg-card rounded-lg rounded-t-none" >
                 <CommentEditor_CommentSection
                     editor={editor}
                     onContentChange={setCommentContent}
@@ -124,9 +122,7 @@ type TCommentProps = {
 
 const Comment : React.FC<TCommentProps> = ({ data, reply }) => {
 
-    const {
-        user
-    } = useGlobalsStore()
+    const user = useGlobalsStore_user()
 
     const editor = useEditor({
         extensions : [

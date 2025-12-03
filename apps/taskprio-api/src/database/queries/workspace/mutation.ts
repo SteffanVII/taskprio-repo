@@ -27,7 +27,7 @@ export const createWorkspace = async (
             .values({
                 workspace_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdWorkspace.workspace_id})`,
                 user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
-                workspace_role : EWorkspaceRole.OWNER + 1,
+                workspace_role : EWorkspaceRole.OWNER,
                 invited_by : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`
             })
             .executeTakeFirstOrThrow();
@@ -137,6 +137,7 @@ export const addWorkspaceMember = async (
                     .then( jsonBuildObject({
                         photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                         image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                        last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                     }) )
                     .else( sql<null>`null` )
                     .end()

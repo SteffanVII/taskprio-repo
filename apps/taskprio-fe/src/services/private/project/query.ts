@@ -1,8 +1,9 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { TGetProjectMembersResponseData, TProject, TProjectMember, TProjectPrimitive } from "@repo/taskprio-types/src/index"
+import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query"
+import { TGetDeactivatedProjectsRequestParams, TGetDeactivatedprojectsResponseData, TGetProjectMembersResponseData, TProject, TProjectMember, TProjectPrimitive } from "@repo/taskprio-types/src/index"
 import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { TGetProjectMemberPayload } from "./types"
+import { AxiosError } from "axios"
 
 export type TGetProjectParams = {
     project_id? : string
@@ -78,6 +79,26 @@ export const useGetProjectMember = ( payload : TGetProjectMemberPayload ) => {
             return response.data
         },
         enabled : !!payload.params.project_id && !!payload.params.member_id
+    })
+
+}
+
+type TUseGetDeactivatedProjectsConfig = {
+    options? : Omit<UseQueryOptions<TGetDeactivatedprojectsResponseData, AxiosError>, "queryKey" | "queryFn">,
+    payload? : Partial<TGetDeactivatedProjectsRequestParams>
+}
+
+export const useGetDeactivatedProjects = ( config? : TUseGetDeactivatedProjectsConfig ) => {
+
+    return useQuery<TGetDeactivatedprojectsResponseData, AxiosError>({
+        queryKey : [ ...QueryKeys.GET_WORKSPACE_INACTIVE_PROJECTS.split, config?.payload?.workspace_id ],
+        queryFn : async () => {
+            const response = await axiosInstance.get<TGetDeactivatedprojectsResponseData>(
+                `/private/project/deactivated/${config?.payload?.workspace_id!}`,
+            )
+            return response.data;
+        },
+        enabled : ( config?.options?.enabled ?? true ) && !!config?.payload?.workspace_id
     })
 
 }

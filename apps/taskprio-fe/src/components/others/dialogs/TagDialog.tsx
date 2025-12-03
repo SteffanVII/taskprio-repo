@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { updateDialogsStore, useDialogsStore } from "@/stores/dialogs";
+import { updateDialogsStore, useDialogsStore_tagDialog } from "@/stores/dialogs";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,7 +12,7 @@ import { HexColorPicker } from "react-colorful";
 import { useCreateProjectTag, useUpdateProjectTag } from "@/services/private/tag/mutation";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { useLayoutEffect } from "react";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedProject } from "@/stores/globals";
 import TagDeleteDialog from "./TagDeleteDialog";
 
 const tagSchema = z.object({
@@ -21,17 +22,12 @@ const tagSchema = z.object({
 
 const TagDialog = () => {
 
+    const selectedProject = useGlobalsStore_selectedProject()
 
     const {
-        selectedProject
-    } = useGlobalsStore()
-
-    const {
-        tagDialog : {
-            open,
-            tag
-        }
-    } = useDialogsStore()
+        open,
+        tag
+    } = useDialogsStore_tagDialog()
 
     const form = useForm<z.infer<typeof tagSchema>>({
         resolver : zodResolver(tagSchema),

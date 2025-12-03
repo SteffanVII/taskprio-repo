@@ -5,3 +5,7 @@ export interface IUpdateProfilePhotoRequest extends IAuthenticatedRequest {
     body : TUpdateProfilePhotoRequestBody,
     file : Express.Multer.File
 }
+
+export interface IUpdateProfilePhotoCropRequest extends IAuthenticatedRequest {
+    body : TUpdateProfilePhotoRequestBody
+}

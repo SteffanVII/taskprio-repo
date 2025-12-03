@@ -1,8 +1,10 @@
-import { QueryClient, useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query"
+import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query"
 import { TUpdateProjectMemberRolePayload, TUpdateUserProfilePhotoPayload, TUpdateUserProfilePhotoResponse } from "./types"
 import { axiosHeaders, axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
-
+import { TProfilePhoto, TUpdateProfilePhotoRequestBody } from "@repo/taskprio-types/src"
+import { AxiosError } from "axios"
+import { useGlobalsStore_user } from "@/stores/globals"
 
 export const useUpdateUserProfilePhoto = ( onSuccess : () => void ) => {
 
@@ -35,6 +37,33 @@ export const useUpdateUserProfilePhoto = ( onSuccess : () => void ) => {
             })
             onSuccess()
         }
+    })
+
+}
+
+type TUseUpdateProfilePhotoCropOptions = UseMutationOptions<TProfilePhoto, AxiosError, TUpdateProfilePhotoRequestBody>
+
+export const useUpdateProfilePhotoCrop = ( options? : TUseUpdateProfilePhotoCropOptions ) => {
+
+    const queryClient = useQueryClient()
+    const user = useGlobalsStore_user()
+
+    return useMutation<TProfilePhoto, AxiosError, TUpdateProfilePhotoRequestBody>({
+        mutationFn : async ( payload ) => {
+            const response = await axiosInstance.patch(
+                `/private/profile/photo/update-crop`,
+                payload
+            )
+            return response.data
+        },
+        ...options,
+        onSuccess(data, variables, context) {
+            queryClient.invalidateQueries({
+                queryKey : [ ...QueryKeys.GET_USER_PROFILE.split, user?.user_id ]
+            })
+            options?.onSuccess?.( data, variables, context )
+        },
+
     })
 
 }

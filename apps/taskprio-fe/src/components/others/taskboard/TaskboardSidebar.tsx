@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Settings2Icon, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
 import { createContext, useState } from "react";
 import TaskboardTrashSheet from "./TaskboardTrashSheet";
 
@@ -31,23 +31,9 @@ const TaskboardSidebar = () => {
                     `relative flex flex-col items-center py-2`,
                     `w-[3rem] h-full min-w-0 min-h-0`,
                     `bg-background border-l`
+                    // `bg-background border-l`
                 )}
             >
-                <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            size={"icon"}
-                            variant={"ghost"}
-                        >
-                            <Settings2Icon/>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                        side="left"
-                    >
-                        Board Settings
-                    </TooltipContent>
-                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild >
                         <Button

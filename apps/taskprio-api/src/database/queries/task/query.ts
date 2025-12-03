@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { databaseFunctionWrapper, EDatabaseFunction, getPoolClient } from "../../postgresql.js";
-import { DB, TTask, TTaskComment, TTaskPath, TTaskPrimitive, TTaskTimeLog, TUserAvailableTaskTodo, TUserAvailableTaskTodoByProject, TUserTaskTodoState } from "@repo/taskprio-types";
+import { DB, TTask, TTaskComment, TTaskPath, TTaskPrimitive, TUserAvailableTaskTodo, TUserAvailableTaskTodoByProject, TUserTaskTodoState } from "@repo/taskprio-types";
 import { taskprioKysely } from "../../kysely/kysely.js";
 import { sql, Transaction } from "kysely";
 import { jsonArrayFrom, jsonBuildObject } from "kysely/helpers/postgres";
@@ -182,12 +182,12 @@ export const getTasksAssignedToUserByWorkspaceId = async (
     addTodoState? : boolean
 ) : Promise<TUserAvailableTaskTodoByProject[]> => {
 
-    const queryBuilder = trx ? trx.selectFrom( "project.workspace_projects" ) : taskprioKysely.selectFrom( "project.workspace_projects" )
+    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
 
     const returnValue = await queryBuilder
-        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.workspace_projects.workspace_id" )
+        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
-        .innerJoin( "project.project", "project.project.project_id", "project.workspace_projects.project_id" )
+        // .innerJoin( "project.project", "project.project.project_id", "project.project.project_id" )
         .innerJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
         .leftJoin( "taskboard.task_board", "taskboard.task_board.project_id", "project.project.project_id" )
         .leftJoin( "taskboard.task_section", "taskboard.task_section.task_board_id", "taskboard.task_board.task_board_id" )
@@ -196,6 +196,8 @@ export const getTasksAssignedToUserByWorkspaceId = async (
         .leftJoin( "taskboard.task_todo_state", "taskboard.task_todo_state.task_id", "taskboard.task.task_id" )
         .select( eb => [
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as( "workspace_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as( "created_by" ),
             "project.project.project_name",
             "project.project.project_abbreviation",
             "project.project.project_color",
@@ -237,11 +239,14 @@ export const getTasksAssignedToUserByWorkspaceId = async (
             eb("taskboard.task_todo_state.active", "=", false),
             eb("taskboard.task_todo_state.active", "is", null)
         ]) )
-        .where( "project.workspace_projects.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+        .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
         .where( "taskboard.task_assignee.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
+        .where( "taskboard.task_board.inactive", "=", false )
         .where( "workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
         .groupBy([
             "project.project.project_id",
+            "project.project.workspace_id",
+            "project.project.created_by",
             "project.project.project_name",
             "project.project.project_color",
             "project.project.project_abbreviation"
@@ -265,12 +270,11 @@ export const getUserTaskTodoState = async (
     trx? : Transaction<DB>
 ) : Promise<TUserTaskTodoState[]> => {
 
-    const queryBuilder = trx ? trx.selectFrom( "project.workspace_projects" ) : taskprioKysely.selectFrom( "project.workspace_projects" )
+    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
 
     return await queryBuilder
-        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.workspace_projects.workspace_id" )
+        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
-        .innerJoin( "project.project", "project.project.project_id", "project.workspace_projects.project_id" )
         .innerJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
         .leftJoin( "taskboard.task_board", "taskboard.task_board.project_id", "project.project.project_id" )
         .leftJoin( "taskboard.task_section", "taskboard.task_section.task_board_id", "taskboard.task_board.task_board_id" )
@@ -292,6 +296,16 @@ export const getUserTaskTodoState = async (
                     ])
                     .where( "taskboard.task_tag.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(taskboard.task.task_id::text)` )
             ).as( "tags" ),
+            jsonArrayFrom(
+                eb.selectFrom( "taskboard.task_todo_timer" )
+                    .selectAll()
+                    .select([
+                        sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.workspace_id)`.as( "workspace_id" )
+                    ])
+                    .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(taskboard.task.task_id::text)` )
+                    .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                    .orderBy( "taskboard.task_todo_timer.start", "desc" )
+            ).as( "timers" ),
             "taskboard.task_todo_state.work_time_goal",
             "taskboard.task_todo_state.current_work_time",
             "taskboard.task_todo_state.display_order",
@@ -301,8 +315,10 @@ export const getUserTaskTodoState = async (
         ])
         .where( "taskboard.task.task_id", "is not", null )
         .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
-        .where( "project.workspace_projects.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+        .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
         .where( "taskboard.task_todo_state.active", "=", true )
+        .where( "taskboard.task_board.inactive", "=", false )
+        .orderBy( "taskboard.task_todo_state.display_order", "desc" )
         .groupBy([
             "taskboard.task.task_id",
             "taskboard.task.task_title",
@@ -331,15 +347,14 @@ export const getTasksTodoLastDisplayOrder = async (
         .innerJoin( "taskboard.task", "taskboard.task.task_id", "taskboard.task_todo_state.task_id" )
         .innerJoin( "taskboard.task_section", "taskboard.task_section.task_section_id", "taskboard.task.task_section_id" )
         .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
-        .innerJoin( "project.workspace_projects", "project.workspace_projects.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
         .select( sql<number>`COALESCE(MAX(taskboard.task_todo_state.display_order), -99)`.as( "last_display_order" ) )
         .where( "taskboard.task.task_id", "is not", null )
         .where( "taskboard.task.in_trash", "is", false )
         .where( "taskboard.task_todo_state.active", "=", true )
         .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
-        .where( "project.workspace_projects.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
-        .executeTakeFirstOrThrow()).last_display_order
-        
+        .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+        .executeTakeFirstOrThrow()).last_display_order       
 }
 
 /**

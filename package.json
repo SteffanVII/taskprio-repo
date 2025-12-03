@@ -5,6 +5,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --force",
     "dev::types": "turbo run dev --filter=@repo/taskprio-types",
+    "dev::server": "turbo run dev --filter=taskprio-api --filter=@repo/taskprio-types",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

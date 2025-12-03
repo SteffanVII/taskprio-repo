@@ -2,26 +2,23 @@ import { cn } from "@/lib/utils";
 import { useGetTasksAssignedToUserByWorkspace } from "@/services/private/todo/query";
 import React from "react";
 import { useParams } from "react-router";
-import TagBadge from "../shared/tag/TagBadge";
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import useTaskTodoPageStore from "@/stores/taskTodoPage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { TUserAvailableTaskTodo, TUserAvailableTaskTodoByProject } from "@repo/taskprio-types/src";
+import TagBadge from "../../shared/tag/TagBadge";
+import { Badge } from "@/components/ui/badge";
+import { updateTaskboardDragStore } from "@/stores/taskboardDrag";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Filter, Search } from "lucide-react";
 
 const AvailableTasksSection_TaskTodoPage = () => {
 
     const { workspace_id } = useParams()
 
     const {
-        taskTodoPageShowAvailableTasks
-    } = useGlobalsStore()
-
-    const {
         data : assignedTasksGroups,
-        isLoading : assignedTasksGroupsIsLoading
+        // isLoading : assignedTasksGroupsIsLoading
     } = useGetTasksAssignedToUserByWorkspace({
         pathParameter : {
             workspace_id
@@ -32,37 +29,12 @@ const AvailableTasksSection_TaskTodoPage = () => {
         <div
             className={cn(
                 ` w-full h-full min-h-0 `,
-                ` grid grow `
+                ` flex flex-col grow `,
             )}
-            style={{
-                gridTemplateRows : "min-content 1fr"
-            }}
+            // style={{
+            //     gridTemplateRows : "min-content 1fr"
+            // }}
         >
-            <div
-                className={cn(
-                    `w-full h-fit`,
-                    ` flex justify-between `,
-                    `p-4 bg-background`,
-                    `border-b border-border`
-                )}
-            >
-                <h3>Available Tasks</h3>
-                {
-                    taskTodoPageShowAvailableTasks &&
-                    <div className=" flex items-center gap-4 " >
-                        <Switch
-                            id="taskTodoPageShowAvailableTasks"
-                            checked={taskTodoPageShowAvailableTasks}
-                            onCheckedChange={ checked => {
-                                updateGlobalsStore({
-                                    taskTodoPageShowAvailableTasks : checked
-                                })
-                            } }
-                        />
-                        <Label htmlFor="taskTodoPageShowAvailableTasks" >Show Available Tasks</Label>   
-                    </div>
-                }
-            </div>
             <div
                 className={cn(
                     ` w-full h-full min-h-0 grow overflow-x-auto overflow-y-hidden `,
@@ -125,19 +97,40 @@ const ProjectColumn : React.FC<TProjectColumnProps> = ({
                 ` rounded-md `
             )}
             style={{
-                gridTemplateRows : "min-content 1fr"
+                gridTemplateRows : "min-content min-content 1fr"
             }}
         >
             <div>
                 <h3
                     className={cn(
-                        " px-3 py-2 bg-primary rounded-md text-lg text-primary-foreground ",
+                        "flex justify-between items-center px-3 py-2 bg-primary rounded-md text-lg text-primary-foreground ",
                         data.project_color !== "#ffffff" && getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                     )}
                     style={{
                         backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
                     }}
-                >{data.project_name}</h3>
+                >
+                    {data.project_name}
+                    <Badge variant={"secondary"} >{data.tasks.length > 99 ? "99+" : data.tasks.length}</Badge>
+                </h3>
+            </div>
+
+            <div className="flex justify-end gap-2" >
+                <Input
+                    placeholder="Seach"
+                />
+                <Button
+                    size={"icon"}
+                    variant={"ghost"}
+                >
+                    <Search/>
+                </Button>
+                <Button
+                    size={"icon"}
+                    variant={"ghost"}
+                >
+                    <Filter/>
+                </Button>
             </div>
 
             <ScrollArea
@@ -145,7 +138,7 @@ const ProjectColumn : React.FC<TProjectColumnProps> = ({
             >
                 <div
                     className={cn(
-                        ` space-y-4 `
+                        ` space-y-4 pb-[10rem] `
                     )}
                 >
                     {
@@ -168,7 +161,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
 
     const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
         e.stopPropagation()
-        updateGlobalsStore({
+        updateTaskboardDragStore({
             taskboardTaskTodoDrag : {
                 taskboardTaskTodo : data
             }
@@ -176,7 +169,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
     }
 
     const onDragEndHandler = () => {
-        updateGlobalsStore({
+        updateTaskboardDragStore({
             taskboardTaskTodoDrag : {
                 taskboardTaskTodo : null
             }
@@ -191,7 +184,8 @@ const TaskCard : React.FC<TTaskCardProps> = ({
         <div
             className={cn(
                 ` w-full h-fit `,
-                ` bg-background border border-border rounded-2xl `
+                ` bg-card border border-border shadow `,
+                `rounded-md`
             )}
             draggable={true}
             onDragStart={onDragStartHandler}
@@ -200,7 +194,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
         >
             <p
                 className={cn(
-                    `w-fit px-2 py-1 ml-2 mt-2 rounded-md bg-primary text-xs text-primary-foreground font-semibold`,
+                    `w-fit px-2 py-1 ml-2 mt-2 rounded bg-primary text-xs text-primary-foreground font-semibold`,
                     data.project_color !== "#ffffff" && getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                 )}
                 style={{
@@ -216,8 +210,8 @@ const TaskCard : React.FC<TTaskCardProps> = ({
                 data.tags.length > 0 && (
                     <div
                         className={cn(
-                            ` flex flex-wrap gap-1 overflow-hidden rounded-bl-[0.3rem] `,
-                            ` m-3 `
+                            ` flex flex-wrap gap-1 rounded-bl-[0.3rem] `,
+                            ` m-2 `
                         )}
                     >
                         {

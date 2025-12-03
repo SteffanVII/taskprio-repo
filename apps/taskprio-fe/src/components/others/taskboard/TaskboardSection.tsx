@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
-import { Ellipsis, Plus } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import TaskboardTaskInitialCreator from "./TaskboardTaskInitialCreator";
 import { useCreateTask } from "@/services/private/task/mutation";
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedTaskboard } from "@/stores/globals";
+
 import TaskboardTask from "./TaskboardTask";
 import TaskboardTaskDrop from "./TaskboardTaskDrop";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
@@ -13,7 +14,9 @@ import TaskboardSectionMenu from "./TaskboardSectionMenu";
 import { Input } from "@/components/ui/input";
 import { useUpdateTaskboardSection } from "@/services/private/tasksection/mutation";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import { Badge } from "@/components/ui/badge";
+import { updateTaskboardDragStore } from "@/stores/taskboardDrag";
+import NumberFlow from "@number-flow/react";
 
 export type TTaskboardSectionProps = {
     taskSection : TTaskSectionWithTasks
@@ -23,14 +26,17 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
     taskSection
 } ) => {
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const [ createTask, setCreateTask ] = useState( false )
 
     const [ rename, setRename ] = useState( false )
     const [ renameValue, setRenameValue ] = useState( "" )
+
+    const [ taskVisibility, setTaskVisibility ] = useState<Record<string, boolean>>({})
+
+    const taskRefs = useRef<Record<string, HTMLDivElement>>({});
+    const intersectionObserverRef = useRef<IntersectionObserver>(null)
 
     const {
         mutateAsync : createTaskMutation,
@@ -42,24 +48,25 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
     } = useUpdateTaskboardSection()
 
     const sortedTaskSectionTasks = useMemo(() => {
-        return [...taskSection.tasks].sort( ( a, b ) => b.display_order - a.display_order )
+        return [...taskSection.tasks].sort( ( a, b ) => {
+            taskVisibility[a.task_id] = taskVisibility[a.task_id] ?? false;
+            return b.display_order - a.display_order
+        } )
     }, [taskSection.tasks])
 
     const onTaskSubmit = ( taskTitle : string ) => {
         if ( taskTitle.trim() === "" ) return
         if ( !selectedTaskboard ) return
         createTaskMutation( {
-            body : {
-                task_board_id : selectedTaskboard.task_board_id,
-                task_section_id : taskSection.task_section_id,
-                task_title : taskTitle
-            }
+            task_board_id : selectedTaskboard.task_board_id,
+            task_section_id : taskSection.task_section_id,
+            task_title : taskTitle
         } )
     }
 
     const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
         e.stopPropagation()
-        updateGlobalsStore({
+        updateTaskboardDragStore({
             taskboardSectionDrag : {
                 taskboardSection : taskSection
             }
@@ -97,6 +104,46 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
         closeRenameModal()
     }
 
+    useEffect(() => { 
+        intersectionObserverRef.current = new IntersectionObserver(( entries ) => {
+            const updates : Record<string, boolean> = {};
+            entries.forEach( entry => {
+                const taskId = (entry.target as HTMLElement).dataset.taskId;
+                if (taskId) {
+                    updates[taskId] = entry.isIntersecting;
+                }
+            } )
+            setTaskVisibility( prev => ({...prev, ...updates}) )
+        }, {
+            root : null,
+            rootMargin : "200px",
+            threshold: 0.1,
+        })
+        return () => {
+            intersectionObserverRef.current?.disconnect()
+        }
+    }, [])
+
+    useEffect(() => {
+        const currentObserver = intersectionObserverRef.current;
+        if (!currentObserver) return;
+
+        // Disconnect previous observer
+        currentObserver.disconnect();
+
+        // Observe all task elements
+        Object.keys(taskRefs.current).forEach(taskId => {
+            const element = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (element) {
+                currentObserver.observe(element);
+            }
+        });
+
+        return () => {
+            currentObserver.disconnect();
+        };
+    }, [taskSection.tasks])
+
     return (
         <div
             className={cn(
@@ -109,7 +156,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
         >
             <div
                 className={cn(
-                    ` w-full p-1 pl-4 `,
+                    ` w-full p-1 pl-2 `,
                     ` flex justify-between items-center gap-2 `,
                     ` bg-background rounded-md z-10 `,
                 )}
@@ -142,7 +189,15 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                         autoFocus
                     />
                     :
-                    <p>{taskSection.task_section_name}</p>
+                    <div className=" flex items-center gap-2 " >
+                        <Badge variant={"secondary"} >
+                            {/* {taskSection.tasks.length > 99 ? "99+" : taskSection.tasks.length} */}
+                            <NumberFlow
+                                value={taskSection.tasks.length > 99 ? 99 : taskSection.tasks.length}
+                            />
+                        </Badge>
+                        <p>{taskSection.task_section_name}</p>
+                    </div>
                 }
                 <div
                     className=" flex "
@@ -163,6 +218,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
             </div>
 
             <ScrollArea
+                id="taskboard-section-scroll-area"
                 className="relative flex flex-col w-full h-full min-h-full "
             >
                 <div
@@ -211,10 +267,27 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                                             bottomTaskId={task?.task_id}
                                         />
                                     }
-                                    <TaskboardTask
-                                        key={task.task_id}
-                                        task={task}
-                                    />
+                                    <div
+                                        data-task-id={task.task_id}
+                                        className={cn(
+                                            `w-[20rem] min-h-[8rem] h-fit pointer-events-none`
+                                        )}
+                                        ref={(el) => {
+                                            if (el) {
+                                                taskRefs.current[task.task_id] = el;
+                                            } else {
+                                                delete taskRefs.current[task.task_id];
+                                            }
+                                        }}
+                                    >
+                                        {
+                                            taskVisibility[task.task_id] &&
+                                            <TaskboardTask
+                                                key={task.task_id}
+                                                task={task}
+                                            />
+                                        }
+                                    </div> 
                                     <TaskboardTaskDrop
                                         task_section_id={taskSection.task_section_id}
                                         display_order={displayOrderBottom}

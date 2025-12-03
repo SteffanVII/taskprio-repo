@@ -1,24 +1,32 @@
+import dayjs from "@/lib/dayjs"
 import { formatTaskTodoTimeSeconds } from "@/lib/utils/durationFormatter"
-import { QueryKeys } from "@/services/enum"
-import { useUpdateTaskTodoState } from "@/services/private/todo/mutation"
+import { useStartOrStopTaskTodoTimer } from "@/services/private/todo/mutation"
 import { useGetUserTaskTodoState } from "@/services/private/todo/query"
-import useTaskTodoPageStore, { updateTaskTodoPageStore } from "@/stores/taskTodoPage"
-import { TGetUserTaskTodoStateResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
-import { useQueryClient } from "@tanstack/react-query"
-import { produce } from "immer"
-import React, { createContext, useCallback, useEffect, useMemo, useRef } from "react"
+import { 
+    useTaskTodoPageStore_timerCount,
+    updateTaskTodoPageStore 
+} from "@/stores/taskTodoPage"
+import { EWebsocketClientEventType, TGetUserTaskTodoStateResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { useParams } from "react-router"
+import { taskTodoTimerHeartbeatEventHandler } from "../websocket/eventHandlers/outgoing/taskTodoEventHandlers"
+import { WebSocketContext } from "../websocket/WebsocketProvider"
+import { useQueryClient } from "@tanstack/react-query"
+import { QueryKeys } from "@/services/enum"
+import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 
 type TStateManager_TaskTodoPageContext = {
-    handleStartSession : () => void,
-    handlePauseSession : () => void,
+    handleStartSession : () => Promise<void>,
+    handlePauseSession : () => Promise<void>,
+    invalidateUseGetUserTaskTodoState : () => void,
     userTaskTodoState : TGetUserTaskTodoStateResponseData | undefined,
     topTaskTodo : TUserTaskTodoState | null
 }
 
 export const StateManager_TaskTodoPageContext = createContext<TStateManager_TaskTodoPageContext>({
-    handleStartSession : () => {},
-    handlePauseSession : () => {},
+    handleStartSession : () => Promise.resolve(),
+    handlePauseSession : () => Promise.resolve(),
+    invalidateUseGetUserTaskTodoState : () => {},
     userTaskTodoState : undefined,
     topTaskTodo : null
 })
@@ -35,16 +43,21 @@ const StateManager_TaskTodoPage : React.FC<TStateManager_TaskTodoPage> = ({
 
     const { workspace_id } = useParams()
 
-    const {
-        timerCount
-    } = useTaskTodoPageStore()
+    const selectedWorkpace = useGlobalsStore_selectedWorkspace()
+    const timerCount = useTaskTodoPageStore_timerCount()
 
     const {
-        data : userTaskTodoState
+        sendWebSocketMessage
+    } = useContext(WebSocketContext)
+
+    const {
+        data : userTaskTodoState,
+        isLoading : userTaskTodoStateIsLoading,
+        isFetching : userTaskTodoStateIsFetching
     } = useGetUserTaskTodoState(
         {
             pathParameter : {
-                workspace_id
+                workspace_id : selectedWorkpace?.workspace_id
             }
         },
         {
@@ -53,8 +66,8 @@ const StateManager_TaskTodoPage : React.FC<TStateManager_TaskTodoPage> = ({
     )
 
     const {
-        mutateAsync : updateTaskTodoStateTrigger
-    } = useUpdateTaskTodoState( undefined, [ QueryKeys.GET_USER_TASK_TODO_STATE.value ] )
+        mutateAsync : startOrStopTaskTodoStateTrigger
+    } = useStartOrStopTaskTodoTimer()
 
     const timerWorkerRef = useRef<Worker | null>(null)
 
@@ -70,94 +83,141 @@ const StateManager_TaskTodoPage : React.FC<TStateManager_TaskTodoPage> = ({
         }
     }, [ userTaskTodoState ])
 
-    const handleStartSession = () => {
-
-        updateTaskTodoPageStore({
-            sessionActive : true
-        })
-
-        setTimeout(() => {
-            timerWorkerRef.current = new Worker(new URL("./timerWorker.js", import.meta.url))
-            timerWorkerRef.current!.onmessage = ( e : MessageEvent ) => {
-                if ( e.data === 0 ) {
-                    updateTaskTodoStateTrigger({
-                        pathParameters : {
-                            task_id : topTaskTodo!.task_id
-                        },
-                        body : {
-                            current_work_time : ( Number(topTaskTodo!.current_work_time) + 60 )
-                        }
-                    })
-                    queryClient.setQueryData(
-                        [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, workspace_id ],
-                        ( oldData : TGetUserTaskTodoStateResponseData ) => produce( oldData, draft => {
-                            if ( draft.length > 0 ) {
-                                draft.sort( ( a, b ) => b.display_order - a.display_order )
-                                draft[0].current_work_time = ( Number(draft[0].current_work_time) + 60 ).toString()
-                            }
-                        } )
-                    )
-                    updateTaskTodoPageStore({
-                        timerCount : 0
-                    })
-                } else {
-                    updateTaskTodoPageStore({
-                        timerCount : e.data
-                    })
+    const handleStartSession = async () => {
+        if ( topTaskTodo ) {
+            await startOrStopTaskTodoStateTrigger({
+                pathParameters : {
+                    task_id : topTaskTodo.task_id
                 }
-            }
-        }, 500)
-
+            })
+        }
     }
 
-    const handlePauseSession = useCallback(() => {
-
+    const handlePauseSession = async () => {
         if ( timerWorkerRef.current ) {
             timerWorkerRef.current.onmessage = null
             timerWorkerRef.current.terminate()
             timerWorkerRef.current = null
         }
         if ( topTaskTodo ) {
-            updateTaskTodoStateTrigger({
+            await startOrStopTaskTodoStateTrigger({
                 pathParameters : {
                     task_id : topTaskTodo.task_id
-                },
-                body : {
-                    current_work_time : Number(topTaskTodo.current_work_time) + timerCount
                 }
             })
-            queryClient.setQueryData(
-                [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, workspace_id ],
-                ( oldData : TGetUserTaskTodoStateResponseData ) => produce( oldData, draft => {
-                    if ( draft.length > 0 ) {
-                        draft.sort( ( a, b ) => b.display_order - a.display_order )
-                        draft[0].current_work_time = ( Number(draft[0].current_work_time) + timerCount ).toString()
-                    }
-                } )
-            )
+
         }
         updateTaskTodoPageStore({
             sessionActive : false,
             timerCount : 0
         })
+    }
 
-    }, [timerCount])
+    const invalidateUseGetUserTaskTodoState = () => {
+        // queryClient.invalidateQueries({
+        //     queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkpace?.workspace_id ],
+        // })
+        queryClient.removeQueries({
+            queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkpace?.workspace_id ],
+        })
+        // queryClient.cancelQueries({
+        //     queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkpace?.workspace_id ]
+        // })
+    }
 
     useEffect(() => {
         if ( userTaskTodoState ) {
-            const totalCurrentWorkTime = userTaskTodoState.reduce( ( acc, curr ) => acc + Number(curr.current_work_time), 0 ) + timerCount
+            // Calculate total time from start and stop data of timers inside each of the task todo state
+            const totalCurrentWorkTime = userTaskTodoState.reduce( ( acc, curr ) => {
+                const totalTimers = curr.timers.reduce( ( acc2, curr2 ) => {
+                    if ( curr2.start && curr2.stop ) {
+                        const start = dayjs(curr2.start)
+                        const stop = dayjs(curr2.stop)
+                        return acc2 + stop.diff( start, "second" )
+                    }
+                    return acc2
+                } , 0 )
+                return acc + totalTimers
+            }, 0 ) + timerCount
+
             const totalWorkTimeGoal = userTaskTodoState.reduce( ( acc, curr ) => acc + Number(curr.work_time_goal), 0 )
             updateTaskTodoPageStore({
                 totalCurrentWorkTimeString : formatTaskTodoTimeSeconds(totalCurrentWorkTime),
-                totalWorkTimeGoalString : formatTaskTodoTimeSeconds(totalWorkTimeGoal)
+                totalWorkTimeGoalString : formatTaskTodoTimeSeconds(totalWorkTimeGoal),
+                totalCurrentWorkTimeNumber : totalCurrentWorkTime,
+                totalWorkTimeGoalNumber : totalWorkTimeGoal
             })
         } else {
             updateTaskTodoPageStore({
                 totalCurrentWorkTimeString : "0m",
-                totalWorkTimeGoalString : "0m"
+                totalWorkTimeGoalString : "0m",
+                totalCurrentWorkTimeNumber : 0,
+                totalWorkTimeGoalNumber : 0
             })
         }
     }, [ userTaskTodoState, timerCount ])
+
+    useLayoutEffect(() => {
+        // Start timer if top todo has active timer
+        if (
+            !!topTaskTodo &&
+            !!topTaskTodo.timers[0] &&
+            topTaskTodo.timers[0].stop === null &&
+            workspace_id === topTaskTodo.timers[0].workspace_id &&
+            !userTaskTodoStateIsFetching
+        ) {
+            if ( timerWorkerRef.current === null ) {
+                updateTaskTodoPageStore({
+                    sessionActive : true
+                })
+                const start = dayjs.utc(topTaskTodo.timers[0].start)
+                const timeDiff = dayjs.utc().diff(start, "second")
+                timerWorkerRef.current = new Worker(new URL("./timerWorker.js", import.meta.url))
+                timerWorkerRef.current!.onmessage = ( e : MessageEvent ) => {
+                    if ( e.data === 0 ) {
+                        updateTaskTodoPageStore({
+                            timerCount : Math.max(0, timeDiff) + 0
+                        })
+                    } else {
+                        // Send heartbeat every 60 seconds
+                        if ( (e.data + 1) % 60 === 0 ) {
+                            taskTodoTimerHeartbeatEventHandler({
+                                type : EWebsocketClientEventType.TASK_TODO_TIMER_HEARTBEAT,
+                                data : {
+                                    task_id : topTaskTodo.task_id,
+                                    workspace_id : selectedWorkpace?.workspace_id!
+                                }
+                            }, sendWebSocketMessage)
+                        }
+                        updateTaskTodoPageStore({
+                            timerCount : Math.max(0, timeDiff) + e.data
+                        })
+                    }
+                }
+            }
+        } else {
+            if ( timerWorkerRef.current ) {
+                timerWorkerRef.current.onmessage = null
+                timerWorkerRef.current.terminate()
+                timerWorkerRef.current = null
+                updateTaskTodoPageStore({
+                    sessionActive : false,
+                    timerCount : 0
+                })
+            }
+        }
+    }, [
+        topTaskTodo,
+        userTaskTodoStateIsFetching,
+        workspace_id
+    ])
+
+    useLayoutEffect(() => {
+        updateTaskTodoPageStore({
+            userTaskTodoStateIsFetching,
+            userTaskTodoStateIsLoading
+        })
+    }, [ userTaskTodoStateIsFetching, userTaskTodoStateIsFetching ])
 
     useEffect(() => {
         return () => {
@@ -172,6 +232,7 @@ const StateManager_TaskTodoPage : React.FC<TStateManager_TaskTodoPage> = ({
             value={{
                 handleStartSession,
                 handlePauseSession,
+                invalidateUseGetUserTaskTodoState,
                 userTaskTodoState,
                 topTaskTodo
             }}

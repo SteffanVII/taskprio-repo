@@ -1,6 +1,6 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { cn } from "@/lib/utils"
-import { useGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 import React, { useMemo } from "react"
 import WorkspaceMemberBadge from "./WorkspaceMemberBadge"
 import { ProfilePhotoUrl } from "@/lib/globals"
@@ -19,9 +19,7 @@ const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement,
     disableHoverCard = false
 }, ref) => {
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const user = useMemo(() => {
         return selectedWorkspace?.workspace_members.find( member => member.user_id === user_id_or_email || member.email === user_id_or_email )
@@ -42,7 +40,8 @@ const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement,
                 {
                     user?.profile_photo?.photo_file_name ?
                     <img
-                        src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}`}
+                        loading="lazy"
+                        src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}?v=${user.profile_photo.last_modified}`}
                     />
                     :
                     <UserIcon className="size-[70%]" />

@@ -2,13 +2,13 @@
 -- Task Todo State
 DROP TABLE IF EXISTS taskboard."task_todo_state" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_todo_state" (
-	task_id UUID NOT NULL REFERENCES taskboard."task",
+	task_id UUID NOT NULL REFERENCES taskboard."task" ON DELETE CASCADE,
 	user_id UUID NOT NULL REFERENCES tp_user."user",
-	work_time_goal BIGINT NOT NULL DEFAULT 900, -- Depracated
-	current_work_time BIGINT NOT NULL DEFAULT 0,
+	work_time_goal BIGINT NOT NULL DEFAULT 900,
+	current_work_time BIGINT NOT NULL DEFAULT 0, -- Depracated
 	display_order DOUBLE PRECISION NOT NULL,
 	active BOOLEAN DEFAULT true,
-	session_started_at TIMESTAMP WITH TIME ZONE DEFAULT NULL, -- Depracated
+	session_started_at TIMESTAMP DEFAULT NULL, -- Depracated
 
 	PRIMARY KEY (task_id, user_id)
 );
@@ -29,16 +29,18 @@ FROM taskboard."task_todo_state";
 -- Task todo timer
 DROP TABLE IF EXISTS taskboard."task_todo_timer" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_todo_timer" (
-    task_id UUID NOT NULL REFERENCES taskboard."task",
+	workspace_id UUID NOT NULL REFERENCES workspace."workspace", -- Use for a container to group timers
+    task_id UUID NOT NULL REFERENCES taskboard."task" ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES tp_user."user",
-    start NOT NULL TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    stop TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+	last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- TODO - Implement auto pause
+    start NOT NULL TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    stop TIMESTAMP DEFAULT NULL,
 
     PRIMARY KEY (task_id, user_id, start)
 );
 
--- Constraint to make the table only keep one task timer with stop value of null per user
-CREATE UNIQUE INDEX uix_single_active_task_timer_per_user
-ON taskboard."task_todo_timer" (user_id)
+-- Constraint to make the table only keep one task timer with stop value of null per user per workspace
+CREATE UNIQUE INDEX uix_single_active_task_timer_per_user_workspace
+ON taskboard."task_todo_timer" (workspace_id, user_id)
 WHERE stop IS NULL;
 -- Task timer timer

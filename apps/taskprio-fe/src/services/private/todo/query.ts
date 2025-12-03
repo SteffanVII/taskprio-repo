@@ -3,6 +3,7 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 import { TGetTasksAssignedToUserByWorkspacePayload, TGetUserTaskTodoStatePayload } from "./types"
 import { QueryKeys } from "@/services/enum"
 import { axiosInstance } from "@/services/axios"
+import { useGlobalsStore_authenticated } from "@/stores/globals"
 
 export const useGetTasksAssignedToUserByWorkspace = ( payload : TGetTasksAssignedToUserByWorkspacePayload ) => {
 
@@ -20,6 +21,9 @@ export const useGetTasksAssignedToUserByWorkspace = ( payload : TGetTasksAssigne
 }
 
 export const useGetUserTaskTodoState = ( payload : TGetUserTaskTodoStatePayload, config? : Partial<UseQueryOptions<TGetUserTaskTodoStateResponseData, Error>> ) => {
+
+    const authenticated = useGlobalsStore_authenticated()
+
     return useQuery<TGetUserTaskTodoStateResponseData, Error>({
         queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, payload.pathParameter.workspace_id ],
         queryFn : async () => {
@@ -29,6 +33,6 @@ export const useGetUserTaskTodoState = ( payload : TGetUserTaskTodoStatePayload,
             return response.data
         },
         refetchOnWindowFocus : config?.refetchOnWindowFocus,
-        enabled : !!payload.pathParameter.workspace_id && (config?.enabled ?? true)
+        enabled : !!payload.pathParameter.workspace_id && authenticated && (config?.enabled ?? true)
     })
 }

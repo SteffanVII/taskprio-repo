@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { taskSectionColors } from "@/lib/utils/shared";
 import { useUpdateProjectCustomization } from "@/services/private/project/mutation";
@@ -76,7 +75,9 @@ const Customization_ProjectSettingsPage = () => {
             </div>
             <div
                 className={cn(
-                    `space-y-4`
+                    `space-y-4`,
+                    `p-4 border border-transparent rounded-md`,
+                    `hover:bg-secondary/50 hover:border-foreground/10`
                 )}
             >
                 <Form {...projectCustomizationForm}>
@@ -156,10 +157,11 @@ const Customization_ProjectSettingsPage = () => {
                 </Form>
                 <div
                     className={cn(
-                        `flex justify-end`
+                        `flex`
                     )}
                 >
                     <Button
+                        variant={"outline"}
                         onClick={ () => {
                             projectCustomizationForm.handleSubmit(handleSubmit)()
                         } }

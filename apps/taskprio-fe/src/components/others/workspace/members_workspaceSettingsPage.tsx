@@ -3,11 +3,11 @@ import { EWorkspaceRole, TWorkspaceMember } from "@repo/taskprio-types/src";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import UserAvatar from "../shared/UserAvatar";
 import WorkspaceMemberBadge from "../shared/WorkspaceMemberBadge";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, PlusIcon } from "lucide-react";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import dayjs from "dayjs";
 import { Label } from "@/components/ui/label";
@@ -29,9 +29,7 @@ const MembersSectionContenxt = createContext<TMembersSectionContext>({
 
 export const Members_WorkspaceSettingsPage = () => {
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
 
@@ -145,9 +143,7 @@ const MemberCard : React.FC<TMemberCardProps> = ({
 
 const MemberDialog = () => {
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const {
         selectedMember,
@@ -239,7 +235,8 @@ const MemberDialog = () => {
                                 <p><span className="text-sm text-muted-foreground" >Added on -</span> {workspaceMember?.joined_at ? dayjs(workspaceMember.joined_at).format("MMMM D, YYYY") : "N/A"}</p>
                                 <p className="flex items-center gap-1" ><span className="text-sm text-muted-foreground" >Invited by -</span> {workspaceMember?.invited_by ? <UserAvatar user_id_or_email={workspaceMember.invited_by} size="sm" /> : "N/A"}</p>
                                 {
-                                    workspaceMember?.workspace_role === EWorkspaceRole.OWNER || (!isUserWorkspaceOwnerOrAdmin) ?
+                                    // Disable member role change of the selected member is an owner and the current user is not an admin or an owner
+                                    (selectedMember?.workspace_role === EWorkspaceRole.OWNER) || (!isUserWorkspaceOwnerOrAdmin) ?
                                     <div className="mt-2" >
                                         <WorkspaceMemberBadge role={workspaceMember?.workspace_role ?? EWorkspaceRole.MEMBER} />
                                     </div>

@@ -1,28 +1,28 @@
-import { useMutation, UseMutationOptions, useQuery, useQueryClient } from "@tanstack/react-query"
-import { TAddTaskAssigneePayload, TAddTaskCommentPayload, TAddTaskTagPayload, TAddTaskTimeLogPayload, TAddTaskTimeLogResponse, TArrangeTaskPayload, TArrangeTaskResponse, TCreateTaskPayload, TCreateTaskResponse, TGetTaskResponse, TMoveTaskToTrashPayload, TRemoveTaskAssigneePayload, TRemoveTaskTagPayload, TRestoreTaskFromTrashPayload, TUpdateTaskPrimitiveFieldsPayload } from "./types"
+import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query"
+import { TAddTaskAssigneePayload, TAddTaskCommentPayload, TAddTaskTagPayload, TAddTaskTimeLogPayload, TAddTaskTimeLogResponse, TArrangeTaskPayload, TArrangeTaskResponse, TCreateTaskResponse, TGetTaskResponse, TMoveTaskToTrashPayload, TRemoveTaskAssigneePayload, TRemoveTaskTagPayload, TRestoreTaskFromTrashPayload, TUpdateTaskPrimitiveFieldsPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
-import { TAddTaskCommentResponseData, TAddTaskTagResponse, TGetTaskCommentsResponse, TTask, TTaskForCardView, TTaskSectionWithTasks, TTaskTag } from "@repo/taskprio-types/src/index"
+import { updateGlobalsStore, useGlobalsStore_selectedTask, useGlobalsStore_selectedTaskboard, useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { TAddTaskCommentResponseData, TAddTaskTagResponse, TCreateTaskRequestBody, TGetTaskCommentsResponse, TTask, TTaskForCardView, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index"
 import { TGetTaskboardSectionsResponse } from "../tasksection/types"
 import { produce } from "immer"
 import { QueryKeys } from "@/services/enum"
 
 export const useCreateTask = () => {
     const queryClient = useQueryClient()
-    return useMutation<TCreateTaskResponse, Error, TCreateTaskPayload>({
-        mutationFn : async ( payload : TCreateTaskPayload ) => {
+    return useMutation<TCreateTaskResponse, Error, TCreateTaskRequestBody>({
+        mutationFn : async ( payload : TCreateTaskRequestBody ) => {
             const response = await axiosInstance.post<TCreateTaskResponse>(
                 "/private/task",
-                payload.body
+                payload
             )
             return response.data
         },
         onSuccess : ( data, payload ) => {
             queryClient.setQueryData(
-                [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, payload.body.task_board_id, true ],
+                [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, payload.task_board_id, true ],
                 ( oldData : TTaskSectionWithTasks[] ) => {
                     return oldData.map( taskSection => {
-                        if ( taskSection.task_section_id === payload.body.task_section_id ) {
+                        if ( taskSection.task_section_id === payload.task_section_id ) {
                             return {
                                 ...taskSection,
                                 tasks : [ data, ...taskSection.tasks ]
@@ -38,9 +38,7 @@ export const useCreateTask = () => {
 
 export const useArrangeTask = () => {
     const queryClient = useQueryClient()
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
     return useMutation<TArrangeTaskResponse, Error, TArrangeTaskPayload>({
         mutationFn : async ( payload : TArrangeTaskPayload ) => {
             const response = await axiosInstance.patch<TArrangeTaskResponse>(
@@ -90,9 +88,9 @@ export const useArrangeTask = () => {
 }
 
 export const useUpdateTaskPrimitiveFields = () => {
-    const {
-        selectedTask
-    } = useGlobalsStore()
+
+    const selectedTask = useGlobalsStore_selectedTask()
+
     return useMutation<TTask, Error, TUpdateTaskPrimitiveFieldsPayload>({
         mutationFn : async ( payload : TUpdateTaskPrimitiveFieldsPayload ) => {
             const response = await axiosInstance.patch<TTask>(
@@ -111,9 +109,9 @@ export const useUpdateTaskPrimitiveFields = () => {
                 }
             })
         },
-        // onSuccess : ( _, variables ) => {
+        // onSuccess : () => {
         //     queryClient.invalidateQueries({
-        //         queryKey : [ ...QueryKeys.GET_TASK.split, variables.task_id ]
+        //         queryKey : [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTask?.task_board_id, true ]
         //     })
         // }
     })
@@ -121,9 +119,7 @@ export const useUpdateTaskPrimitiveFields = () => {
 
 export const useAddTaskAssignee = () => {
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const queryClient = useQueryClient()
 
@@ -158,9 +154,7 @@ export const useAddTaskAssignee = () => {
 
 export const useRemoveTaskAssignee = () => {
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const queryClient = useQueryClient()
 
@@ -219,10 +213,8 @@ export const useAddTaskTag = (
     onSuccess? : ( data : TAddTaskTagResponse ) => void
 ) => {
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
 
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
     const queryClient = useQueryClient()
 
     return useMutation<TAddTaskTagResponse, Error, TAddTaskTagPayload>({
@@ -250,14 +242,6 @@ export const useAddTaskTag = (
                     } )
                 }
             )
-            queryClient.setQueryData(
-                [ ...QueryKeys.GET_TASK.split, variables.body.task_id ],
-                ( oldData : TGetTaskResponse ) => {
-                    return produce( oldData, draft => {
-                        draft.tags = [ ...draft.tags, data ]
-                    } )
-                }
-            )
             onSuccess?.( data )
         }
     })
@@ -268,9 +252,7 @@ export const useRemoveTaskTag = (
     onSuccess? : () => void
 ) => {
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const queryClient = useQueryClient()
 
@@ -351,10 +333,8 @@ type TUseMoveTaskToTrashOptions = UseMutationOptions<any, Error, TMoveTaskToTras
 
 export const useMoveTaskToTrash = ( options? : TUseMoveTaskToTrashOptions ) => {
 
-    const {
-        selectedWorkspace,
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const queryClient = useQueryClient()
 
@@ -386,10 +366,8 @@ type TUseRestoreTaskFromTrashOptions = UseMutationOptions<any, Error, TRestoreTa
 
 export const useRestoreTaskFromTrash = ( options? : TUseRestoreTaskFromTrashOptions ) => {
 
-    const {
-        selectedWorkspace,
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const queryClient = useQueryClient()
 

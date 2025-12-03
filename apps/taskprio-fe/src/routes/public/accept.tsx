@@ -4,7 +4,8 @@ import Spinner from "@/components/others/Spinner"
 import { Button } from "@/components/ui/button"
 import { useAcceptInvitation } from "@/services/private/invitation/mutation"
 import { useGetInvitationInfo } from "@/services/public/invitation/query"
-import { useGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore_authenticated, useGlobalsStore_invitationRecipient, useGlobalsStore_user } from "@/stores/globals"
+
 import { AxiosError } from "axios"
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
@@ -24,11 +25,9 @@ const AcceptRoute = () => {
     const navigate = useNavigate()
     const [ searchParams ] = useSearchParams()
 
-    const {
-        authenticated,
-        user,
-        invitationRecipient
-    } = useGlobalsStore()
+    const authenticated = useGlobalsStore_authenticated()
+    const user = useGlobalsStore_user()
+    const invitationRecipient = useGlobalsStore_invitationRecipient()
 
     const {
         data : invitationInfo,

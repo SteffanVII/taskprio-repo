@@ -1,14 +1,13 @@
-import { TGetTaskboardSectionsResponse } from "@/services/private/tasksection/types"
-import { TGlobalsStore, useGlobalsStore } from "@/stores/globals"
-import { EWebSocketEventType, TTask, TTaskSectionWithTasks, TTaskUpdateWebSocketMessageSimple, TWebSocketChangePathMessageSimple, TWebSocketMessage } from "@repo/taskprio-types/src"
-import { QueryClient, useQueryClient } from "@tanstack/react-query"
+import { useGlobalsStore_authenticated, useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { EWebsocketClientEventType, TWebSocketChangePathMessageSimple, TWebSocketMessage } from "@repo/taskprio-types/src"
 import { createContext, useLayoutEffect, useRef, useState } from "react"
-import { produce } from "immer"
+import { useWebSocketEventHandlers } from "./eventHandlers/WebsocketEventHandlers"
 
 type TWebSocketContext = {
     connected : boolean,
     socket : WebSocket | null,
     closeWebSocketConnection : () => void,
+    sendWebSocketMessage : ( message : TWebSocketMessage ) => void,
     pathChangeMethods : {
         updateWorkspacePath : ( workspace_id : string ) => void,
         // updateProjectPath : ( project_id : string ) => void,
@@ -19,6 +18,7 @@ type TWebSocketContext = {
 export const WebSocketContext = createContext<TWebSocketContext>({
     connected : false,
     socket : null,
+    sendWebSocketMessage : () => {},
     closeWebSocketConnection : () => {},
     pathChangeMethods : {
         updateWorkspacePath : () => {},
@@ -33,19 +33,18 @@ type TWebSocketProviderProps = {
 
 export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
 
-    const globalsStore = useGlobalsStore()
-
-    const queryClient = useQueryClient()
+    const authenticated = useGlobalsStore_authenticated()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ connected, setConnected ] = useState(false)
     const socket = useRef<WebSocket | null>(null)
 
     const updateWorkspacePath = ( workspace_id : string ) => {
         const message : TWebSocketMessage<TWebSocketChangePathMessageSimple> = {
-            type : EWebSocketEventType.PATH_CHANGE,
+            type : EWebsocketClientEventType.PATH_CHANGE,
             data : {
                 // The previous workspace id is the workspace id of the currently loaded workspace
-                previous_workspace_id : globalsStore.selectedWorkspace?.workspace_id,
+                previous_workspace_id : selectedWorkspace?.workspace_id,
                 workspace_id : workspace_id
             }
         }
@@ -64,21 +63,13 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         setConnected(false)
     }
 
-    const websocketEventHandlers = ( message : TWebSocketMessage ) => {
-
-        switch ( message.type ) {
-            case EWebSocketEventType.TASK_UPDATED:
-                taskUpdateWebSocketMessageHandler( message, queryClient, globalsStore )
-                break;
-            default:
-                break;
-        }
-    
-    }
+    // Event Handlers
+    const websocketEventHandlers = useWebSocketEventHandlers();
 
     useLayoutEffect(() => {
         if ( socket.current ) return
-        if ( !globalsStore.authenticated ) return
+        if ( !authenticated ) return
+
         socket.current = new WebSocket(
             `${import.meta.env.VITE_TASKPRIO_WSS_URL}`
         )
@@ -88,22 +79,24 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         socket.current.onclose = () => {
             setConnected(false)
         }
-    }, [ globalsStore.authenticated ] )
+    }, [ authenticated ] )
 
+    // Attach the message handlers to the socket
     useLayoutEffect(() => {
         if ( !connected ) return
         if ( !socket.current ) return
-        socket.current!.onmessage = ( event ) => {
+        socket.current.onmessage = ( event ) => {
             const message = JSON.parse(event.data) as TWebSocketMessage
             websocketEventHandlers( message )
         }
-    }, [ connected, globalsStore ])
+    }, [ connected, selectedWorkspace, authenticated, websocketEventHandlers ])
 
     return (
         <WebSocketContext.Provider
             value={{
                 connected,
                 socket : socket.current,
+                sendWebSocketMessage,
                 closeWebSocketConnection,
                 pathChangeMethods : {
                     updateWorkspacePath,
@@ -112,37 +105,6 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         >
             { children }
         </WebSocketContext.Provider>
-    )
-
-}
-
-const taskUpdateWebSocketMessageHandler = (
-    message : TWebSocketMessage<TTask>,
-    queryClient : QueryClient,
-    globalsStore : TGlobalsStore
-) => {
-
-    const {
-        selectedTaskboard
-    } = globalsStore;
-
-    queryClient.setQueryData(
-        [ "get_taskboard_sections", selectedTaskboard?.task_board_id, true ],
-        ( oldData : TGetTaskboardSectionsResponse ) => produce( oldData, draft => {
-            draft.forEach( section => {
-                if ( section.task_section_id === message.data.task_section_id ) {
-                    (section as TTaskSectionWithTasks).tasks = (section as TTaskSectionWithTasks).tasks.map( task => {
-                        if ( task.task_id === message.data.task_id ) {
-                            return {
-                                ...message.data,
-                                assignees : task.assignees
-                            }
-                        }
-                        return task
-                    } )
-                }
-            } )
-        } )
     )
 
 }

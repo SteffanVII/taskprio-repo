@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { TJWTPayload } from "./types.js";
-import { EWorkspaceRole } from "@repo/taskprio-types";
+import { EProjectRole, EWorkspaceRole } from "@repo/taskprio-types";
 
 
 export interface IAuthenticatedRequest extends Request {
@@ -8,7 +8,8 @@ export interface IAuthenticatedRequest extends Request {
 }
 
 export interface IAuthenticatedProjectMemberRequest extends IAuthenticatedRequest {
-    projectId : string
+    projectId : string,
+    projectRole : EProjectRole
 }
 
 export interface IAuthenticatedWorkspaceMemberRequest extends IAuthenticatedRequest {

@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import LogoutTrigger from "../shared/LogoutTrigger";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_user } from "@/stores/globals";
+
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router";
 import UserAvatar from "../shared/UserAvatar";
@@ -12,9 +13,7 @@ const UserPopoverMenu = () => {
 
     const navigate = useNavigate()
 
-    const {
-        user
-    } = useGlobalsStore()
+    const user = useGlobalsStore_user()
 
     return (
         <Popover>

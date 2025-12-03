@@ -1,25 +1,28 @@
-import useTaskTodoPageStore from "@/stores/taskTodoPage";
-import { useContext, useMemo } from "react";
+import { 
+    useTaskTodoPageStore_sessionActive, 
+    useTaskTodoPageStore_timerCount 
+} from "@/stores/taskTodoPage";
+import { useContext, useMemo, useState } from "react";
 import { StateManager_TaskTodoPageContext } from "../taskTodo/StateManager_TaskTodoPage";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatTaskTodoTimeSeconds } from "@/lib/utils/durationFormatter";
 import TagBadge from "../shared/tag/TagBadge";
 import { Slider } from "@/components/ui/slider";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
+import { TUserTaskTodoState } from "@repo/taskprio-types/src";
+import dayjs from "@/lib/dayjs";
+import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 
 
 const TodoCard_MainDashboardPane = () => {
 
     const { pathname } = useLocation()
 
-    const {
-        sessionActive,
-        timerCount
-    } =  useTaskTodoPageStore()
+    const sessionActive = useTaskTodoPageStore_sessionActive()
+    const timerCount = useTaskTodoPageStore_timerCount()
 
     const {
         topTaskTodo,
@@ -28,18 +31,35 @@ const TodoCard_MainDashboardPane = () => {
         handlePauseSession
     } = useContext(StateManager_TaskTodoPageContext)
 
+    const [ loading, setLoading ] = useState<boolean>(false)
     
+    const currentWorkTime = ( value : TUserTaskTodoState | null ) => {
+        if ( value ) {
+            return value.timers.reduce( ( acc, curr ) => {
+                if ( curr.start && curr.stop ) {
+                    const start = dayjs(curr.start)
+                    const stop = dayjs(curr.stop)
+                    return acc + stop.diff( start, "second" )
+                }
+                return acc
+            }, 0 )
+        }
+        return 0
+    }
+
     const workTimeExceeded = useMemo(() => {
         if ( !topTaskTodo ) return false
-        return Number(topTaskTodo!.current_work_time) > Number(topTaskTodo!.work_time_goal)
+        return Math.floor( (currentWorkTime(topTaskTodo) + timerCount) ) > Number(topTaskTodo!.work_time_goal)
     }, [topTaskTodo])
     
-    const handleSessionButtonOnClick = () => {
+    const handleSessionButtonOnClick = async () => {
+        setLoading(true)
         if ( sessionActive ) {
-            handlePauseSession()
+            await handlePauseSession()
         } else {
-            handleStartSession()
+            await handleStartSession()
         }
+        setLoading(false)
     }
     
     if ( !userTaskTodoState || userTaskTodoState.length === 0 || pathname.includes("/tt") ) return null
@@ -49,9 +69,9 @@ const TodoCard_MainDashboardPane = () => {
             className={cn(
                 `relative`,
                 `flex flex-col gap-4`,
-                `w-[calc(100%-1rem)] h-fit bg-accent `,
-                `p-4 mx-auto`,
-                `border rounded-lg shadow-t-lg `,
+                `w-[calc(100%-1rem)] h-fit `,
+                `p-4 mx-auto bg-card`,
+                `border border-primary/30 rounded-lg shadow-t-lg `,
                 `animate-in fade-in-0 duration-300 `,
                 sessionActive && `shadow-2xl shadow-primary/40`
             )}
@@ -81,11 +101,12 @@ const TodoCard_MainDashboardPane = () => {
                     size="icon"
                     variant={sessionActive ? "destructive" : "default"}
                     onClick={handleSessionButtonOnClick}
+                    isLoading={loading}
                 >
                     {
                         sessionActive &&
                         <div
-                            className="absolute top-0 left-0 size-full rounded-full bg-destructive/50 animate-ping delay-500"
+                            className="absolute top-0 left-0 size-full rounded-full bg-destructive/50 animate-ping"
                         ></div>
                     }
                     {
@@ -96,20 +117,61 @@ const TodoCard_MainDashboardPane = () => {
                     }
                 </Button>
             </div>
-            <div className="flex flex-col gap-2" >
+            <div className="flex gap-2" >
                 <p
                     className={cn(
-                        workTimeExceeded && "text-destructive"
+                        workTimeExceeded && "text-destructive truncate"
                     )}
                 >
-                    {formatTaskTodoTimeSeconds(Number(topTaskTodo?.current_work_time) + timerCount)} / {formatTaskTodoTimeSeconds(Number(topTaskTodo?.work_time_goal))}
+                    <NumberFlowGroup>
+                        <span
+                            className={cn(
+                                "text-3xl font-bold",
+                            )}
+                        >
+                            <NumberFlow
+                                value={ Math.floor( (currentWorkTime(topTaskTodo) + timerCount) / 3600 ) }
+                            />
+                            <NumberFlow
+                                prefix=":"
+                                value={Math.floor(((currentWorkTime(topTaskTodo) + timerCount) % 3600) / 60)}
+                                digits={{ 1: { max: 5 } }}
+                                format={{ minimumIntegerDigits: 2 }}
+                                />
+                            <NumberFlow
+                                prefix=":"
+                                value={(currentWorkTime(topTaskTodo) + timerCount) % 60}
+                                digits={{ 1: { max: 5 } }}
+                                format={{ minimumIntegerDigits: 2 }}
+                            />
+                        </span>
+                    </NumberFlowGroup>
+                    <span className="text-3xl font-bold" >/</span>
+                    <NumberFlowGroup>
+                        <span className="text-2xl font-bold" >
+                            <NumberFlow
+                                value={ Math.floor( Number(topTaskTodo?.work_time_goal) / 3600 ) }
+                            />
+                            <NumberFlow
+                                prefix=":"
+                                value={Math.floor((Number(topTaskTodo?.work_time_goal) % 3600) / 60)}
+                                digits={{ 1: { max: 5 } }}
+                                format={{ minimumIntegerDigits: 2 }}
+                                />
+                        </span>
+                    </NumberFlowGroup>
                 </p>
             </div>
             <Slider
-                value={[Number(topTaskTodo!.current_work_time)]}
+                value={[currentWorkTime(topTaskTodo) + timerCount]}
                 min={0}
                 max={Number(topTaskTodo!.work_time_goal)}
                 step={1}
+                hideThumb
+                className={cn(
+                    (currentWorkTime(topTaskTodo) + timerCount) > Number(topTaskTodo!.work_time_goal) && `text-destructive`
+                )}
+                destructive={workTimeExceeded}
             />
             {
                 topTaskTodo!.tags.length > 0 && (

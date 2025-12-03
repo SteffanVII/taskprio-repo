@@ -2,28 +2,31 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input";
 import { useCreateProject } from "@/services/private/project/mutation";
-import { updateDialogsStore, useDialogsStore } from "@/stores/dialogs";
-import { useGlobalsStore } from "@/stores/globals";
+import { updateDialogsStore, useDialogsStore_createProjectDialog } from "@/stores/dialogs";
+import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { useState } from "react";
 
 const CreateProjectDialog = () => {
 
     const {
-        createProjectDialog : {
-            open
-        }
-    } = useDialogsStore()
+        open
+    } = useDialogsStore_createProjectDialog()
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ projectName, setProjectName ] = useState<string>("")
 
     const {
         mutateAsync : createProject,
         isPending : isCreatingProject
-    } = useCreateProject()
+    } = useCreateProject(() => {
+        updateDialogsStore({
+            createProjectDialog : {
+                open : false
+            }
+        })
+        setProjectName("")
+    })
 
     const onSubmit = async () => {
         if ( !selectedWorkspace ) return
@@ -31,11 +34,6 @@ const CreateProjectDialog = () => {
             body : {
                 project_name : projectName,
                 workspace_id : selectedWorkspace.workspace_id
-            }
-        })
-        updateDialogsStore({
-            createProjectDialog : {
-                open : false
             }
         })
     }
@@ -64,7 +62,7 @@ const CreateProjectDialog = () => {
                     <Button
                         variant={"outline"}
                         onClick={onSubmit}
-                        disabled={isCreatingProject}
+                        isLoading={isCreatingProject}
                     >Create</Button>
                 </DialogFooter>
             </DialogContent>

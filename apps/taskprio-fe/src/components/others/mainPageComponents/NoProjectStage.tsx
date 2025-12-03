@@ -5,16 +5,15 @@ import Spinner from "../Spinner";
 import { useCreateProject } from "@/services/private/project/mutation";
 import { useNavigate } from "react-router";
 import { useState } from "react";
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+
 import { cn } from "@/lib/utils";
 
 const NoProjectStage = () => {
 
     const navigate = useNavigate()
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ projectName, setProjectName ] = useState<string>("")
 

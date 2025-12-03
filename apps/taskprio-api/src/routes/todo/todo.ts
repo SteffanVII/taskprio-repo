@@ -1,9 +1,11 @@
 import { Router, Response } from "express";
-import { IAddTaskToTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
+import { IAddTaskToTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
 import { verifyWorkspaceMemberMiddleware } from "../../middlewares/authentication.js";
 import { getTasksAssignedToUserByWorkspaceId, getUserTaskTodoState } from "../../database/queries/task/query.js";
 import { addTaskToTodo, updateTaskTodoState } from "../../database/queries/task/mutation.js";
-import { finishTaskTodoSession } from "../../database/queries/todo/mutation.js";
+import { finishTaskTodoSession, startOrStopTaskTimer } from "../../database/queries/todo/mutation.js";
+import { TStartOrStopTaskTodoTimerRequestPathParams } from "@repo/taskprio-types";
+import { taskTodoTimerHeartbeatTimeoutManager } from "../../initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 
 export function registerToDoRoutes( router : Router ) {
 
@@ -92,6 +94,45 @@ export function registerToDoRoutes( router : Router ) {
             try {
                 await finishTaskTodoSession( workspace_id, user_id )
                 res.status(200).json({ message : "Task todo session finished" })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    // Start or stop task todo timer
+    router.post(
+        "/start-or-stop/:task_id",
+        verifyWorkspaceMemberMiddleware,
+        async ( req : IStartOrStopTaskTodoTimerRequest, res : Response ) => {
+
+            const { user_id } = req.user;
+            const { task_id } = req.params;
+
+            if ( !task_id ) {
+                res.status(401).json({ message : "Task ID is required" })
+            }
+
+            try {   
+                const timer = await startOrStopTaskTimer( user_id, task_id )
+                if ( timer.start && timer.stop === null ) {
+                    // Create the timeout timer to pause the the task timer when there is no active app updating the last_seen for 5 minutes
+                    taskTodoTimerHeartbeatTimeoutManager.udpateTaskTodoTimerHeartbeatTimeout(
+                        task_id,
+                        user_id,
+                        timer.last_seen!
+                    )
+                    res.status(200).json(timer)
+                } else {
+                    // Clear the heartbeat if paused
+                    taskTodoTimerHeartbeatTimeoutManager.clearTaskTOdoTimerHeartbeatTimeout(
+                        task_id,
+                        user_id
+                    )
+                    res.status(200).json(timer)
+                }
             } catch (error) {
                 console.log(error)
                 res.status(500).json({ message : "Internal server error" })

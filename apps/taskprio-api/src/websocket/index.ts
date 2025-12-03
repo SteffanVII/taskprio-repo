@@ -1,17 +1,19 @@
 import { WebSocketServer } from "ws"
 import { WebSocket } from "ws"
 import { IncomingMessage } from "http"
-import { TWebSocketMessage } from "@repo/taskprio-types"
+import { EWebsocketClientEventType, TWebSocketMessage } from "@repo/taskprio-types"
 import { pathUpdateEventHandlerSimple } from "./eventHandlers/pathUpdateEventHandler.js"
 import cookie from "cookie"
 import { TJWTPayload } from "../middlewares/types.js"
 import jwt from "jsonwebtoken"
-import { EWebSocketEventType } from "@repo/taskprio-types"
 import { WebSocketConnectionsManagerSimple } from "./connectionsManager.js"
+import { taskTodoTimerHeartbeatEventHandler } from "./eventHandlers/taskTodoEventHandlers.js"
 
 export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsManagerSimple : WebSocketConnectionsManagerSimple ) => {
     
-    wsConnectionsManagerSimple.addEventHandler( EWebSocketEventType.PATH_CHANGE, pathUpdateEventHandlerSimple )
+    // Register incoming event handlers
+    wsConnectionsManagerSimple.addEventHandler( EWebsocketClientEventType.PATH_CHANGE, pathUpdateEventHandlerSimple )
+    wsConnectionsManagerSimple.addEventHandler( EWebsocketClientEventType.TASK_TODO_TIMER_HEARTBEAT, taskTodoTimerHeartbeatEventHandler )
 
     // Connection event
     wss.on("connection", ( ws : WebSocket, req : IncomingMessage ) => {

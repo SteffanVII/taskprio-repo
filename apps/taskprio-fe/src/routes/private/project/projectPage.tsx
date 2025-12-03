@@ -2,12 +2,11 @@ import MainDashboardHeader from "@/components/others/mainDashboardHeader/MainDas
 import { cn } from "@/lib/utils";
 import { Outlet } from "react-router";
 
-
 const ProjectPage = () => {
 
     return (
         <>
-            <MainDashboardHeader/>  
+            <MainDashboardHeader/>
             <div
                 className={cn(
                     `relative max-h-full min-h-0 grow bg-accent `

@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS workspace."workspace_members" (
 	workspace_id UUID NOT NULL REFERENCES workspace."workspace"(workspace_id),
 	user_id UUID NOT NULL REFERENCES tp_user."user"(user_id),
 	workspace_role INTEGER NOT NULL REFERENCES workspace."workspace_role"(id),
-	joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	invited_by UUID NOT NULL REFERENCES tp_user."user"(user_id),
 
 	PRIMARY KEY (workspace_id, user_id)

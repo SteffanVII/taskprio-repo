@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 import { useUpdateTaskboardSection } from "@/services/private/tasksection/mutation"
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals"
+import { updateTaskboardDragStore, useTaskboardDragStore_taskboardSectionDrag } from "@/stores/taskboardDrag"
 import React, { useState } from "react"
 
 export type TTaskboardSectionDropProps = {
@@ -11,11 +11,7 @@ export type TTaskboardSectionDropProps = {
 
 export const TaskboardSectionDrop : React.FC<TTaskboardSectionDropProps> = ({ displayOrder, topTaskSectionId, bottomTaskSectionId }) => {
 
-    const {
-        taskboardSectionDrag : {
-            taskboardSection
-        }
-    } = useGlobalsStore()
+    const { taskboardSection } = useTaskboardDragStore_taskboardSectionDrag()
 
     const {
         mutateAsync : updateTaskboardSectionMutation,
@@ -49,7 +45,7 @@ export const TaskboardSectionDrop : React.FC<TTaskboardSectionDropProps> = ({ di
         }
 
         setDraggedOver( false )
-        updateGlobalsStore({
+        updateTaskboardDragStore({
             taskboardSectionDrag : {
                 taskboardSection : null
             }

@@ -1,30 +1,7 @@
 import { sql, Transaction } from "kysely";
 import { databaseFunctionWrapper, EDatabaseFunction } from "../../postgresql.js";
-import { DB, TTaskboard } from "@repo/taskprio-types";
+import { DB, TTaskboard, TTaskboardInactiveForTable } from "@repo/taskprio-types";
 import { taskprioKysely } from "../../kysely/kysely.js";
-
-// export const getProjectTaskboardList = databaseFunctionWrapper(
-//     async (
-//         client,
-//         projectId : string
-//     ) : Promise<TTaskboard[] | undefined> => {
-//         const taskboardList = await client.query({
-//             text : `--sql
-//                 SELECT
-//                     task_board_name,
-//                     created_at,
-//                     public.uuid_to_base64(task_board_id) AS task_board_id,
-//                     public.uuid_to_base64(project_id) AS project_id
-//                 FROM
-//                     taskboard."task_board"
-//                 WHERE
-//                     project_id = public.detect_and_convert_to_uuid($1)
-//             `,
-//             values : [ projectId ]
-//         })
-//         return taskboardList.rows
-//     }
-// )
 
 export const getProjectTaskboardList = async (
     projectId : string,
@@ -37,12 +14,46 @@ export const getProjectTaskboardList = async (
         .select([
             "taskboard.task_board.task_board_name",
             "taskboard.task_board.created_at",
+            "taskboard.task_board.inactive",
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_board.task_board_id)`.as( "task_board_id" ),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_board.project_id)`.as( "project_id" )
         ])
         .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+        .where( "taskboard.task_board.inactive", "=", false )
         .execute()
 
     return taskboardList;
+
+}
+
+export const getProjectInactiveTaskboardList = async (
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<TTaskboardInactiveForTable[]> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "taskboard.task_board" ) : taskprioKysely.selectFrom( "taskboard.task_board" )
+
+    return await queryBuilder
+        .leftJoin( "taskboard.task_section", "taskboard.task_section.task_board_id", "taskboard.task_board.task_board_id" )
+        .leftJoin( "taskboard.task", "taskboard.task.task_board_id", "taskboard.task_board.task_board_id" )
+        .select( eb => [
+            "taskboard.task_board.task_board_name",
+            "taskboard.task_board.created_at",
+            "taskboard.task_board.inactive",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_board.task_board_id)`.as( "task_board_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_board.project_id)`.as( "project_id" ),
+            eb.fn.count<number>("taskboard.task_section.task_section_id").as( "sections" ),
+            eb.fn.count<number>( "taskboard.task.task_id" ).as("tasks")
+        ])
+        .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+        .where( "taskboard.task_board.inactive", "=", true )
+        .groupBy([
+            "taskboard.task_board.task_board_name",
+            "taskboard.task_board.created_at",
+            "taskboard.task_board.inactive",
+            "taskboard.task_board.task_board_id",
+            "taskboard.task_board.project_id"
+        ])
+        .execute()
 
 }

@@ -136,7 +136,7 @@ const LoginForm : React.FC<TLoginFormProps> = ({
                 <Separator className="my-4" />
 
                 <span className="text-xs text-center text-muted-foreground">Or</span>
-                
+
                 <GoogleLogin
                     onSuccess={(credentialResponse) => {
                         if ( !credentialResponse.clientId || !credentialResponse.credential ) {

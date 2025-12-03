@@ -26,7 +26,8 @@ export const getUserProfile = async (
                         "tp_user.user_profile_photo.crop_width",
                         "tp_user.user_profile_photo.crop_height",
                         "tp_user.user_profile_photo.image_type",
-                        "tp_user.user_profile_photo.photo_file_name"
+                        "tp_user.user_profile_photo.photo_file_name",
+                        "tp_user.user_profile_photo.last_modified"
                     ])
                     .where( "tp_user.user_profile_photo.user_id", "=", eb.ref( "tp_user.user.user_id" ) )
             ).as( "profile_photo" )

@@ -2,23 +2,29 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 import { TGetProjectTaskboardsPayload, TGetProjectTaskboardsResponse, TGetTaskboardTrashTasksPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
-import { TGetTaskboardTrashTasksResponseData } from "@repo/taskprio-types/src"
+import { TGetProjectInactiveTaskboardsRequestQuery, TGetProjectInactiveTaskboardsResponseData, TGetTaskboardTrashTasksResponseData } from "@repo/taskprio-types/src"
+import { AxiosError } from "axios"
 
-export const useGetProjectTaskboards = ( payload : TGetProjectTaskboardsPayload ) => {
+type TUseGetProjectTaskboardsConfig = {
+    options? : Partial<UseQueryOptions<TGetProjectTaskboardsResponse, Error>>,
+    payload : TGetProjectTaskboardsPayload
+}
+
+export const useGetProjectTaskboards = ( config : TUseGetProjectTaskboardsConfig ) => {
     return useQuery<TGetProjectTaskboardsResponse, Error>({
-        queryKey : [ ...QueryKeys.GET_PROJECT_TASKBOARDS.split, payload.query.project_id ],
+        queryKey : [ ...QueryKeys.GET_PROJECT_TASKBOARDS.split, config.payload.query.project_id ],
         queryFn : async () => {
             const response = await axiosInstance.get<TGetProjectTaskboardsResponse>(
                 `/private/taskboard/s`,
                 {
                     params : {
-                        project_id : payload.query.project_id
+                        project_id : config.payload.query.project_id
                     }
                 }
             )
             return response.data
         },
-        enabled : !!payload.query.project_id
+        enabled : !!config.payload.query.project_id && (config.options?.enabled ?? true)
     })
 }
 
@@ -37,5 +43,21 @@ export const useGetTaskboardTrashTasks = ( config : TUseGetTaskboardTrashTasksCo
             return response.data
         },
         enabled : !!config.payload.params.taskboard_id && config.options?.enabled
+    })
+}
+
+export const useGetProjectDeactivateTaskboards = ( payload : TGetProjectInactiveTaskboardsRequestQuery ) => {
+    return useQuery<TGetProjectInactiveTaskboardsResponseData, AxiosError>({
+        queryKey : [ ...QueryKeys.GET_PROJECT_INACTIVE_TASKBOARDS.split, payload.project_id ],
+        queryFn : async () => {
+            const response = await axiosInstance.get<TGetProjectInactiveTaskboardsResponseData>(
+                `/private/taskboard/inactive`,
+                {
+                    params : payload
+                }
+            )
+            return response.data
+        },
+        enabled : !!payload.project_id
     })
 }

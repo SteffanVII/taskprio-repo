@@ -1,15 +1,13 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { TGetUserWorkspaceResponse, TGetUserWorkspacesResponse, TGetWorkspaceMemberPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
-import { useGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore_authenticated } from "@/stores/globals"
 import { QueryKeys } from "@/services/enum"
 import { TWorkspaceMember } from "@repo/taskprio-types/src"
 
 export const useGetUserWorkspaces = () => {
     
-    const {
-        authenticated
-    } = useGlobalsStore()
+    const authenticated = useGlobalsStore_authenticated()
 
     return useQuery<any, any, TGetUserWorkspacesResponse>({
         queryKey : [ ...QueryKeys.GET_USER_WORKSPACES.split ],
@@ -26,9 +24,7 @@ export const useGetUserWorkspaces = () => {
 
 export const useGetUserWorkspace = ( workspace_id? : string ) => {
     
-    const {
-        authenticated
-    } = useGlobalsStore()
+    const authenticated = useGlobalsStore_authenticated()
     
     return useQuery<string, any, TGetUserWorkspaceResponse >({
         queryKey : [ ...QueryKeys.GET_USER_WORKSPACE.split, workspace_id ],

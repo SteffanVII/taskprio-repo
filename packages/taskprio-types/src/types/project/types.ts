@@ -54,6 +54,28 @@ export type TGetProjectMemberRequestParams = {
     member_id : string
 }
 
+export type TDeactivateProjectRequestBody = {
+    workspace_id : string,
+    project_id : string
+}
+
+export type TDropProjectRequestQueryParams = {
+    workspace_id : string,
+    project_id : string,
+    project_name : string
+}
+
+export type TReactivateProjectRequestBody = {
+    workspace_id : string,
+    project_id : string
+}
+
+export type TGetDeactivatedProjectsRequestParams = {
+    workspace_id : string
+}
+
+export type TGetDeactivatedprojectsResponseData = TProjectInactiveForTable[]
+
 // Project
 
 export type TProject = Selectable<ProjectProject> & {
@@ -64,3 +86,8 @@ export type TProject = Selectable<ProjectProject> & {
 export type TProjectPrimitive = Selectable<ProjectProject>
 
 export type TProjectMember = Selectable<ProjectProjectMembers> & Pick<TUser, "firstname" | "lastname" | "email">
+
+export type TProjectInactiveForTable = TProjectPrimitive & {
+    taskboards : number,
+    members : number   
+}

@@ -13,7 +13,7 @@ const ProfilePage = () => {
 
     const {
         data : profileData,
-        isLoading : isLoadingProfileData
+        // isLoading : isLoadingProfileData
     } = useGetUserProfile()
 
     return (

@@ -1,7 +1,8 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import React, { useContext, useState } from "react";
 import { TaskboardSidebarContext } from "./TaskboardSidebar";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedTaskboard } from "@/stores/globals";
+
 import { ArchiveRestore, Trash2, Undo2 } from "lucide-react";
 import { useGetTaskboardTrashTasks } from "@/services/private/taskboard/query";
 import Spinner from "../Spinner";
@@ -17,9 +18,7 @@ import { toast } from "sonner";
 
 const TaskboardTrashSheet = () => {
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const {
         openTrashSheet,
@@ -81,7 +80,9 @@ const TaskboardTrashSheet = () => {
                     </SheetHeader>
                     {
                         taskboardTrashTasksIsLoading &&
-                        <Spinner size="xl" />
+                        <div className="w-full py-[4rem] flex items-center justify-center" >
+                            <Spinner size="xl"/>
+                        </div>
                     }
                     {
                         (!taskboardTrashTasksIsLoading && taskboardTrashTasks) &&
@@ -151,7 +152,7 @@ const TrashTaskCard : React.FC<TTrashTaskCardProps> = ({
         <div
             className={cn(
                 `flex flex-col`,
-                `rounded-2xl border transition-all duration-500`,
+                `bg-card rounded-md border transition-all duration-500`,
                 `hover:border-primary hover:shadow-lg`,
             )}
         >

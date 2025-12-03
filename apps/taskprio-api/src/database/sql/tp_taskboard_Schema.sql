@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS taskboard."task_board" (
 	task_board_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_id UUID NOT NULL REFERENCES project."project",
 	task_board_name VARCHAR(255),
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	inactive BOOLEAN DEFAULT false
 );
 
 DROP VIEW IF EXISTS taskboard."task_board_base64" CASCADE;
@@ -24,11 +25,11 @@ FROM taskboard."task_board";
 DROP TABLE IF EXISTS taskboard."task_section" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_section" (
 	task_section_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	task_board_id UUID NOT NULL REFERENCES taskboard."task_board",
+	task_board_id UUID NOT NULL REFERENCES taskboard."task_board" ON DELETE CASCADE,
 	task_section_name VARCHAR(255) NOT NULL,
 	task_section_color VARCHAR(7),
 	display_order DOUBLE PRECISION NOT NULL,
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
 	CONSTRAINT task_section_color_check CHECK (task_section_color IS NULL OR task_section_color ~ '^#([0-9a-fA-F]{6})$')
 );
@@ -51,7 +52,7 @@ DROP TABLE IF EXISTS taskboard."task" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task" (
 	task_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	task_board_id UUID NOT NULL REFERENCES taskboard."task_board",
-	task_section_id UUID NOT NULL REFERENCES taskboard."task_section",
+	task_section_id UUID NOT NULL REFERENCES taskboard."task_section" ON DELETE CASCADE,
 	task_title VARCHAR(255) NOT NULL,
 	task_description TEXT,
 	task_estimate INTEGER,
@@ -59,8 +60,8 @@ CREATE TABLE IF NOT EXISTS taskboard."task" (
 	task_depth INTEGER NOT NULL DEFAULT 0,
 	display_order DOUBLE PRECISION NOT NULL,
 	created_by UUID NOT NULL REFERENCES tp_user."user",
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-	last_modified TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	in_trash BOOLEAN DEFAULT FALSE
 );
 
@@ -113,10 +114,10 @@ FROM taskboard."task_assignee";
 DROP TABLE IF EXISTS taskboard."task_time_log" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_time_log" (
 	task_time_log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	task_id UUID NOT NULL REFERENCES taskboard."task",
+	task_id UUID NOT NULL REFERENCES taskboard."task" ON DELETE CASCADE,
 	user_id UUID NOT NULL REFERENCES tp_user."user",
 	time_spent DOUBLE PRECISION NOT NULL,
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP VIEW IF EXISTS taskboard."task_time_log_base64" CASCADE;
@@ -151,11 +152,11 @@ FROM taskboard."task_tag";
 DROP TABLE IF EXISTS taskboard."task_comment" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_comment" (
 	task_comment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	task_id UUID NOT NULL REFERENCES taskboard."task",
+	task_id UUID NOT NULL REFERENCES taskboard."task" ON DELETE CASCADE,
 	user_id UUID NOT NULL REFERENCES tp_user."user",
 	comment_content TEXT,
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-	edited_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	edited_at TIMESTAMP DEFAULT NULL,
 	replying_to_task_comment_id UUID REFERENCES taskboard."task_comment" DEFAULT NULL
 );
 

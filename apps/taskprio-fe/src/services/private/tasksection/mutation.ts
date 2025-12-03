@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { TCreateTaskboardSectionPayload, TCreateTaskboardSectionResponse, TGetTaskboardSectionsResponse, TUpdateTaskboardSectionPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
-import { useGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore_selectedTaskboard } from "@/stores/globals"
 import { QueryKeys } from "@/services/enum"
 
 export const useCreateTaskboardSection = () => {
@@ -34,9 +34,7 @@ export const useUpdateTaskboardSection = () => {
 
     const queryClient = useQueryClient()
 
-    const {
-        selectedTaskboard
-    } = useGlobalsStore()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     return useMutation<any, Error, TUpdateTaskboardSectionPayload>({
         mutationFn : async ( payload : TUpdateTaskboardSectionPayload ) => {

@@ -10,8 +10,12 @@ function Slider({
   min = 0,
   max = 100,
   hideThumb = false,
+  destructive = false,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root> & { hideThumb? : boolean }) {
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  hideThumb? : boolean,
+  destructive? : boolean
+}) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -44,7 +48,8 @@ function Slider({
         <SliderPrimitive.Range
           data-slot="slider-range"
           className={cn(
-            "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
+            "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
+            destructive && "bg-destructive"
           )}
         />
       </SliderPrimitive.Track>

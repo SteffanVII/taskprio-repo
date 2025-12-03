@@ -1,10 +1,11 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TTag, TTask, TTaskForCardView, TTaskTag } from "@repo/taskprio-types/src";
-import { Check, CheckCircle2, Pencil } from "lucide-react";
+import { CheckCircle2, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import TagBadge from "../tag/TagBadge";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedProject } from "@/stores/globals";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAddTaskTag, useRemoveTaskTag } from "@/services/private/task/mutation";
 
@@ -16,9 +17,7 @@ const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
     task
 }) => {
 
-    const {
-        selectedProject
-    } = useGlobalsStore()
+    const selectedProject = useGlobalsStore_selectedProject()
 
     const [ tags, setTags ] = useState<TTaskTag[]>(task.tags)
 
@@ -67,8 +66,8 @@ const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
                 <PopoverTrigger asChild>
                     <button
                         className={cn(
-                            ` flex items-center gap-2 text-sm text-blue-400 cursor-pointer ml-auto `,
-                            ` hover:text-blue-800 `
+                            ` flex items-center gap-2 text-sm text-primary cursor-pointer ml-auto `,
+                            ` hover:text-primary `
                         )}
                     ><Pencil className=" size-4 " /> Edit Tags</button>
                 </PopoverTrigger>
@@ -89,7 +88,7 @@ const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
                                                 className=" w-full flex gap-3 items-center cursor-pointer "
                                             >
                                                 {
-                                                    tags.find( t => t.tag_id === tag.tag_id ) && <CheckCircle2 className=" size-4 text-green-400 " />
+                                                    tags.find( t => t.tag_id === tag.tag_id ) && <CheckCircle2 className=" ml-2 size-4 text-primary " />
                                                 }
                                                 <TagBadge
                                                     tag={tag}

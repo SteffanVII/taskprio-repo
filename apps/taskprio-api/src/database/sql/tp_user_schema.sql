@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS tp_user."user" (
 	lastname VARCHAR(255) NOT NULL,
 	password_hashed VARCHAR(255),
 	google_user_id VARCHAR(255),
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-	last_modified TIMESTAMP WITH TIME ZONE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	last_modified TIMESTAMP,
 
 	CONSTRAINT users_email_unique UNIQUE (email)
 );
@@ -70,7 +70,8 @@ CREATE TABLE IF NOT EXISTS tp_user."user_profile_photo" (
 	crop_x FLOAT NOT NULL,
 	crop_y FLOAT NOT NULL,
 	crop_width FLOAT NOT NULL,
-	crop_height FLOAT NOT NULL
+	crop_height FLOAT NOT NULL,
+	last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP VIEW IF EXISTS tp."user_profile_photo" CASCADE;
@@ -84,3 +85,9 @@ SELECT
 	crop_width,
 	crop_height
 FROM tp_user."user_profile_photo";
+
+DROP TRIGGER IF EXISTS update_user_profile_photo_last_modified_timestamp_trigger ON tp_user."user_profile_photo";
+CREATE TRIGGER update_user_profile_photo_last_modified_timestamp_trigger
+BEFORE INSERT OR UPDATE ON tp_user."user_profile_photo"
+FOR EACH ROW
+EXECUTE FUNCTION public.update_last_modified_timestamp();

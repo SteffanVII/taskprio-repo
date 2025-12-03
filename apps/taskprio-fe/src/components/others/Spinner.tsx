@@ -1,6 +1,6 @@
 import { LoaderCircle } from "lucide-react"
 
-type SpinnerSize = "sm" | "md" | "lg" | "xl"
+export type SpinnerSize = "sm" | "md" | "lg" | "xl"
 
 interface SpinnerProps {
     size?: SpinnerSize

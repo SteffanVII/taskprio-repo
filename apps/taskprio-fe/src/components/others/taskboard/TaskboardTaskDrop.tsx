@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils"
 import { useArrangeTask } from "@/services/private/task/mutation"
-import { useGlobalsStore } from "@/stores/globals"
+import { useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag"
+
 import React, { useState } from "react"
 
 export type TTaskboardTaskDrop = {
@@ -13,11 +14,7 @@ export type TTaskboardTaskDrop = {
 
 const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ({ task_section_id, display_order, topTaskId, bottomTaskId, fullSize }) => {
 
-    const {
-        taskboardTaskDrag : {
-            taskboardTask
-        }
-    } = useGlobalsStore()
+    const { taskboardTask } = useTaskboardDragStore_taskboardTaskDrag()
 
     const [ draggedOver, setDraggedOver ] = useState<boolean>( false)
 

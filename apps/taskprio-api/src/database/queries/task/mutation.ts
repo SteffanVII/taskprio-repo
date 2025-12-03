@@ -6,7 +6,6 @@ import { taskprioKysely } from "../../kysely/kysely.js"
 import { Transaction, Updateable } from "kysely"
 import { sql } from "kysely"
 import { getWorkspaceIdFromTaskId } from "../workspace/query.js"
-import { jsonArrayFrom, jsonBuildObject } from "kysely/helpers/postgres"
 import { getFirstTaskSectionFromTaskboard, getTaskboardSections, getTaskSectionPrimitive } from "../tasksection/query.js"
 
 export const createTask = async (
@@ -25,7 +24,10 @@ export const createTask = async (
                 return db1.selectFrom( "taskboard.task_section" )
                     .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
                     .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
-                    .select( "project.project.project_id" )
+                    .select([
+                        "project.project.project_id",
+                        "taskboard.task_section.task_board_id"
+                    ])
                     .where( "taskboard.task_section.task_section_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskSectionId})` )
             } )
             .with( "current_task_depth", db2 => {
@@ -41,6 +43,7 @@ export const createTask = async (
                 return db3.insertInto( "taskboard.task" )
                     .values({
                         task_section_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskSectionId})`,
+                        task_board_id : eb => eb.selectFrom( "task_section_project" ).select( "task_board_id" ),
                         task_title : taskName,
                         task_depth : sql<number>`(SELECT task_depth FROM current_task_depth) + 1`,
                         display_order : lastDisplayOrder + 100,
@@ -214,62 +217,6 @@ export const updateTaskPrimitiveFields = async (
 
 }
 
-// export const updateTaskPrimitiveFields = databaseFunctionWrapper(
-//     async (
-//         client,
-//         taskId : string,
-//         body : TUpdateTaskPrimitiveFieldsRequestBody
-//     ) : Promise<TTask> => {
-
-//         const {
-//             values,
-//             push,
-//             getLastIndex,
-//             joinClausesAndValueIndex
-//         } = clausesOrganizer()
-
-//         if ( body.task_title ) {
-//             push("task_title", body.task_title)
-//         }
-
-//         if ( 'task_description' in body ) {
-//             push("task_description", body.task_description)
-//         }
-
-//         if ( 'task_estimate' in body ) {
-//             push("task_estimate", body.task_estimate)
-//         }
-
-//         if ( 'task_deadline' in body ) {
-//             push("task_deadline", body.task_deadline)
-//         }
-
-//         const task = await client.query({
-//             text : `--sql
-//                 UPDATE taskboard."task"
-//                 SET ${joinClausesAndValueIndex()}
-//                 WHERE task_id = public.detect_and_convert_to_uuid($${getLastIndex() + 1})
-//                 RETURNING
-//                     task_title,
-//                     task_description,
-//                     task_estimate,
-//                     display_order,
-//                     created_at,
-//                     last_modified,
-//                     in_trash,
-//                     public.uuid_to_base64(task_id) AS task_id,
-//                     public.uuid_to_base64(task_section_id) AS task_section_id,
-//                     public.uuid_to_base64(created_by) AS created_by;
-//             `,
-//             values : [ ...values, taskId ]
-//         })
-
-//         return task.rows[0]
-
-//     },
-//     EDatabaseFunctionWrapperMode.TRANSACTION
-// )
-
 export const addTaskAssignee = async (
     taskId : string,
     userId : string,
@@ -322,60 +269,6 @@ export const addTaskAssignee = async (
 
 }
 
-// export const addTaskAssignee = databaseFunctionWrapper(
-//     async (
-//         client,
-//         taskId : string,
-//         userId : string
-//     ) : Promise<TTaskAssignee> => {
-
-//         const assignee = await client.query({
-//             text : `--sql
-//                 WITH
-//                 existing_assignee AS (
-//                     SELECT
-//                         public.uuid_to_base64(u.user_id) AS user_id,
-//                         u.firstname,
-//                         u.lastname
-//                     FROM taskboard."task_assignee" ta
-//                     JOIN tp_user."user" u ON u.user_id = ta.user_id
-//                     WHERE
-//                         ta.task_id = public.detect_and_convert_to_uuid($1)
-//                         AND ta.user_id = public.detect_and_convert_to_uuid($2)
-//                 ),
-//                 inserted_assignee AS (
-//                     INSERT INTO taskboard."task_assignee" (
-//                         task_id,
-//                         user_id
-//                     ) VALUES (
-//                         public.detect_and_convert_to_uuid($1),
-//                         public.detect_and_convert_to_uuid($2)
-//                     )
-//                     WHERE NOT EXISTS ( SELECT 1 FROM existing_assignee )
-//                     RETURNING
-//                         user_id;
-//                 ),
-//                 final_assignee AS (
-//                     SELECT
-//                         public.uuid_to_base64(u.user_id) AS user_id,
-//                         u.firstname,
-//                         u.lastname
-//                     FROM inserted_assignee ia
-//                     JOIN tp_user."user" u ON u.user_id = ia.user_id
-//                 )
-//                 SELECT * FROM existing_assignee
-//                 UNION ALL
-//                 SELECT * FROM final_assignee
-//             `,
-//             values : [ taskId, userId ]
-//         })
-
-//         return assignee.rows[0]
-
-//     },
-//     EDatabaseFunctionWrapperMode.TRANSACTION
-// )
-
 export const removeTaskAssignee = async (
     taskId : string,
     userId : string,
@@ -390,27 +283,6 @@ export const removeTaskAssignee = async (
         .execute();
 
 }
-
-// export const removeTaskAssignee = databaseFunctionWrapper(
-//     async (
-//         client,
-//         taskId : string,
-//         userId : string
-//     ) : Promise<void> => {
-
-//         await client.query({
-//             text : `--sql
-//                 DELETE FROM taskboard."task_assignee"
-//                 WHERE
-//                     task_id = public.detect_and_convert_to_uuid($1)
-//                     AND user_id = public.detect_and_convert_to_uuid($2);
-//             `,
-//             values : [taskId, userId]
-//         })
-
-//     },
-//     EDatabaseFunctionWrapperMode.TRANSACTION
-// )
 
 export const logTaskTime = async (
     taskId : string,
@@ -441,41 +313,6 @@ export const logTaskTime = async (
 
 }
 
-// export const logTaskTime = databaseFunctionWrapper(
-//     async (
-//         client,
-//         taskId : string,
-//         userId : string,
-//         timeSpent : number
-//     ) : Promise<TTaskTimeLog> => {
-
-//         const createdTaskTimeLog = await client.query({
-//             text : `--sql
-//                 INSERT INTO taskboard."task_time_log" (
-//                     task_id,
-//                     user_id,
-//                     time_spent
-//                 )
-//                 VALUES (
-//                     public.detect_and_convert_to_uuid($1),
-//                     public.detect_and_convert_to_uuid($2),
-//                     $3
-//                 )
-//                 RETURNING
-//                     time_spent,
-//                     created_at,
-//                     public.uuid_to_base64(task_id) AS task_id,
-//                     public.uuid_to_base64(user_id) AS user_id;
-//             `,
-//             values : [ taskId, userId, timeSpent ]
-//         })
-
-//         return createdTaskTimeLog.rows[0]
-
-//     },
-//     EDatabaseFunctionWrapperMode.TRANSACTION
-// )
-
 export const addTaskToTodo = async (
     taskId : string,
     userId : string,
@@ -485,6 +322,7 @@ export const addTaskToTodo = async (
 
     const query = async ( trx : Transaction<DB> ) => {
 
+        // Check if the task is already has a todo state
         const existingTaskTodoState = await trx.selectFrom( "taskboard.task_todo_state" )
             .where( "task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
             .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
@@ -503,7 +341,6 @@ export const addTaskToTodo = async (
 
             await trx.updateTable( "taskboard.task_todo_state")
                 .set({
-                    current_work_time : 0,
                     active : true,
                     display_order : displayOrderToUse,
                     work_time_goal : 900
@@ -519,7 +356,6 @@ export const addTaskToTodo = async (
                 .values({
                     task_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})`,
                     user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
-                    current_work_time : 0,
                     active : true,
                     display_order : lastDisplayOrder + 100
                 })
@@ -554,18 +390,33 @@ export const updateTaskTodoState = async (
     trx? : Transaction<DB>
 ) : Promise<void> => {
 
-    const queryBuilder = trx ? trx.updateTable( "taskboard.task_todo_state" ) : taskprioKysely.updateTable( "taskboard.task_todo_state" )
+    const query = async ( trx : Transaction<DB> ) => {
 
-    const query = queryBuilder
-    .$if( body.display_order !== undefined && body.display_order !== null, qb => qb.set( "display_order", body.display_order ) )
-    .$if( body.active !== undefined && body.active !== null, qb => qb.set( "active", body.active ) )
-    .$if( body.current_work_time !== undefined && body.current_work_time !== null, qb => qb.set( "current_work_time", body.current_work_time ) )
-    .$if( body.work_time_goal !== undefined && body.work_time_goal !== null, qb => qb.set( "work_time_goal", body.work_time_goal ) )
-    .where( "task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
-    .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        await trx.updateTable( "taskboard.task_todo_state" )
+        .$if( body.display_order !== undefined && body.display_order !== null, qb => qb.set( "display_order", body.display_order ) )
+        .$if( body.active !== undefined && body.active !== null, qb => qb.set( "active", body.active ) )
+        .$if( body.current_work_time !== undefined && body.current_work_time !== null, qb => qb.set( "current_work_time", body.current_work_time ) )
+        .$if( body.work_time_goal !== undefined && body.work_time_goal !== null, qb => qb.set( "work_time_goal", body.work_time_goal ) )
+        .where( "task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+        .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .executeTakeFirstOrThrow()
 
+        // remove task todo timers if active is set to false
+        if ( body.active !== undefined && body.active === false ) {
+            await trx.deleteFrom( "taskboard.task_todo_timer" )
+                .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+                .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                .executeTakeFirstOrThrow()
+        }
 
-    await query.executeTakeFirstOrThrow()
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
+    }
+
 }
 
 /**

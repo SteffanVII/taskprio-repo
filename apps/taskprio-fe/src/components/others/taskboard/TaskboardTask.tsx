@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils"
 import { TTaskForCardView } from "@repo/taskprio-types/src/index"
-import { updateGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore_selectedTask } from "@/stores/globals"
+import { updateTaskboardDragStore } from "@/stores/taskboardDrag"
+
 import { useNavigate, useParams } from "react-router"
 import TaskAssigner from "../shared/task/TaskAssigner"
 import { useLayoutEffect, useMemo, useState } from "react"
@@ -10,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 
 export type TTaskboardTaskProps = {
-    task : TTaskForCardView
+    task : TTaskForCardView,
 }
 
 export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
@@ -22,10 +24,19 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
         task_id
     } = useParams()
 
+    const selectedTask = useGlobalsStore_selectedTask()
+
     const navigate = useNavigate()
+
+    const [ taskTitle, setTaskTitle ] = useState<string>(task.task_title)
+    // const [ taskDescription, setTaskDescription ] = useState<string | null>(task.task_description)
+    // const [ taskDeadline, setTaskDeadline ] = useState<string | null>(task.task_deadline)
+    // const [ taskEstimate, setTaskEstimate ] = useState<number | null>(task.task_estimate)
 
     const [ mainKey, setMainKey ] = useState( 0)
     const [ assignees, setAssignees ] = useState<string[]>( task.assignees.map( assignee => assignee.user_id ) )
+
+    const [ showTaskAssigner, setShowTaskAssigner ] = useState<boolean>(false)
 
     const onClickHandler = () => {
         navigate( task_id ? `../t/${task_board_slug}/${task.task_id}` : `${task.task_id}`, { replace : true } )
@@ -33,7 +44,7 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
 
     const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
         e.stopPropagation()
-        updateGlobalsStore({
+        updateTaskboardDragStore({
             taskboardTaskDrag : {
                 taskboardTask : task
             }
@@ -41,7 +52,7 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
     }
 
     const onDragEndHandler = () => {
-        updateGlobalsStore({
+        updateTaskboardDragStore({
             taskboardTaskDrag : {
                 taskboardTask : null
             }
@@ -60,15 +71,35 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
     useLayoutEffect(() => {
         setAssignees( task.assignees.map( assignee => assignee.user_id ) )
         setMainKey( mainKey + 1 )
-    }, [task])
+    }, [])
+
+    useLayoutEffect(() => {
+        if ( selectedTask && selectedTask.task_id === task.task_id ) {
+            if ( selectedTask.task_title !== taskTitle ) {
+                setTaskTitle(selectedTask.task_title)
+            }
+            setAssignees( selectedTask.assignees.map( assignee => assignee.user_id ) )
+        }
+    }, [selectedTask])
+
+    useLayoutEffect(() => {
+        const timeout = setTimeout(() => {
+            setShowTaskAssigner(true)
+        }, 300 )
+        return () => {
+            clearTimeout(timeout)
+        }
+    }, [])
 
     return (
         <div
             key={mainKey}
             className={cn(
                 `w-[20rem] min-w-[20rem] h-fit `,
-                `bg-background border border-border rounded-2xl transition-colors duration-500 `,
-                `hover:border-primary`
+                `bg-card border border-border transition-colors duration-500 shadow `,
+                `rounded-md`,
+                `hover:border-primary`,
+                `pointer-events-auto`
             )}
             draggable={true}
             onDragStart={ onDragStartHandler }
@@ -108,22 +139,28 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
                 className={cn(
                     `font-medium p-3 `
                 )}
-            >{task.task_title}</p>
+            >{taskTitle}</p>
             <div
-                className={` flex justify-end px-3 pb-3 `}
+                className={` flex justify-end px-3 pb-3 min-h-[2.6rem] h-fit `}
             >
-                <TaskAssigner
-                    task_id={task.task_id}
-                    assignees={assignees}
-                    onAssigneesChange={setAssignees}
-                />
+                {
+                    showTaskAssigner &&
+                    <div className=" animate-in fade-in duration-300" >
+                        <TaskAssigner
+                            task_id={task.task_id}
+                            assignees={assignees}
+                            onAssigneesChange={setAssignees}
+                            disabledHoverCard
+                        />
+                    </div>
+                }
             </div>
             {
                 task.tags.length > 0 && (
                     <div
                         className={cn(
-                            ` flex flex-wrap gap-1 overflow-hidden rounded-bl-[0.3rem] `,
-                            ` m-3 `
+                            ` flex flex-wrap gap-1 `,
+                            ` m-2 `
                         )}
                     >
                         {

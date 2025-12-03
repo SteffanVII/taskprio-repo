@@ -1,5 +1,6 @@
-import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TGetProjectMemberRequestParams, TGetProjectMembersRequestParams, TGetUserWorkspaceProjectsParams, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams, TUpdateProjectMemberRoleRequestBody, TUpdateProjectMemberRoleRequestParams } from "@repo/taskprio-types";
-import { IAuthenticatedProjectMemberRequest, IAuthenticatedRequest } from "../../middlewares/interfaces.js";
+import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TDropProjectRequestQueryParams, TGetDeactivatedProjectsRequestParams, TGetProjectMemberRequestParams, TGetProjectMembersRequestParams, TGetUserWorkspaceProjectsParams, TReactivateProjectRequestBody, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams, TUpdateProjectMemberRoleRequestBody, TUpdateProjectMemberRoleRequestParams } from "@repo/taskprio-types";
+import { IAuthenticatedProjectMemberRequest, IAuthenticatedRequest, IAuthenticatedWorkspaceMemberRequest } from "../../middlewares/interfaces.js";
+import { TDeactivateProjectRequestBody } from "@repo/taskprio-types";
 
 export interface ICreateProjectRequest extends IAuthenticatedRequest {
     body : TCreateProjectRequestBody
@@ -30,4 +31,20 @@ export interface IUpdateProjectMemberRoleRequest extends IAuthenticatedProjectMe
 
 export interface IGetProjectMemberRequest extends IAuthenticatedProjectMemberRequest {
     params : TGetProjectMemberRequestParams
+}
+
+export interface IDeactivateProjectRequest extends IAuthenticatedWorkspaceMemberRequest {
+    body : TDeactivateProjectRequestBody
+}
+
+export interface IDropProjectRequest extends IAuthenticatedWorkspaceMemberRequest {
+    query : TDropProjectRequestQueryParams
+}
+
+export interface IReactivateProjectRequest extends IAuthenticatedWorkspaceMemberRequest {
+    body : TReactivateProjectRequestBody
+}
+
+export interface IGetDeactivatedProjectsRequest extends IAuthenticatedWorkspaceMemberRequest {
+    params : TGetDeactivatedProjectsRequestParams
 }

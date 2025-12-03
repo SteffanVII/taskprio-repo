@@ -67,8 +67,8 @@ const TaskEstimateInput : React.FC<TTaskEstimateInputProps> = ({
                         <>
                             <button
                                 className={cn(
-                                    ` flex items-center gap-2 text-sm text-blue-400 cursor-pointer `,
-                                    ` hover:text-blue-800 `
+                                    ` flex items-center gap-2 text-sm text-primary cursor-pointer `,
+                                    ` hover:text-primary `
                                 )}
                                 onClick={() => {
                                     setInputValue( formatDurationString( estimate ) )
@@ -87,8 +87,8 @@ const TaskEstimateInput : React.FC<TTaskEstimateInputProps> = ({
                     ) : (
                         <button
                             className={cn(
-                                ` flex items-center gap-2 text-sm text-blue-400 cursor-pointer `,
-                                ` hover:text-blue-800 hover:underline `
+                                ` flex items-center gap-2 text-sm text-primary cursor-pointer `,
+                                ` hover:text-primary hover:underline `
                             )}
                             onClick={() => setIsEditing( true )}
                         ><Plus className={"size-[1rem]"} />Set Estimate</button>

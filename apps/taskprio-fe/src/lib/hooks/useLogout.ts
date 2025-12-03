@@ -1,6 +1,8 @@
-import { WebSocketContext } from "@/components/others/websocket/WebsocketHandler"
+import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider"
 import { useLogoutRequest } from "@/services/authentication"
 import { resetGlobalsStore } from "@/stores/globals"
+import { resetTaskboardDragStore } from "@/stores/taskboardDrag"
+import { resetTaskTodoPageStore } from "@/stores/taskTodoPage"
 import { useQueryClient } from "@tanstack/react-query"
 import Cookies from "js-cookie"
 import { useContext } from "react"
@@ -36,6 +38,8 @@ export const useLogout = () : TUseLogout => {
             Cookies.remove("access_token")
             await logout()
             resetGlobalsStore()
+            resetTaskboardDragStore()
+            resetTaskTodoPageStore()
             navigate("/login")
             queryClient.clear()
         },

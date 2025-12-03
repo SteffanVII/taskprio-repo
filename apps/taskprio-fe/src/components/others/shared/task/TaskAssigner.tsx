@@ -1,28 +1,29 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils"
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedProject, useGlobalsStore_user } from "@/stores/globals";
 import { Check, Plus } from "lucide-react"
 import React from "react";
 import UserAvatar from "../UserAvatar";
 import { useAddTaskAssignee, useRemoveTaskAssignee } from "@/services/private/task/mutation";
 import { TProjectMember } from "@repo/taskprio-types/src";
+import { Button } from "@/components/ui/button";
 
 export type TTaskAssignerProps = {
     task_id? : string,
-    assignees : string[]
+    assignees : string[],
+    disabledHoverCard? : boolean,
     onAssigneesChange : ( assignees : string[] ) => void
 }
 
 const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
     task_id,
     assignees,
+    disabledHoverCard,
     onAssigneesChange
 } ) => {
 
-    const {
-        user,
-        selectedProject
-    } = useGlobalsStore()
+    const user = useGlobalsStore_user()
+    const selectedProject = useGlobalsStore_selectedProject()
 
     const {
         mutateAsync : addTaskAssignee
@@ -76,8 +77,8 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                     <button
                         className={cn(
                             ` h-[1.6rem] `,
-                            ` flex items-center gap-2 text-sm text-blue-400 cursor-pointer `,
-                            ` hover:text-blue-800 hover:underline `
+                            ` flex items-center gap-2 text-sm text-primary cursor-pointer `,
+                            ` hover:text-primary hover:underline `
                         )}
                         onClick={ e => {
                             e.stopPropagation()
@@ -90,7 +91,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                         )}
                     >
                         <button>
-                            <Plus className={` size-[1rem] text-blue-400 cursor-pointer `} />
+                            <Plus className={` size-[1rem] text-primary cursor-pointer `} />
                         </button>
                         {
                             assignees.map( ( assignee ) => (
@@ -98,6 +99,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                                     key={assignee}
                                     user_id_or_email={assignee}
                                     size="sm"
+                                    disableHoverCard={disabledHoverCard}
                                 />
                             ) )
                         }
@@ -110,32 +112,36 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                     ` p-0 `
                 )}
                 onClick={ e => {
+                    e.preventDefault()
                     e.stopPropagation()
                 } }
             >
                 <div
                     className={cn(
-                        ` max-h-[20rem] overflow-y-auto `,
+                        ` max-h-[20rem] p-2 space-y-2 overflow-y-auto `,
                         ` flex flex-col rounded-sm `
                     )}
                 >
                     {
                         selectedProject?.project_members.map( ( member ) => (
-                            <div
+                            <Button
                                 key={member.user_id}
                                 role="button"
                                 className={cn(
-                                    ` p-2 `,
-                                    ` flex gap-4 items-center cursor-pointer `,
-                                    ` hover:bg-blue-200 `,
-                                    assignees.includes( member.user_id ) && ` bg-blue-400 `
+                                    `flex justify-start cursor-pointer`
+                                    // ` p-2 `,
+                                    // ` flex gap-4 items-center cursor-pointer `,
+                                    // ` hover:bg-blue-200 `,
+                                    // assignees.includes( member.user_id ) && ` bg-blue-400 `
                                 )}
-                                onClick={() => {
+                                variant={assignees.includes( member.user_id ) ? "default" : "outline"}
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
                                     handleAssigning( member )
                                 }}
                             >
-                                {/* Create profile picture component later */}
-                                <UserAvatar user_id_or_email={member.user_id} size="sm" />
+                                <UserAvatar user_id_or_email={member.user_id} size="sm" disableHoverCard />
                                 {
                                     member.user_id === user?.user_id ?
                                     <>
@@ -148,7 +154,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                                     assignees.includes( member.user_id ) &&
                                     <Check className=" text-background size-4 ml-auto mr-2 " />
                                 }
-                            </div>
+                            </Button>
                         ) )
                     }
                 </div>

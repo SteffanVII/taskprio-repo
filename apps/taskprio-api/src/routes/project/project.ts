@@ -1,10 +1,13 @@
 import dotenv from "dotenv";
-import { IAddProjectMembersRequest, ICreateProjectRequest, IGetProjectMemberRequest, IGetProjectMembersRequest, IGetUserWorkspaceProjectsRequest, IUpdateProjectCustomizationRequest, IUpdateProjectMemberRoleRequest } from "./interfaces.js";
+import { IAddProjectMembersRequest, ICreateProjectRequest, IDeactivateProjectRequest, IDropProjectRequest, IGetDeactivatedProjectsRequest, IGetProjectMemberRequest, IGetProjectMembersRequest, IGetUserWorkspaceProjectsRequest, IReactivateProjectRequest, IUpdateProjectCustomizationRequest, IUpdateProjectMemberRoleRequest } from "./interfaces.js";
 import { Response, Router } from "express";
-import { getProject, getProjectMember, getProjectMembers, getUserProjects, getUserWorkspaceProjects } from "../../database/queries/project/query.js";
+import { getProject, getProjectMember, getProjectMembers, getUserProjects, getUserWorkspaceProjects, getWorkpaceInactiveProjectList } from "../../database/queries/project/query.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
-import { addMembersToProject, addMemberToProjects, createProject, updateProjectCustomization, updateProjectMemberRole } from "../../database/queries/project/mutation.js";
-import { verifyProjectMemberMiddleware, verifyProjectOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
+import { addMembersToProject, createProject, deactivateProject, dropProject, reactivateProject, updateProjectCustomization, updateProjectMemberRole } from "../../database/queries/project/mutation.js";
+import { verifyProjectMemberMiddleware, verifyProjectOwnerOrAdminMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
+import { getWorkspaceMemberByTaskSectionId, getWorkspaceMembers } from "../../database/queries/workspace/query.js";
+import { EWebSocketEventType, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectReactivatedSocketMessage } from "@repo/taskprio-types";
+import { wsConnectionsManagerSimple } from "../../app.js";
 
 dotenv.config();
 
@@ -109,6 +112,24 @@ const registerProjectRoutes = ( router : Router ) => {
         }
     )
 
+    router.get(
+        `/deactivated/:workspace_id`,
+        verifyWorkspaceOwnerOrAdminMiddleware,
+        async ( req : IGetDeactivatedProjectsRequest, res : Response ) => {
+
+            const { workspace_id } = req.params
+
+            try {
+                const projectList = await getWorkpaceInactiveProjectList( workspace_id )
+                res.status(200).json(projectList)
+            } catch (error) {                
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
     // POST
 
     // Create project
@@ -149,6 +170,64 @@ const registerProjectRoutes = ( router : Router ) => {
                 res.status(500).json({ message : "Internal server error" })
             }
 
+        }
+    )
+
+    router.post(
+        "/deactivate",
+        verifyWorkspaceOwnerOrAdminMiddleware,
+        async ( req : IDeactivateProjectRequest, res : Response ) => {
+
+            const { workspace_id, project_id } = req.body
+
+            try {
+                await deactivateProject(workspace_id, project_id)
+                const wsMessage : TProjectDeactivatedSocketMessage = {
+                    workspace_id,
+                    project_id
+                }
+                wsConnectionsManagerSimple.sendMessage(
+                    {
+                        type : EWebSocketEventType.PROJECT_DEACTIVATED,
+                        data : wsMessage
+                    },
+                    workspace_id
+                )
+                res.status(200).json({ message : "Project deactivated" })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    router.post(
+        "/reactivate",
+        verifyWorkspaceOwnerOrAdminMiddleware,
+        async ( req : IReactivateProjectRequest, res : Response ) => {
+            const { workspace_id, project_id } = req.body
+            try {
+                await reactivateProject(
+                    workspace_id,
+                    project_id
+                )
+                const wsMessage : TProjectReactivatedSocketMessage = {
+                    workspace_id,
+                    project_id
+                }
+                wsConnectionsManagerSimple.sendMessage(
+                    {
+                        type : EWebSocketEventType.PROJECT_REACTIVATED,
+                        data : wsMessage
+                    },
+                    workspace_id
+                )
+                res.status(200).json({ message : "Project reactivated" })
+            } catch( error ) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
         }
     )
 
@@ -203,6 +282,36 @@ const registerProjectRoutes = ( router : Router ) => {
                     role
                 )
                 res.status(200).json({ message : "Project member role updated" })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    // DELETE
+    router.delete(
+        "/drop",
+        verifyWorkspaceOwnerOrAdminMiddleware,
+        async ( req : IDropProjectRequest, res : Response ) => {
+
+            const { workspace_id, project_id, project_name } = req.query
+
+            try {
+                await dropProject(workspace_id, project_id, project_name)
+                const wsMessage : TProjectDroppedSocketMessage = {
+                    workspace_id,
+                    project_id
+                }
+                wsConnectionsManagerSimple.sendMessage(
+                    {
+                        type : EWebSocketEventType.PROJECT_DROPPED,
+                        data : wsMessage
+                    },
+                    workspace_id
+                )
+                res.status(200).json({message : "Project deleted successfully"})
             } catch (error) {
                 console.log(error)
                 res.status(500).json({ message : "Internal server error" })

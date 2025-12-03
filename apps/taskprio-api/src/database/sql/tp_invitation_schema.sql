@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS invitation."workspace_invitation" (
 	sender_id UUID NOT NULL REFERENCES tp_user."user",
 	email VARCHAR(255) NOT NULL,
 	accepted BOOLEAN DEFAULT FALSE,
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP VIEW IF EXISTS invitation."workspace_invitation_base64" CASCADE;

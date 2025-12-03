@@ -1,8 +1,12 @@
+import NoTaskboardsStage from "@/components/others/project/NoTaskboardsStage";
 import Taskboard from "@/components/others/taskboard/Taskboard";
 import TaskboardList from "@/components/others/taskboard/TaskboardList";
 import { cn } from "@/lib/utils";
+import { useGlobalsStore_noTaskboards } from "@/stores/globals";
 
-const TaskboardPage = () => {
+const TaskboardPage = () => {    
+
+    const noTaskboards = useGlobalsStore_noTaskboards()
 
     return (
         <div
@@ -14,8 +18,18 @@ const TaskboardPage = () => {
                 gridTemplateRows : "min-content 1fr"
             }}
         >
-            <TaskboardList/>
-            <Taskboard/>
+            {
+                noTaskboards ?
+                <>
+                    <div></div>
+                    <NoTaskboardsStage/>
+                </>
+                :
+                <>
+                    <TaskboardList/>
+                    <Taskboard/>
+                </>
+            }
         </div>
     )
 

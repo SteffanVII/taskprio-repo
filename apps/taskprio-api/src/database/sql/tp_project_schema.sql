@@ -18,12 +18,14 @@ INSERT INTO project."project_role" (role_name) VALUES ('guest');
 	-- project mutation/query.ts
 DROP TABLE IF EXISTS project."project" CASCADE;
 CREATE TABLE IF NOT EXISTS project."project" (
+	workspace_id UUID NOT NULL REFERENCES workspace."workspace"(workspace_id),
 	project_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_name VARCHAR(255) NOT NULL,
 	project_abbreviation VARCHAR(16) NOT NULL,
 	project_color VARCHAR(7) NOT NULL DEFAULT '#ffffff',
 	active BOOLEAN DEFAULT TRUE,
-	created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	created_by UUID NOT NULL REFERENCES tp_user."user"(user_id)
 );
 
 DROP VIEW IF EXISTS project."project_base64" CASCADE;
@@ -34,7 +36,9 @@ SELECT
 	project_abbreviation,
 	project_color,
 	active,
-	public.uuid_to_base64(project_id) AS project_id
+	public.uuid_to_base64(workspace_id) AS workspace_id,
+	public.uuid_to_base64(project_id) AS project_id,
+	public.uuid_to_base64(created_by) AS created_by
 FROM project."project";
 -- Project
 
@@ -46,7 +50,7 @@ DROP TABLE IF EXISTS project."workspace_projects" CASCADE;
 CREATE TABLE IF NOT EXISTS project."workspace_projects" (
 	workspace_id UUID NOT NULL REFERENCES workspace."workspace"(workspace_id) ON DELETE CASCADE,
 	project_id UUID NOT NULL REFERENCES project."project"(project_id) ON DELETE CASCADE,
-	user_id UUID NOT NULL REFERENCES tp_user."user"(user_id) ON DELETE CASCADE,
+	user_id UUID NOT NULL REFERENCES tp_user."user"(user_id),
 
 	PRIMARY KEY (workspace_id, project_id)
 );
@@ -67,7 +71,7 @@ DROP TABLE IF EXISTS project."project_members" CASCADE;
 CREATE TABLE IF NOT EXISTS project."project_members" (
 	user_id UUID NOT NULL REFERENCES tp_user."user"(user_id) ON DELETE CASCADE,
 	project_id UUID NOT NULL REFERENCES project."project"(project_id) ON DELETE CASCADE,
-	joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+	joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	project_role INTEGER NOT NULL REFERENCES project."project_role"(id),
 	invited_by UUID NOT NULL REFERENCES tp_user."user"(user_id),
 	is_active BOOLEAN DEFAULT TRUE,

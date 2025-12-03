@@ -1,8 +1,6 @@
 import { Transaction } from "kysely"
-import { databaseFunctionWrapper, EDatabaseFunction, EDatabaseFunctionWrapperMode } from "../../postgresql.js"
-import { createTaskSection } from "../tasksection/mutation.js"
+import { EDatabaseFunction } from "../../postgresql.js"
 import { DB, TTaskboard } from "@repo/taskprio-types"
-import { Kysely } from "kysely"
 import { taskprioKysely } from "../../kysely/kysely.js"
 import { sql } from "kysely"
 
@@ -22,6 +20,7 @@ export const createTaskboard = async (
         .returning([
             "task_board_name",
             "created_at",
+            "inactive",
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(task_board_id)`.as( "task_board_id" ),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project_id)`.as( "project_id" )
         ])
@@ -30,53 +29,114 @@ export const createTaskboard = async (
     return taskboard;
 }
 
-// export const createTaskboard = databaseFunctionWrapper(
-//     async (
-//         client,
-//         projectId : string,
-//         taskboardName : string
-//     ) : Promise<TTaskboard | undefined> => {
+export const deactivateTaskboard = async (
+    projectId : string,
+    taskboardId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
 
-//         const createdTaskboard = await client.query({
-//             text : `--sql
-//                 INSERT INTO taskboard."task_board" (
-//                     task_board_name,
-//                     project_id
-//                 ) VALUES (
-//                     $1,
-//                     public.detect_and_convert_to_uuid($2)
-//                 ) RETURNING
-//                     task_board_name,
-//                     created_at,
-//                     public.uuid_to_base64(task_board_id) AS task_board_id,
-//                     public.uuid_to_base64(project_id) AS project_id;
-//             `,
-//             values : [ taskboardName, projectId ]
-//         })
+    const query = async ( trx : Transaction<DB> ) => {   
 
-//         const toDoTaskSection = await createTaskSection(
-//             createdTaskboard.rows[0].task_board_id,
-//             "To Do",
-//             1,
-//             client
-//         )
+        // Pause all running task todos
+        await trx.updateTable( "taskboard.task_todo_timer" )
+            .from( "taskboard.task" )
+            .whereRef( "taskboard.task.task_id", "=", "taskboard.task_todo_timer.task_id" )
+            .from( "taskboard.task_board" )
+            .whereRef( "taskboard.task_board.task_board_id", "=", "taskboard.task.task_board_id" )
+            .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "taskboard.task_board.task_board_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskboardId})` )
+            .where( "taskboard.task_todo_timer.stop", "is", null )
+            .set({
+                stop : sql.raw("CURRENT_TIMESTAMP"),
+                last_seen : sql.raw("CURRENT_TIMESTAMP")
+            })
+            .execute()
 
-//         const inProgressTaskSection = await createTaskSection(
-//             createdTaskboard.rows[0].task_board_id,
-//             "In Progress",
-//             toDoTaskSection.display_order + 100,
-//             client
-//         )
+        // Deactivate all active task todos related to the taskboard
+        await trx.updateTable( "taskboard.task_todo_state" )
+            .from( "taskboard.task" )
+            .whereRef( "taskboard.task.task_id", "=", "taskboard.task_todo_state.task_id" )
+            .from( "taskboard.task_board" )
+            .whereRef( "taskboard.task_board.task_board_id", "=", "taskboard.task.task_board_id" )
+            .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "taskboard.task_board.task_board_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskboardId})` )
+            .where( "taskboard.task_todo_state.active", "=", true )
+            .set({
+                active : false
+            })
+            .execute()
 
-//         await createTaskSection(
-//             createdTaskboard.rows[0].task_board_id,
-//             "Done",
-//             inProgressTaskSection.display_order + 100,
-//             client
-//         )
+        // Deactivate the taskboard
+        await trx.updateTable( "taskboard.task_board" )
+            .set({ inactive : true })
+            .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "taskboard.task_board.task_board_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskboardId})` )
+            .executeTakeFirstOrThrow()
+    }
 
-//         return createdTaskboard.rows[0]
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async ( trx ) => {
+            await query( trx )
+        } )
+    }
 
-//     },
-//     EDatabaseFunctionWrapperMode.TRANSACTION
-// )
+}
+
+export const reactivateTaskboard = async (
+    taskboardId : string,
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+    
+    const query = async ( trx : Transaction<DB> ) => {
+
+        await trx.updateTable( "taskboard.task_board" )
+            .set({
+                inactive : false
+            })
+            .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "taskboard.task_board.task_board_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskboardId})` )
+            .where( "taskboard.task_board.inactive", "=", true )
+            .executeTakeFirstOrThrow()     
+    }
+
+    if ( trx ) {
+        await query(trx)
+    } else {
+        await taskprioKysely.transaction().execute( async (trx) => {
+            await query(trx)
+        } )
+    }
+
+}
+
+export const dropTaskboard = async (
+    projectId : string,
+    taskboardId : string,
+    taskboardName : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+
+        // Delete the main taskboard table
+        // Cascade delete will delete all related tables
+        await trx.deleteFrom("taskboard.task_board")
+            .where("taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`)
+            .where("taskboard.task_board.task_board_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskboardId})`)
+            .where("taskboard.task_board.task_board_name", "=", taskboardName)
+            .executeTakeFirstOrThrow()
+
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async ( trx ) => {
+            await query( trx )
+        } )
+    }
+
+}

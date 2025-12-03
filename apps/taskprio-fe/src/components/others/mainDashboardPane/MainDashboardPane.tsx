@@ -1,13 +1,14 @@
 import { cn } from "@/lib/utils"
 import { Button } from "../../ui/button";
-import { Mail, Sun } from "lucide-react";
+import { Sun } from "lucide-react";
 import ProjectsList_MainDashboardPane from "./ProjectsList_MainDashboardPane";
 import WorkspaceDropdown_MainDashboardPane from "./WorkspaceDropdown_MainDashboardPane";
-import { updateDialogsStore } from "@/stores/dialogs";
 import GeneralButtons from "./GeneralButtons_MainDashboardPane";
 import { useTheme } from "@/lib/utils/themeProvider";
 import TodoCard_MainDashboardPane from "./TodoCard_MainDashboardPane";
 import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
+import { useGlobalsStore_noWorkspaces } from "@/stores/globals";
 
 const MainDashboardPane = () => {
 
@@ -16,66 +17,104 @@ const MainDashboardPane = () => {
         setTheme
     } = useTheme()
 
+    const noWorkspaces = useGlobalsStore_noWorkspaces()
+
     return (
-        <div
-            className={cn(
-                ` w-[20rem] min-w-[20rem] h-full max-h-screen overflow-y-auto overflow-x-hidden `,
-                ` flex flex-col justify-between `,
-                ` border-r border-border `,
-                ` bg-accent/25 `
-            )}
-        >
-            <div
+        <>
+            <Sidebar>
+                {
+                    !noWorkspaces ?
+                    <>
+                        <SidebarHeader className="p-2" >
+                            <WorkspaceDropdown_MainDashboardPane/>
+                        </SidebarHeader>
+                        <SidebarContent>
+                            <GeneralButtons/>
+                            <ProjectsList_MainDashboardPane/>
+                        </SidebarContent>
+                    </>
+                    :
+                    <p className="font-semibold text-lg m-auto" >No Workspaces Found</p>
+                }
+                <SidebarFooter className="mt-auto" >
+                    <TodoCard_MainDashboardPane/>
+                    <div
+                        className={cn(
+                            ` w-full p-2 `,
+                            ` flex items-center justify-between gap-2 `
+                        )}
+                    >
+                        <UserPopoverMenu/>
+                        <Button
+                            size={"icon"}
+                            variant={"outline"}
+                            onClick={() => {
+                                setTheme( theme === "dark" ? "light" : "dark" )
+                            }}
+                        >
+                            <Sun className=" size-4 "/>
+                        </Button>
+                    </div>
+                </SidebarFooter>
+            </Sidebar>
+            {/* <div
                 className={cn(
-                    ` p-4 `
+                    ` w-[20rem] min-w-[20rem] h-full max-h-screen overflow-y-auto overflow-x-hidden `,
+                    ` flex flex-col justify-between `,
+                    ` border-r border-border `,
+                    ` bg-accent/25 `
                 )}
             >
-                <WorkspaceDropdown_MainDashboardPane/>
-            </div>
+                <div
+                    className={cn(
+                        ` p-4 `
+                    )}
+                >
+                    <WorkspaceDropdown_MainDashboardPane/>
+                </div>
 
-            {/* Header */}
-            
-            <GeneralButtons/>
-
-            <div
-                className={cn(
-                    ` flex flex-col grow gap-2 p-2 overflow-y-auto overflow-x-hidden `
-                )}
-            >
-                <ProjectsList_MainDashboardPane/>
-            </div>
-
-            {/* Footer */}
-
-            <div
-                className={cn(
-                    `w-full mt-auto`
-                )}
-            >
-
-                <TodoCard_MainDashboardPane/>
+                Header
+                
+                <GeneralButtons/>
 
                 <div
                     className={cn(
-                        ` w-full p-4 `,
-                        ` flex items-center justify-between gap-2 `
+                        ` flex flex-col grow gap-2 p-2 overflow-y-auto overflow-x-hidden `
                     )}
                 >
-                    <UserPopoverMenu/>
-                    <Button
-                        size={"icon"}
-                        variant={"outline"}
-                        onClick={() => {
-                            setTheme( theme === "dark" ? "light" : "dark" )
-                        }}
-                    >
-                        <Sun className=" size-4 "/>
-                    </Button>
+                    <ProjectsList_MainDashboardPane/>
                 </div>
-            </div>
 
+                Footer
 
-        </div>
+                <div
+                    className={cn(
+                        `w-full mt-auto`
+                    )}
+                >
+
+                    <TodoCard_MainDashboardPane/>
+
+                    <div
+                        className={cn(
+                            ` w-full p-4 `,
+                            ` flex items-center justify-between gap-2 `
+                        )}
+                    >
+                        <UserPopoverMenu/>
+                        <Button
+                            size={"icon"}
+                            variant={"outline"}
+                            onClick={() => {
+                                setTheme( theme === "dark" ? "light" : "dark" )
+                            }}
+                        >
+                            <Sun className=" size-4 "/>
+                        </Button>
+                    </div>
+                </div>
+            </div> */}
+        </>
     )
 
 }

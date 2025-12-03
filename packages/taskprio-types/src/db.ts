@@ -14,7 +14,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
-export type Timestamp = ColumnType<string, Date | string, Date | string>;
+export type Timestamp = ColumnType<string, string | string, Date | string>;
 
 export interface InvitationWorkspaceInvitation {
   accepted: Generated<boolean | null>;
@@ -37,19 +37,23 @@ export interface InvitationWorkspaceInvitationBase64 {
 export interface ProjectProject {
   active: Generated<boolean | null>;
   created_at: Generated<Timestamp | null>;
+  created_by: string;
   project_abbreviation: Generated<string>;
   project_color: Generated<string>;
   project_id: Generated<string>;
   project_name: string;
+  workspace_id: string;
 }
 
 export interface ProjectProjectBase64 {
   active: boolean | null;
   created_at: Timestamp | null;
+  created_by: string | null;
   project_abbreviation: string | null;
   project_color: string | null;
   project_id: string | null;
   project_name: string | null;
+  workspace_id: string | null;
 }
 
 export interface ProjectProjectMembers {
@@ -89,18 +93,6 @@ export interface ProjectProjectTagsBase64 {
   tag_name: string | null;
 }
 
-export interface ProjectWorkspaceProjects {
-  project_id: string;
-  user_id: string;
-  workspace_id: string;
-}
-
-export interface ProjectWorkspaceProjectsBase64 {
-  project_id: string | null;
-  user_id: string | null;
-  workspace_id: string | null;
-}
-
 export interface TaskboardTask {
   created_at: Generated<Timestamp | null>;
   created_by: string;
@@ -133,6 +125,7 @@ export interface TaskboardTaskBase64 {
   display_order: number | null;
   in_trash: boolean | null;
   last_modified: Timestamp | null;
+  task_board_id: string | null;
   task_deadline: string | null;
   task_description: string | null;
   task_estimate: number | null;
@@ -143,6 +136,7 @@ export interface TaskboardTaskBase64 {
 
 export interface TaskboardTaskBoard {
   created_at: Generated<Timestamp | null>;
+  inactive: Generated<boolean | null>;
   project_id: string;
   task_board_id: Generated<string>;
   task_board_name: string | null;
@@ -230,10 +224,12 @@ export interface TaskboardTaskTodoStateBase64 {
 }
 
 export interface TaskboardTaskTodoTimer {
+  last_seen: Generated<Timestamp | null>;
   start: Generated<Timestamp>;
   stop: Timestamp | null;
   task_id: string;
   user_id: string;
+  workspace_id: string;
 }
 
 export interface TpUserUser {
@@ -264,6 +260,7 @@ export interface TpUserUserProfilePhoto {
   crop_x: number;
   crop_y: number;
   image_type: string;
+  last_modified: Generated<Timestamp | null>;
   photo_file_name: string;
   user_id: string;
 }
@@ -337,8 +334,6 @@ export interface DB {
   "project.project_role": ProjectProjectRole;
   "project.project_tags": ProjectProjectTags;
   "project.project_tags_base64": ProjectProjectTagsBase64;
-  "project.workspace_projects": ProjectWorkspaceProjects;
-  "project.workspace_projects_base64": ProjectWorkspaceProjectsBase64;
   "taskboard.task": TaskboardTask;
   "taskboard.task_assignee": TaskboardTaskAssignee;
   "taskboard.task_assignee_base64": TaskboardTaskAssigneeBase64;

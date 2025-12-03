@@ -1,35 +1,39 @@
 import CreateProjectDialog from "@/components/others/dialogs/CreateProjectDialog";
 import CreateTaskboardDialog from "@/components/others/dialogs/CreateTaskboardDialog";
 import CreateWorkspaceDialog from "@/components/others/dialogs/CreateWorkspaceDialog";
+import RenameTaskboardDialog from "@/components/others/dialogs/RenameTaskboardDialog";
 import TagDialog from "@/components/others/dialogs/TagDialog";
+import DropTaskboardDialog from "@/components/others/dialogs/DropTaskboardDialog";
 import WorkspaceInvitationDialog from "@/components/others/dialogs/WorkspaceInvitationDialog";
 import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboardPane";
 import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStage";
-import NoWorkspaceStage from "@/components/others/mainPageComponents/NoWorkspaceStage";
 import Spinner from "@/components/others/Spinner";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useGetUserWorkspaces } from "@/services/private/workspace/query";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_authenticated, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 import { Outlet } from "react-router";
+import DeactivateTaskboardDialog from "@/components/others/dialogs/DeactivateTaskboardDialog";
+import ReactivateTaskboardDialog from "@/components/others/dialogs/ReactivateTaskboardDialog";
+import DeactivateProjectDialog from "@/components/others/dialogs/DeactivateProjectDialog";
+import DropProjectDialog from "@/components/others/dialogs/DropProjectDialog";
+import ReactivateProjectDialog from "@/components/others/dialogs/ReactivateProjectDialog";
+import NoWorkspaceStage from "@/components/others/mainPageComponents/NoWorkspaceStage";
+import TaskboardTaskAssignerDialog from "@/components/others/dialogs/TaskboardTaskAssignerDialog";
 
 
 const MainPage = () => {
 
-    const {
-        authenticated,
-        noProjects,
-        projectsIsLoading
-    } = useGlobalsStore()
-
-    const {
-        data : workspaces,
-        isLoading : isLoadingWorkspaces
-    } = useGetUserWorkspaces()
+    const authenticated = useGlobalsStore_authenticated()
+    const noProjects = useGlobalsStore_noProjects()
+    const projectsIsLoading = useGlobalsStore_projectsIsLoading()
+    const noWorkspaces = useGlobalsStore_noWorkspaces()
+    const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
 
     return (
         <>
             {
-                ( !authenticated || isLoadingWorkspaces ) ?
+                ( !authenticated ) ?
+                // Show loading screen when not authenticated
                 <div
                     className={cn(
                         ` size-full max-w-screen max-h-screen `,
@@ -40,37 +44,47 @@ const MainPage = () => {
                     <Spinner size="xl" />
                 </div>
                 :
-                workspaces && workspaces?.length < 1 ?
-                <NoWorkspaceStage/>
-                :
-                <div
-                    className={cn(
-                        ` size-full max-w-screen max-h-screen `,
-                        ` flex overflow-hidden `
-                    )}
-                >
+                <SidebarProvider>
                     <MainDashboardPane/>
-                    <div
+                    <main
                         className={cn(
-                            ` w-full min-w-0 grow `,
+                            ` w-full min-w-0 min-h-0 grow max-h-screen overflow-hidden `,
                             ` flex flex-col `
                         )}
                     >
                         {
-                            ( noProjects && !projectsIsLoading ) ?
-                            <NoProjectStage/>
+                            (noWorkspaces && !workspacesIsLoading) ?
+                            // Show no workspaces stage
+                            <NoWorkspaceStage/>
                             :
-                            <>                  
-                                <Outlet/>
+                            // Show main page
+                            <>
+                                {
+                                    ( noProjects && !projectsIsLoading ) ?
+                                    // Show no projects stage
+                                    <NoProjectStage/>
+                                    :
+                                    <>                  
+                                        <Outlet/>
+                                    </>
+                                }
                             </>
                         }
-                    </div>
+                    </main>
                     <CreateProjectDialog/>
                     <CreateWorkspaceDialog/>
                     <CreateTaskboardDialog/>
+                    <RenameTaskboardDialog/>
+                    <DropTaskboardDialog/>
+                    <DeactivateTaskboardDialog/>
+                    <ReactivateTaskboardDialog/>
+                    <DropProjectDialog/>
+                    <DeactivateProjectDialog/>
+                    <ReactivateProjectDialog/>
                     <WorkspaceInvitationDialog/>
                     <TagDialog/>
-                </div>
+                    <TaskboardTaskAssignerDialog/>
+                </SidebarProvider>
             }
         </>
     )

@@ -50,6 +50,7 @@ export const getUserWorkspace = async (
                                 .then( jsonBuildObject({
                                     photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                                     image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                                 }) )
                                 .else( sql<null>`null` )
                                 .end()
@@ -78,49 +79,6 @@ export const getUserWorkspace = async (
     return workspace;
 
 }
-// export const getUserWorkspace = databaseFunctionWrapper(
-//     async (
-//         client,
-//         workspaceId : string,
-//         userId : string
-//     ) : Promise<TWorkspace | undefined> => {
-
-//         const workspace = await client.query({
-//             text : `--sql
-//                 SELECT
-//                     public.uuid_to_base64(w.workspace_id) as workspace_id,
-//                     w.workspace_name,
-//                     json_agg(
-//                         json_build_object(
-//                             'user_id', public.uuid_to_base64(all_members_wm.user_id),
-//                             'email', all_members_u.email,
-//                             'firstname', all_members_u.firstname,
-//                             'lastname', all_members_u.lastname,
-//                             'workspace_role', all_members_wm.workspace_role,
-//                             'joined_at', all_members_wm.joined_at,
-//                             'invited_by', public.uuid_to_base64(all_members_wm.invited_by)
-//                         )
-//                     ) as workspace_members
-//                 FROM
-//                     workspace."workspace" w
-//                 JOIN
-//                     workspace."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
-//                 JOIN
-//                     workspace."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
-//                 JOIN
-//                     tp_user."user" all_members_u ON all_members_wm.user_id = all_members_u.user_id
-//                 WHERE
-//                     w.workspace_id = public.detect_and_convert_to_uuid($1)
-//                     AND querying_user_wm.user_id = public.detect_and_convert_to_uuid($2)
-//                 GROUP BY
-//                     w.workspace_id, w.workspace_name;
-//             `,
-//             values : [ workspaceId, userId ]
-//         })
-//         return workspace.rows[0]
-
-//     }
-// )
 
 /**
  * Get the workspaces of a user
@@ -157,6 +115,7 @@ export const getUserWorkspaces = async (
                             .then( jsonBuildObject({
                                 photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                                 image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                                last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                             }) )
                             .else( sql<null>`null` )
                             .end()
@@ -172,48 +131,6 @@ export const getUserWorkspaces = async (
     return workspaces;
 
 }
-// export const getUserWorkspaces = databaseFunctionWrapper(
-//     async (
-//         client,
-//         userId : string
-//     ) : Promise<TWorkspace[]> => {
-
-//         const workspaces = await client.query({
-//             text : `--sql
-//                 SELECT
-//                     public.uuid_to_base64(w.workspace_id) as workspace_id,
-//                     w.workspace_name,
-//                     json_agg(
-//                         json_build_object(
-//                             'user_id', public.uuid_to_base64(all_members_wm.user_id),
-//                             'email', all_members_u.email,
-//                             'firstname', all_members_u.firstname,
-//                             'lastname', all_members_u.lastname,
-//                             'workspace_role', all_members_wm.workspace_role,
-//                             'joined_at', all_members_wm.joined_at,
-//                             'invited_by', public.uuid_to_base64(all_members_wm.invited_by)
-//                         )
-//                     ) as workspace_members
-//                 FROM
-//                     workspace."workspace" w
-//                 JOIN
-//                     workspace."workspace_members" querying_user_wm ON w.workspace_id = querying_user_wm.workspace_id
-//                 JOIN
-//                     workspace."workspace_members" all_members_wm ON w.workspace_id = all_members_wm.workspace_id
-//                 JOIN
-//                     tp_user."user" all_members_u ON all_memberS_wm.user_id = all_members_u.user_id
-//                 WHERE
-//                     querying_user_wm.user_id = public.detect_and_convert_to_uuid($1)
-//                 GROUP BY
-//                     w.workspace_id, w.workspace_name;
-//             `,
-//             values : [ userId ]
-//         })
-
-//         return workspaces.rows;
-
-//     }
-// )
 
 /**
  * Get the workspace member of a workspace
@@ -246,6 +163,7 @@ export const getWorkspaceMember = async (
                 .then( jsonBuildObject({
                     photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                     image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                 }) )
                 .else( sql<null>`null` )
                 .end()
@@ -273,10 +191,10 @@ export const getWorkspaceMemberByProjectId = async (
     trx? : Transaction<DB>
 ) : Promise<TWorkspaceMember | undefined> => {
 
-    const queryBuilder = trx ? trx.selectFrom( "project.workspace_projects" ) : taskprioKysely.selectFrom( "project.workspace_projects" );
+    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" );
 
     const workspaceMember = await queryBuilder
-        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.workspace_projects.workspace_id" )
+        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
         .leftJoin( "tp_user.user_profile_photo", "tp_user.user_profile_photo.user_id", "workspace.workspace_members.user_id" )
         .select( eb => [
@@ -293,12 +211,13 @@ export const getWorkspaceMemberByProjectId = async (
                 .then( jsonBuildObject({
                     photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                     image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                 }) )
                 .else( sql<null>`null` )
                 .end()
                 .as( "profile_photo" )
         ])
-        .where( "project.workspace_projects.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(${projectId})` )
+        .where( "project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(${projectId})` )
         .where( "workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(${userId})` )
         .executeTakeFirst()
 
@@ -321,8 +240,8 @@ export const getWorkspaceMemberByTaskboardId = async (
     const queryBuilder = trx ? trx.selectFrom( "taskboard.task_board" ) : taskprioKysely.selectFrom( "taskboard.task_board" );
 
     const workspaceMember = await queryBuilder
-        .innerJoin( "project.workspace_projects", "project.workspace_projects.project_id", "taskboard.task_board.project_id" )
-        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.workspace_projects.workspace_id" )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
         .leftJoin( "tp_user.user_profile_photo", "tp_user.user_profile_photo.user_id", "workspace.workspace_members.user_id" )
         .select( eb => [
@@ -339,6 +258,7 @@ export const getWorkspaceMemberByTaskboardId = async (
                 .then( jsonBuildObject({
                     photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                     image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                 }) )
                 .else( sql<null>`null` )
                 .end()
@@ -367,8 +287,8 @@ export const getWorkspaceMemberByTaskSectionId = async (
     
     const workspaceMember = await queryBuilder
         .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
-        .innerJoin( "project.workspace_projects", "project.workspace_projects.project_id", "taskboard.task_board.project_id" )
-        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.workspace_projects.workspace_id" )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
         .leftJoin( "tp_user.user_profile_photo", "tp_user.user_profile_photo.user_id", "workspace.workspace_members.user_id" )
         .select( eb => [
@@ -385,6 +305,7 @@ export const getWorkspaceMemberByTaskSectionId = async (
                 .then( jsonBuildObject({
                     photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                     image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                 }) )
                 .else( sql<null>`null` )
                 .end()
@@ -414,8 +335,8 @@ export const getWorkspaceMemberByTaskId = async (
     const workspaceMember = await queryBuilder
         .innerJoin( "taskboard.task_section", "taskboard.task_section.task_section_id", "taskboard.task.task_section_id" )
         .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
-        .innerJoin( "project.workspace_projects", "project.workspace_projects.project_id", "taskboard.task_board.project_id" )
-        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.workspace_projects.workspace_id" )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
         .leftJoin( "tp_user.user_profile_photo", "tp_user.user_profile_photo.user_id", "workspace.workspace_members.user_id" )
         .select( eb => [
@@ -432,6 +353,7 @@ export const getWorkspaceMemberByTaskId = async (
                 .then( jsonBuildObject({
                     photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
                     image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
                 }) )
                 .else( sql<null>`null` )
                 .end()
@@ -454,7 +376,7 @@ export const getWorkspaceIdFromProjectId = async (
     trx? : Transaction<DB>
 ) : Promise<string | undefined> => {
 
-    const queryBuilder = trx ? trx.selectFrom( "project.workspace_projects" ) : taskprioKysely.selectFrom( "project.workspace_projects" );
+    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" );
 
     const workspaceId = await queryBuilder
         .select( sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace_id)`.as( "workspace_id") )
@@ -475,9 +397,45 @@ export const getWorkspaceIdFromTaskId = async (
     return (await queryBuilder
         .innerJoin( "taskboard.task_section", "taskboard.task_section.task_section_id", "taskboard.task.task_section_id" )
         .innerJoin( "taskboard.task_board", "taskboard.task_board.task_board_id", "taskboard.task_section.task_board_id" )
-        .innerJoin( "project.workspace_projects", "project.workspace_projects.project_id", "taskboard.task_board.project_id" )
-        .select( sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.workspace_projects.workspace_id)`.as( "workspace_id" ) )
+        .innerJoin( "project.project", "project.project.project_id", "taskboard.task_board.project_id" )
+        .select( sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as( "workspace_id" ) )
         .where( "taskboard.task.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
         .executeTakeFirst()).workspace_id;
+
+}
+
+export const getWorkspaceMembers = async (
+    workspaceId : string,
+    trx? : Transaction<DB>
+) : Promise<TWorkspaceMember[]> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "workspace.workspace_members" ) : taskprioKysely.selectFrom( "workspace.workspace_members" );
+
+    return await queryBuilder
+        .leftJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
+        .leftJoin( "tp_user.user_profile_photo", "tp_user.user_profile_photo.user_id", "tp_user.user.user_id" )
+        .select( eb => [
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.invited_by)`.as("invited_by"),
+            "workspace.workspace_members.joined_at",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.user_id)`.as("user_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.workspace_id)`.as("workspace_id"),
+            "workspace.workspace_members.workspace_role",
+            "tp_user.user.email",
+            "tp_user.user.firstname",
+            "tp_user.user.lastname",
+            eb.case()
+                .when( "tp_user.user_profile_photo.photo_file_name", "is not", null )
+                .then( jsonBuildObject({
+                    photo_file_name : eb.ref( "tp_user.user_profile_photo.photo_file_name" ),
+                    image_type : eb.ref( "tp_user.user_profile_photo.image_type" ),
+                    last_modified : eb.ref( "tp_user.user_profile_photo.last_modified" )
+                }) )
+                .else( sql<null>`null` )
+                .end()
+                .as( "profile_photo" )
+        ])
+        .where( "tp_user.user.user_id", "is not", null )
+        .where( "workspace.workspace_members.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(${workspaceId})` )
+        .execute()
 
 }

@@ -1,10 +1,12 @@
+import "@/styles/Tiptap.css";
 import { Toggle } from "@/components/ui/toggle"
 import { cn } from "@/lib/utils"
 import { starterKitExtensions } from "@/lib/utils/shared"
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import { BoldIcon, ItalicIcon, ListIcon, ListOrderedIcon, UnderlineIcon } from "lucide-react"
+import { BoldIcon, ItalicIcon, ListIcon, ListOrderedIcon, TextQuoteIcon, UnderlineIcon } from "lucide-react"
 import React from "react"
+import Blockquote from "@tiptap/extension-blockquote";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type TContentEditor_TaskboardTaskDialog = {
     content? : string,
@@ -18,7 +20,8 @@ const ContentEditor_TaskboardTaskDialog : React.FC<TContentEditor_TaskboardTaskD
 
     const editor = useEditor({
         extensions : [
-            starterKitExtensions
+            starterKitExtensions,
+            Blockquote
         ],
         editorProps : {
             attributes : {
@@ -52,6 +55,9 @@ const ContentEditor_TaskboardTaskDialog : React.FC<TContentEditor_TaskboardTaskD
                 canList : editor.can().chain().toggleBulletList().run() ?? false,
                 isListOrdered : editor.isActive("orderedList") ?? false,
                 canListOrdered : editor.can().chain().toggleOrderedList().run() ?? false,
+
+                isBlockquote : editor.isActive("blockquote") ?? false,
+                canBlockquote : editor.can().chain().toggleBlockquote().run() ?? false
             }
         }
     })
@@ -64,55 +70,112 @@ const ContentEditor_TaskboardTaskDialog : React.FC<TContentEditor_TaskboardTaskD
         >
             <div
                 className={cn(
-                    `flex gap-1 p-1`
+                    `flex gap-1 p-1 border-b`
                 )}
             >
-                <Toggle
-                    pressed={editorButtonsState.isBold}
-                    disabled={!editorButtonsState.canBold}
-                    onClick={() => {
-                        editor?.chain().focus().toggleBold().run()
-                    }}
-                >
-                    <BoldIcon/>
-                </Toggle>
-                <Toggle
-                    pressed={editorButtonsState.isItalic}
-                    disabled={!editorButtonsState.canItalic}
-                    onClick={() => {
-                        editor?.chain().focus().toggleItalic().run()
-                    }}
-                >
-                    <ItalicIcon/>
-                </Toggle>
-                <Toggle
-                    pressed={editorButtonsState.isUnderline}
-                    disabled={!editorButtonsState.canUnderline}
-                    onClick={() => {
-                        editor?.chain().focus().toggleUnderline().run()
-                    }}
-                >
-                    <UnderlineIcon/>
-                </Toggle>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Toggle
+                            pressed={editorButtonsState.isBold}
+                            disabled={!editorButtonsState.canBold}
+                            onClick={() => {
+                                editor?.chain().focus().toggleBold().run()
+                            }}
+                        >
+                            <BoldIcon/>
+                        </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Bold
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Toggle
+                            pressed={editorButtonsState.isItalic}
+                            disabled={!editorButtonsState.canItalic}
+                            onClick={() => {
+                                editor?.chain().focus().toggleItalic().run()
+                            }}
+                        >
+                            <ItalicIcon/>
+                        </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Italic
+                    </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Toggle
+                            pressed={editorButtonsState.isUnderline}
+                            disabled={!editorButtonsState.canUnderline}
+                            onClick={() => {
+                                editor?.chain().focus().toggleUnderline().run()
+                            }}
+                        >
+                            <UnderlineIcon/>
+                        </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Underline
+                    </TooltipContent>
+                </Tooltip>
                 <div className="h-6 border-r border-border my-auto" ></div>
-                <Toggle
-                    pressed={editorButtonsState.isList}
-                    disabled={!editorButtonsState.canList}
-                    onClick={() => {
-                        editor?.chain().focus().toggleBulletList().run()
-                    }}
-                >
-                    <ListIcon/>
-                </Toggle>
-                <Toggle
-                    pressed={editorButtonsState.isListOrdered}
-                    disabled={!editorButtonsState.canListOrdered}
-                    onClick={() => {
-                        editor?.chain().focus().toggleOrderedList().run()
-                    }}
-                >
-                    <ListOrderedIcon/>
-                </Toggle>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Toggle
+                            pressed={editorButtonsState.isList}
+                            disabled={!editorButtonsState.canList}
+                            onClick={() => {
+                                editor?.chain().focus().toggleBulletList().run()
+                            }}
+                        >
+                            <ListIcon/>
+                        </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Bullet List
+                    </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Toggle
+                            pressed={editorButtonsState.isListOrdered}
+                            disabled={!editorButtonsState.canListOrdered}
+                            onClick={() => {
+                                editor?.chain().focus().toggleOrderedList().run()
+                            }}
+                        >
+                            <ListOrderedIcon/>
+                        </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Ordered List
+                    </TooltipContent>
+                </Tooltip>
+
+                <div className="h-6 border-r border-border my-auto" ></div>
+
+                <Tooltip>
+                    <TooltipTrigger>
+                        <Toggle
+                            pressed={editorButtonsState.isBlockquote}
+                            disabled={!editorButtonsState.canBlockquote}
+                            onClick={() => {
+                                editor?.chain().focus().toggleBlockquote().run()
+                            }}
+                        >
+                            <TextQuoteIcon/>
+                        </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Blockquote
+                    </TooltipContent>
+                </Tooltip>
             </div>
             <EditorContent
                 editor={editor}

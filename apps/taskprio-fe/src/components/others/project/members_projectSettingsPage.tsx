@@ -8,8 +8,8 @@ import UserAvatar from "../shared/UserAvatar";
 import WorkspaceMemberBadge from "../shared/WorkspaceMemberBadge";
 import ProjectMemberBadge from "../shared/ProjectMemberBadge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useGlobalsStore } from "@/stores/globals";
-import { AlertCircle, EditIcon, PlusIcon, SaveIcon } from "lucide-react";
+import { useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { AlertCircle, PlusIcon, SaveIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAddMembersToProject } from "@/services/private/project/mutation";
@@ -63,7 +63,9 @@ const Members_ProjectSettingsPage = () => {
                 </div>
                 <div
                     className={cn(
-                        `flex flex-col gap-4`
+                        `flex flex-col gap-4`,
+                        `p-4 border border-transparent rounded-md`,
+                        `hover:bg-secondary/50 hover:border-foreground/10`
                     )}
                 >
                     {
@@ -157,10 +159,8 @@ const AddProjectMemberDialog : React.FC<TAddProjectMemberDialogProps> = ({
     members
 }) => {
 
-    const {
-        selectedWorkspace,
-        selectedProject
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedProject = useGlobalsStore_selectedProject()
 
     const [ selectedMembers, setSelectedMembers ] = useState<TSelectedMember[]>([])
 

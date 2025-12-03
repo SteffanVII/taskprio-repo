@@ -1,13 +1,11 @@
 import { TWorkspaceMember } from "@repo/taskprio-types/src/index"
-import { useGlobalsStore } from "@/stores/globals"
+import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 import { useCallback } from "react"
 
 
 const useGetWorkspaceMemberDetails = () => {
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const getWorkspaceMemberDetails = useCallback(( user_id : string ) : TWorkspaceMember | null => {
         if ( !selectedWorkspace ) return null

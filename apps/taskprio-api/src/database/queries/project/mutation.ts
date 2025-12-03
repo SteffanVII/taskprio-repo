@@ -1,6 +1,5 @@
-import { databaseFunctionWrapper, EDatabaseFunction, EDatabaseFunctionWrapperMode, getPoolClient } from "../../postgresql.js";
-import { getProject, getProjectMember, getProjectMembersByTheirUserId } from "./query.js";
-import { createTaskboard } from "../taskboard/mutation.js";
+import { EDatabaseFunction } from "../../postgresql.js";
+import { getProject, getProjectMembersByTheirUserId } from "./query.js";
 import { DB, EProjectRole, TCreateProjectRequestBody, TProject, TProjectMember, TProjectPrimitive, TUpdateProjectCustomizationRequestBody } from "@repo/taskprio-types";
 import { taskprioKysely } from "../../kysely/kysely.js";
 import { sql } from "kysely";
@@ -18,19 +17,22 @@ export const createProject = async (
 
         const createdProject = await trx.insertInto( "project.project" )
             .values({
-                project_name : body.project_name
+                project_name : body.project_name,
+                project_abbreviation : projectNameAbbreviation,
+                workspace_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${body.workspace_id})`,
+                created_by : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`
             })
             .returningAll()
             .executeTakeFirstOrThrow()
 
-        await trx.insertInto( "project.workspace_projects" )
-            .values({
-                workspace_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${body.workspace_id})`,
-                project_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdProject.project_id})`,
-                user_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow()
+        // await trx.insertInto( "project.workspace_projects" )
+        //     .values({
+        //         workspace_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${body.workspace_id})`,
+        //         project_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdProject.project_id})`,
+        //         user_id : sql`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`
+        //     })
+        //     .returningAll()
+        //     .executeTakeFirstOrThrow()
 
         await trx.insertInto( "project.project_members" )
             .values({
@@ -169,6 +171,8 @@ export const updateProjectCustomization = async (
                 "project_color",
                 "created_at",
                 "active",
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace_id)`.as( "workspace_id" ),
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(created_by)`.as( "created_by" ),
                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project_id)`.as( "project_id" )
             ])
             .executeTakeFirstOrThrow()
@@ -197,7 +201,9 @@ export const getProjectPrimitive = async (
             "project_color",
             "created_at",
             "active",
-            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project_id)`.as( "project_id" )
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project_id)`.as( "project_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace_id)`.as( "workspace_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(created_by)`.as( "created_by" )
         ])
         .where( "project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
         .executeTakeFirst()
@@ -221,6 +227,123 @@ export const updateProjectMemberRole = async (
             .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${memberId})` )
             .executeTakeFirstOrThrow()
 
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
+    }
+
+}
+
+export const deactivateProject = async (
+    workspaceId : string,
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+
+        // TODO
+
+        // Pause all running task todos
+        await trx.updateTable( "taskboard.task_todo_timer" )
+            .from( "taskboard.task" )
+            .whereRef( "taskboard.task.task_id", "=", "taskboard.task_todo_timer.task_id" )
+            .from( "taskboard.task_board" )
+            .whereRef( "taskboard.task_board.task_board_id", "=", "taskboard.task.task_board_id" )
+            .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "taskboard.task_todo_timer.stop", "is", null )
+            .set({
+                stop : sql.raw("CURRENT_TIMESTAMP"),
+                last_seen : sql.raw("CURRENT_TIMESTAMP")
+            })
+            .execute()
+
+        // Deactivate all active task todos related to the project
+        await trx.updateTable( "taskboard.task_todo_state" )
+            .from( "taskboard.task" )
+            .whereRef( "taskboard.task.task_id", "=", "taskboard.task_todo_state.task_id" )
+            .from( "taskboard.task_board" )
+            .whereRef( "taskboard.task_board.task_board_id", "=", "taskboard.task.task_board_id" )
+            .where( "taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "taskboard.task_todo_state.active", "=", true )
+            .set({
+                active : false
+            })
+            .execute()
+
+        // Deactivate the project
+        await trx.updateTable( "project.project" )
+            // .from( "project.workspace_projects" )
+            // .whereRef( "project.workspace_projects.project_id", "=", "project.project.project_id" )
+            .set({
+                active : false
+            })
+            .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .executeTakeFirstOrThrow()
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
+    }
+
+}
+
+export const reactivateProject = async (
+    workspaceId : string,
+    projectId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {   
+
+    const query = async ( trx : Transaction<DB> ) => {
+
+        await trx.updateTable( "project.project" )
+            // .from( "project.workspace_projects" )
+            // .whereRef( "project.workspace_projects.project_id", "=", "project.project.project_id" )
+            .set({
+                active : true
+            })
+            .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "project.project.active", "=", false )
+            .executeTakeFirstOrThrow()
+
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
+    }
+
+}
+
+export const dropProject = async (
+    workspaceId : string,
+    projectId : string,
+    projectName : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+        // Delete project
+        await trx.deleteFrom( "project.project" )
+            // .using( "project.workspace_projects" )
+            // .whereRef( "project.workspace_projects.project_id", "=", "project.project.project_id" )
+            .where( "project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+            .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "project.project.project_name", "=", projectName )
+            .executeTakeFirstOrThrow()
+        // // Delete workspace project join
+        // await trx.deleteFrom( "project.workspace_projects" )
+        //     .where( "project.workspace_projects.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+        //     .where( "project.workspace_projects.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
+        //     .executeTakeFirstOrThrow()
     }
 
     if ( trx ) {

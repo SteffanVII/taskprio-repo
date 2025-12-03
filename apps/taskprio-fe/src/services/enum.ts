@@ -7,6 +7,7 @@ export enum EQueryKeys {
     GET_PROJECT = "get_project",
     GET_PROJECT_PRIMITIVE = "get_project/primitive",
     GET_USER_PROJECTS_BY_WORKSPACE = "get_user_projects_by_workspace",
+    GET_PROJECT_INACTIVE_TASKBOARDS = "get_project/get_inactive_taskboards",
 
     // Project Tag
     GET_PROJECT_TAGS = "get_project/get_tags",
@@ -30,6 +31,7 @@ export enum EQueryKeys {
     GET_USER_WORKSPACE = "get_user_workspace",
     GET_USER_WORKSPACES = "get_user_workspaces",
     GET_WORKSPACE_MEMBER = "get_user_workspace/get_member",
+    GET_WORKSPACE_INACTIVE_PROJECTS = "get_user_workspace/get_inactive_projects",
 
     // Todo
     GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE = "get_tasks_assigned_to_user_by_workspace",

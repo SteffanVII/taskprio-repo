@@ -1,38 +1,63 @@
+import DangerZone_WorkspaceSettingsPage from "@/components/others/workspace/DangerZone_WorkspaceSettingsPage";
+import DeactivatedProjects_WorkspaceSettingsPage from "@/components/others/workspace/DeactivatedProjects_workspaceSettingsPage";
 import Members_WorkspaceSettingsPage from "@/components/others/workspace/members_workspaceSettingsPage";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
+import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerOrAdmin";
 import { cn } from "@/lib/utils";
+import { Menu } from "lucide-react";
 
 export const WorkspaceSettingsPage = () => {
+
+    const isWorkspaceAdminOrOwner = useIsUserWorkspaceOwnerOrAdmin()
+    const sidebar = useSidebar()
 
     return (
         <div
             className={cn(
-                `size-full min-h-0 overflow-y-auto `
+                `relative`,
+                `SettingsBodyContainer`
             )}
         >
+            {
+                sidebar.isMobile &&
+                <Button
+                    variant={"ghost"}
+                    size={"icon"}
+                    className="absolute top-2 left-2"
+                    onClick={() => {
+                        sidebar.toggleSidebar()
+                    }}
+                >
+                    <Menu/>
+                </Button>
+            }
             <div
                 className={cn(
-                    `max-w-[80rem] min-w-[80rem] mx-auto`
+                    `SettingsBody`
                 )}
             >
-                <div
+                {/* <div
                     className={cn(
                         ` flex flex-col space-y-16 `,
                         ` py-16 `
                     )}
                 >
-                    <h2 className={` text-2xl font-medium `} >Workspace Settings</h2>
-                    <div
-                        className={cn(
-                            ` grid space-y-8 `
-                        )}
-                        style={{
-                            gridTemplateColumns : ` 20rem 1fr `
-                        }}
-                    >
-                        <Members_WorkspaceSettingsPage/>
-                        <Separator className=" col-span-full " />
-                    </div>
+                </div> */}
+                <h2 className={` SettingsHeader `} >Workspace Settings</h2>
+                <div
+                    className={cn(
+                        `SettingsSectionsContainer`
+                    )}
+                >
+                    <Members_WorkspaceSettingsPage/>
+                    {
+                        isWorkspaceAdminOrOwner &&
+                        <>
+                            <DeactivatedProjects_WorkspaceSettingsPage/>
+                            <DangerZone_WorkspaceSettingsPage/>
+                        </>
+                    }
                 </div>
             </div>
         </div>

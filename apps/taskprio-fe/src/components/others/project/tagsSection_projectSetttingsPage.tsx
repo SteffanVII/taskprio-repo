@@ -6,13 +6,11 @@ import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerO
 import { cn } from "@/lib/utils";
 import { useGetProjectTags } from "@/services/private/tag/query";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedProject } from "@/stores/globals";
 
 const TagsSection_ProjectSettingsPage = () => {
 
-    const {
-        selectedProject
-    } = useGlobalsStore()
+    const selectedProject = useGlobalsStore_selectedProject()
 
     const {
         data,
@@ -33,7 +31,8 @@ const TagsSection_ProjectSettingsPage = () => {
             <div
                 className={cn(
                     ` flex flex-col gap-8 `,
-                    ` p-4`,
+                    `p-4 border border-transparent rounded-md`,
+                    `hover:bg-secondary/50 hover:border-foreground/10`,
                 )}
             >
                     {
@@ -66,6 +65,10 @@ const TagsSection_ProjectSettingsPage = () => {
                     {
                         isLoading && 
                         <Spinner/>
+                    }
+                    {
+                        (!isLoading && data && data.length < 1) &&
+                        <p className="font-semibold" >Project doesn't have any tags yet</p>
                     }
                     {
                         (!isLoading && data) &&

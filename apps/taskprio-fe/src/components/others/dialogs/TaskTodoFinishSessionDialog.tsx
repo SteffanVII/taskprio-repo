@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { useFinishTaskTodoSession } from "@/services/private/todo/mutation";
-import { useGlobalsStore } from "@/stores/globals";
+import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+
 import React from "react";
 
 type TTaskTodoFinishSessionDialogProps = {
@@ -14,9 +15,7 @@ const TaskTodoFinishSessionDialog : React.FC<TTaskTodoFinishSessionDialogProps> 
     onOpenChange,
 }) => {
 
-    const {
-        selectedWorkspace
-    } = useGlobalsStore()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const {
         mutateAsync : finishTaskTodoSessionTrigger,

@@ -4,8 +4,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
-import { updateDialogsStore, useDialogsStore } from "@/stores/dialogs";
-import { useGlobalsStore } from "@/stores/globals";
+import { updateDialogsStore, useDialogsStore_workspaceInvitationDialog } from "@/stores/dialogs";
+
+import { useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -21,8 +23,10 @@ const EmailInputSchema = z.object({
 
 const WorkspaceInvitationDialog = () => {
 
-    const { selectedWorkspace, user } = useGlobalsStore();
-    const { workspaceInvitationDialog } = useDialogsStore();
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace();
+    const user = useGlobalsStore_user();
+
+    const workspaceInvitationDialog = useDialogsStore_workspaceInvitationDialog();
 
     const [ emails, setEmails ] = useState<string[]>( [] );
     const [ selectedProjects, setSelectedProjects ] = useState<string[]>( [] );

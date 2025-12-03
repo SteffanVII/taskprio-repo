@@ -75,8 +75,8 @@ const TaskTimeLogger : React.FC<TTaskTimerLoggerProps> = ({
                             <div
                                 role="button"
                                 className={cn(
-                                    ` flex items-center gap-2 text-sm text-blue-400 cursor-pointer `,
-                                    ` hover:text-blue-800 `
+                                    ` flex items-center gap-2 text-sm text-primary cursor-pointer `,
+                                    ` hover:text-primary `
                                 )}
                             >
                                 <Timer className={` size-[1rem] `} /> Log Time
@@ -156,7 +156,7 @@ const TaskTimeLogger : React.FC<TTaskTimerLoggerProps> = ({
                                             className=" flex flex-col "
                                         >
                                             <p className=" text-sm " >{ getWorkspaceMemberDetails( log.user_id )?.firstname ?? "Unknown" } { getWorkspaceMemberDetails( log.user_id )?.lastname ?? "" }</p>
-                                            <p className=" text-xs text-muted-foreground " >{ dayjs( log.created_at ).fromNow() }</p>
+                                            <p className=" text-xs text-muted-foreground " >{ dayjs.utc( log.created_at ).fromNow() }</p>
                                         </div>
                                         <Badge variant={"outline"} >
                                             { formatDurationString( log.time_spent ) }

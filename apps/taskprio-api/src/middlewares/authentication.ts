@@ -96,6 +96,13 @@ export const verifyProjectMemberMiddleware = async (
         project_id : projectIdFromParams,
     } = req.params || {}
 
+    const {
+        task_id : taskIdFromQuery,
+        task_section_id : taskSectionIdFromQuery,
+        taskboard_id : taskboardIdFromQuery,
+        project_id : projectIdFromQuery
+    } = req.query || {}
+
    const {
         project_id : projectIdFromBody,
         task_id : taskIdFromBody,
@@ -103,10 +110,10 @@ export const verifyProjectMemberMiddleware = async (
         taskboard_id : taskboardIdFromBody
     } = req.body || {}
 
-    let projectId = projectIdFromParams || projectIdFromBody;
-    let taskId = taskIdFromParams || taskIdFromBody;
-    let taskboardId = taskboardIdFromParams || taskboardIdFromBody;
-    const taskSectionId = taskSectionIdFromParams || taskSectionIdFromBody;
+    let projectId = projectIdFromParams || projectIdFromBody || projectIdFromQuery;
+    let taskId = taskIdFromParams || taskIdFromBody || taskIdFromQuery;
+    let taskboardId = taskboardIdFromParams || taskboardIdFromBody || taskboardIdFromQuery;
+    const taskSectionId = taskSectionIdFromParams || taskSectionIdFromBody || taskSectionIdFromQuery;
 
     if ( !projectId && !taskId && !taskSectionId && !taskboardId ) {
         res.status(400).json({ message : "Project ID or task ID is required to verify project member" });
@@ -117,19 +124,10 @@ export const verifyProjectMemberMiddleware = async (
 
         let isProjectMember : TProjectMember | undefined;
 
-        if ( projectId ) {
-            isProjectMember = await getProjectMember( projectId, user_id )
-        } else {
-            if ( taskId ) {
-                isProjectMember = await getProjectMemberByTaskId( taskId, user_id );
-            } else {
-                if ( taskboardId ) {
-                    isProjectMember = await getProjectMemberByTaskboardId( taskboardId, user_id );
-                } else {
-                    isProjectMember = await getProjectMemberByTaskSectionId( taskSectionId, user_id )
-                }
-            }
-        }
+        if ( projectId ) isProjectMember = await getProjectMember( projectId, user_id );
+        if ( !isProjectMember && taskId ) isProjectMember = await getProjectMemberByTaskId( taskId, user_id );
+        if ( !isProjectMember && taskboardId ) isProjectMember = await getProjectMemberByTaskboardId( taskboardId, user_id );
+        if ( !isProjectMember && taskSectionId ) isProjectMember = await getProjectMemberByTaskSectionId( taskSectionId, user_id );
 
         if ( !isProjectMember ) {
             res.status(401).json({ message : "You are not a member of this project" });
@@ -137,6 +135,7 @@ export const verifyProjectMemberMiddleware = async (
         }
 
         req.projectId = isProjectMember.project_id;
+        req.projectRole = isProjectMember.project_role;
 
         next();
     } catch (error) {
@@ -164,6 +163,14 @@ export const verifyWorkspaceMemberMiddleware = async (
         workspace_id : workspaceIdFromParams
     } = req.params || {}
 
+    const {
+        task_id : taskIdFromQuery,
+        task_section_id : taskSectionIdFromQuery,
+        taskboard_id : taskboardIdFromQuery,
+        project_id : projectIdFromQuery,
+        workspace_id : workspaceIdFromQuery
+    } = req.query || {}
+
    const {
         project_id : projectIdFromBody,
         task_id : taskIdFromBody,
@@ -172,11 +179,11 @@ export const verifyWorkspaceMemberMiddleware = async (
         workspace_id : workspaceIdFromBody
     } = req.body || {}
 
-    let workspaceId = workspaceIdFromParams || workspaceIdFromBody;
-    let projectId = projectIdFromParams || projectIdFromBody;
-    let taskId = taskIdFromParams || taskIdFromBody;
-    let taskboardId = taskboardIdFromParams || taskboardIdFromBody;
-    const taskSectionId = taskSectionIdFromParams || taskSectionIdFromBody;
+    let workspaceId = workspaceIdFromParams || workspaceIdFromBody || workspaceIdFromQuery;
+    let projectId = projectIdFromParams || projectIdFromBody || projectIdFromQuery;
+    let taskId = taskIdFromParams || taskIdFromBody || taskIdFromQuery;
+    let taskboardId = taskboardIdFromParams || taskboardIdFromBody || taskboardIdFromQuery;
+    const taskSectionId = taskSectionIdFromParams || taskSectionIdFromBody || taskSectionIdFromQuery;
 
     if ( !workspaceId && !projectId && !taskId && !taskSectionId && !taskboardId ) {
         res.status(400).json({ message : "Worksapce ID or Project ID or task ID or Tasksection ID is required to verify workspace member" });
@@ -186,23 +193,11 @@ export const verifyWorkspaceMemberMiddleware = async (
     try {
         let isWorkspaceMember : TWorkspaceMember | undefined;
 
-        if ( workspaceId ) {
-            isWorkspaceMember = await getWorkspaceMember( workspaceId, user_id );
-        } else {
-            if ( projectId ) {
-                isWorkspaceMember = await getWorkspaceMemberByProjectId( projectId, user_id );
-            } else {
-                if ( taskId ) {
-                    isWorkspaceMember = await getWorkspaceMemberByTaskId( taskId, user_id );
-                } else {
-                    if ( taskboardId ) {
-                        isWorkspaceMember = await getWorkspaceMemberByTaskboardId( taskboardId, user_id );
-                    } else {
-                        isWorkspaceMember = await getWorkspaceMemberByTaskSectionId( taskSectionId, user_id );
-                    }
-                }
-            }
-        }
+        if ( workspaceId ) isWorkspaceMember = await getWorkspaceMember( workspaceId, user_id );
+        if ( !isWorkspaceMember && projectId ) isWorkspaceMember = await getWorkspaceMemberByProjectId( projectId, user_id );
+        if ( !isWorkspaceMember && taskId ) isWorkspaceMember = await getWorkspaceMemberByTaskId( taskId, user_id );
+        if ( !isWorkspaceMember && taskboardId ) isWorkspaceMember = await getWorkspaceMemberByTaskboardId( taskboardId, user_id );
+        if ( !isWorkspaceMember && taskSectionId ) isWorkspaceMember = await getWorkspaceMemberByTaskSectionId( taskSectionId, user_id );
 
         if ( !isWorkspaceMember ) {
             res.status(401).json({ message : "You are not a member of this workspace" });
@@ -229,7 +224,7 @@ export const verifyWorkspaceOwnerOrAdminMiddleware = async (
     verifyWorkspaceMemberMiddleware( req, res, () => {
         const workspaceRole = req.workspaceRole
         if ( workspaceRole !== EWorkspaceRole.OWNER && workspaceRole !== EWorkspaceRole.ADMIN ) {
-            res.status(401).json({ message : "You are not the owner or admin of the workspace to be able to dp this action" });
+            res.status(401).json({ message : "You are not the owner or admin of the workspace to be able to do this action" });
         } else {
             next()
         }
@@ -242,36 +237,13 @@ export const verifyProjectOwnerOrAdminMiddleware = async (
     next : NextFunction
 ) => {
 
-    const projectId = req.projectId;
-
-    try {
-        const project = await getProjectMember(
-            projectId,
-            req.user.user_id
-        )
-
-        const workspace = await getWorkspaceMemberByProjectId(
-            projectId,
-            req.user.user_id
-        )
-
-        if ( workspace ) {
-            if ( workspace.workspace_role !== EWorkspaceRole.OWNER ) {                
-                if ( project ) {
-                    if ( project.project_role !== EProjectRole.OWNER && project.project_role !== EProjectRole.ADMIN ) {
-                        res.status(401).json({ message : "You are not the owner of the project or the workspace to be able to update the project" });
-                    } else {
-                        next() 
-                    }
-                }
-            } else {
-                next()
-            }
+    verifyProjectMemberMiddleware( req, res, () => {
+        const projectRole = req.projectRole
+        if ( projectRole !== EProjectRole.OWNER && projectRole !== EProjectRole.ADMIN ) {
+            res.status(401).json({ message : "You are not the owner or admin of the project to be able to do this action" })
+        } else {
+            next()
         }
-
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message : "Internal server error" });
-    }
+    } )
 
 }

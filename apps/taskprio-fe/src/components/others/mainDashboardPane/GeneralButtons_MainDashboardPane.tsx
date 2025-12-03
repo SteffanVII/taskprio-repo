@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils"
-import { updateGlobalsStore } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { Settings2, Timer } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -10,6 +10,7 @@ const GeneralButtons = () => {
     const { pathname } = useLocation()
 
     const navigate = useNavigate()
+    const selectedWorkpace = useGlobalsStore_selectedWorkspace()
 
     const taskTodoOnClick = () => {
         navigate(`/p/w/${workspace_id}/tt`)
@@ -38,25 +39,25 @@ const GeneralButtons = () => {
             )}
         >
             <Button
-                variant={"ghost"}
+                size={"sm"}
+                variant={ pathname.includes("/workspace_settings") ? "default" : "ghost" }
                 className={cn(
                     ` w-full justify-start gap-4 `,
-                    ` hover:bg-border `,
-                    pathname.includes("/workspace_settings") && " bg-border !text-primary "
                 )}
                 onClick={workspaceSettingsOnClick}
+                disabled={!selectedWorkpace}
             >
                 <Settings2/>
                 Workspace Settings
             </Button>
             <Button
-                variant={"ghost"}
+                size={"sm"}
+                variant={ pathname.includes("/tt") ? "default" : "ghost" }
                 className={cn(
                     ` w-full justify-start gap-4 `,
-                    ` hover:bg-border `,
-                    pathname.includes("/tt") && " bg-border !text-primary "
                 )}
                 onClick={taskTodoOnClick}
+                disabled={!selectedWorkpace}
             >
                 <Timer/>
                 My Tasks

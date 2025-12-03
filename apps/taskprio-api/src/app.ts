@@ -24,6 +24,7 @@ import { initAWSS3, testAWSS3Connection } from "./aws/index.js";
 import { registerProfileRoutes } from "./routes/profile/profile.js";
 import multer from "multer";
 import { registerToDoRoutes } from "./routes/todo/todo.js";
+import { initializeTaskTodoTimerHeartbeatTimeouts } from "./initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 
 dotenv.config();
 
@@ -74,6 +75,9 @@ registerWebSocketLogic(wss, wsConnectionsManagerSimple)
 export const multerInstance = multer({
     storage : multer.memoryStorage()
 })
+
+// Initializations
+await initializeTaskTodoTimerHeartbeatTimeouts()
 
 // Routes registration
 APP.get( "/", ( req : Request, res : Response ) => {

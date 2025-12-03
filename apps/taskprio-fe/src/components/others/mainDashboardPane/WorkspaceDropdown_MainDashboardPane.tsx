@@ -2,20 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { useGetUserWorkspace, useGetUserWorkspaces } from "@/services/private/workspace/query";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { updateGlobalsStore, useGlobalsStore } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
+
 import { CheckCircle2Icon, ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
-import { useContext, useLayoutEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
-import { WebSocketContext } from "../websocket/WebsocketHandler";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useContext, useState } from "react";
+import { useNavigate } from "react-router";
 import { TWorkspace } from "@repo/taskprio-types/src";
 import { StateManager_TaskTodoPageContext } from "../taskTodo/StateManager_TaskTodoPage";
-import useTaskTodoPageStore from "@/stores/taskTodoPage";
+import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ignoreTodoSessionIsActiveLocalStorageName = import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME;
 
@@ -29,40 +28,16 @@ const WorkspaceDropdown_MainDashboardPane = () => {
     const navigate = useNavigate()
 
     const {
-        pathChangeMethods
-    } = useContext(WebSocketContext)
-
-    const {
         handlePauseSession,
+        invalidateUseGetUserTaskTodoState
     } = useContext(StateManager_TaskTodoPageContext)
 
-    const {
-        sessionActive
-    } = useTaskTodoPageStore()
+    const sessionActive = useTaskTodoPageStore_sessionActive()
 
-    const {
-        workspace_id
-    } = useParams()
-
-    const {
-        pathname
-    } = useLocation()
-
-    const {
-        selectedWorkspace,
-        user
-    } = useGlobalsStore()
-
-    const {
-        data : workspaces,
-        isLoading : isLoadingWorkspaces
-    } = useGetUserWorkspaces()
-
-    const {
-        data : workspace,
-    } = useGetUserWorkspace(
-        workspace_id
-    )
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const workspaces = useGlobalsStore_workspaces()
+    const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
+    const user = useGlobalsStore_user()
 
     const [ showTodoSessionIsActiveWarning, setTodoSessionIsActiveWarning ] = useState<TTodoSessionActiveWarning>({
         state : false,
@@ -70,33 +45,8 @@ const WorkspaceDropdown_MainDashboardPane = () => {
     })
     const [ ignoreTodoSessionActiveWarning, setIgnoreTodoSessionActiveWarning ] = useState<boolean>(Boolean(localStorage.getItem(ignoreTodoSessionIsActiveLocalStorageName + "_" + user?.user_id)) || false)
 
-    // If no workspace_id is selected, navigate to the first workspace once the workspaces data are available
-    useLayoutEffect(() => {
-        // If the user is on the workspace settings page, don't navigate to the first workspace
-        if (
-            pathname.includes("/workspace_settings") ||
-            pathname.includes("/tt")
-        ) return
-
-        if ( !workspace_id ) {
-            if ( workspaces && workspaces.length > 0 ) {
-                navigate(`/p/w/${workspaces[0].workspace_id}`)
-            }
-        }
-    }, [ workspaces, workspace_id ])
-
-    // Update the selectedWorkspace in the globals store if the workspace_id is the same as the workspace data from the query
-    useLayoutEffect(() => {
-        if ( workspace && workspace.workspace_id === workspace_id ) {
-            pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
-            updateGlobalsStore({
-                selectedWorkspace : workspace,
-                workspaceRole : workspace.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null
-            })
-        }
-    }, [ workspace, workspace_id ])
-
     const handleWorkspaceOnClick = ( workspace : TWorkspace ) => {
+        if ( selectedWorkspace?.workspace_id === workspace.workspace_id ) return
         if ( sessionActive && !ignoreTodoSessionActiveWarning ) {
             setTodoSessionIsActiveWarning({
                 state : true,
@@ -118,11 +68,14 @@ const WorkspaceDropdown_MainDashboardPane = () => {
     }
 
     const handleWorkspaceNavigate = ( workspace : TWorkspace ) => {
+        if ( sessionActive ) {
+            handlePauseSession()
+            invalidateUseGetUserTaskTodoState()
+        }
         updateGlobalsStore({
             selectedProject : null,
             selectedTaskboard : null
         })
-        handlePauseSession()
         navigate(`/p/w/${workspace.workspace_id}`)
     }
 
@@ -137,12 +90,13 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                 <PopoverTrigger asChild >
                     <div
                         className={cn(
+                            `border border-primary/30 bg-accent text-accent-foreground shadow rounded-md px-3 py-2`,
                             ` cursor-pointer flex items-center justify-between `
                         )}
                     >
                         {
-                            isLoadingWorkspaces ?
-                            <Skeleton className=" w-[16rem] h-[2rem]" />
+                            (workspacesIsLoading) ?
+                            <Skeleton className="bg-primary/20 w-[16rem] h-[1.8rem]" />
                             :
                             <p
                                 className={cn(
@@ -176,7 +130,6 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                                         variant={ selectedWorkspace?.workspace_id === workspace.workspace_id ? "default" : "ghost"}
                                         className=" justify-between gap-2 "
                                         onClick={() => handleWorkspaceOnClick(workspace)}
-                                        disabled={selectedWorkspace?.workspace_id === workspace.workspace_id}
                                     >
                                         { workspace.workspace_name }
                                         { selectedWorkspace?.workspace_id === workspace.workspace_id && <CheckCircle2Icon className="size-4" /> }

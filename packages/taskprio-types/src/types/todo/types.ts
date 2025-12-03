@@ -31,6 +31,12 @@ export type TFinishTaskTodoSessionRequestPathParams = {
     workspace_id : string
 }
 
+export type TStartOrStopTaskTodoTimerRequestPathParams = {
+    task_id : string
+}
+
+export type TStartOrStopTaskTodoTimerResponseData = TTaskTodoTimer;
+
 // Query
 export type TGetTaskAssignedToUserByWorkspaceRequestPathParams = {
     workspace_id : string
@@ -46,9 +52,9 @@ export type TGetUserTaskTodoStateResponseData = TUserTaskTodoState[]
 
 // Task Todo
 
-export type TTaskTodoTimer = Pick<Selectable<TaskboardTaskTodoTimer>, "start" | "stop">
+export type TTaskTodoTimer = Selectable<TaskboardTaskTodoTimer>
 
-export type TUserAvailableTaskTodoByProject = Pick<Selectable<ProjectProject>, "project_id" | "project_name" | "project_abbreviation" | "project_color"> & {
+export type TUserAvailableTaskTodoByProject = Pick<Selectable<ProjectProject>, "project_id" | "created_by" | "workspace_id" | "project_name" | "project_abbreviation" | "project_color"> & {
     tasks : (TUserTaskTodoState | TUserAvailableTaskTodo)[]
 }
 

@@ -114,8 +114,9 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple 
                         type : EWebSocketEventType.TASK_CREATED,
                         data : message
                     },
+                    transactionReturn.workspaceId,
+                    undefined,
                     [ req.user.user_id ],
-                    transactionReturn.workspaceId
                 )
 
                 res.status(201).json(transactionReturn.createdTask)
@@ -421,8 +422,9 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple 
                         type : EWebSocketEventType.TASK_UPDATED,
                         data : updatedTask
                     },
+                    workspaceId,
+                    undefined,
                     [ user_id ],
-                    workspaceId
                 )
 
                 res.status(200).json( updatedTask )

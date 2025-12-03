@@ -1,9 +1,15 @@
 // Mutation
 
 import { Selectable } from "kysely"
-import { ProjectProject, TaskboardTask, TaskboardTaskAssignee, TaskboardTaskComment, TaskboardTaskTimeLog, TaskboardTaskTodoState } from "../../db"
+import { TaskboardTask, TaskboardTaskAssignee, TaskboardTaskComment, TaskboardTaskTimeLog } from "../../db"
 import { TUser } from "../user/types"
 import { TTaskTag } from "../tag/types"
+
+export type TCreateTaskRequestBody = {
+    task_board_id : string,
+    task_section_id : string,
+    task_title : string
+}
 
 export type TArrangeTaskRequestBody = {
     task_section_id : string,

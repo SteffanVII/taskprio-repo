@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCreateWorkspace } from "@/services/private/workspace/mutation";
-import { updateDialogsStore, useDialogsStore } from "@/stores/dialogs";
+import { updateDialogsStore, useDialogsStore_createWorkspaceDialog } from "@/stores/dialogs";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,10 +17,8 @@ const createWorkspaceFormSchema = z.object({
 const CreateWorkspaceDialog = () => {
 
     const {
-        createWorkspaceDialog : {
-            open
-        }
-    } = useDialogsStore()
+        open
+    } = useDialogsStore_createWorkspaceDialog()
 
     const createWorkspaceForm = useForm<z.infer<typeof createWorkspaceFormSchema>>({
         resolver : zodResolver(createWorkspaceFormSchema),
@@ -37,6 +36,7 @@ const CreateWorkspaceDialog = () => {
                 open : false
             }
         })
+        createWorkspaceForm.reset()
     } )
 
     const onSubmit = async ( data : z.infer<typeof createWorkspaceFormSchema> ) => {

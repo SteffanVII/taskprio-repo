@@ -17,7 +17,9 @@ export const getProject = async (
     .leftJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
     .leftJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
     .select( (eb) => [
+        sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as( "workspace_id" ),
         sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" ),
+        sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as( "created_by" ),
         "project.project.project_name",
         "project.project.created_at",
         "project.project.project_abbreviation",
@@ -50,6 +52,8 @@ export const getProject = async (
     .where( "project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
     .where( "tp_user.user.user_id", "is not", null )
     .groupBy( [
+        "project.project.created_by",
+        "project.project.workspace_id",
         "project.project.project_id",
         "project.project.project_name",
         "project.project.project_abbreviation",
@@ -58,7 +62,7 @@ export const getProject = async (
     ] )
     .executeTakeFirst()
 
-    return project
+    return project;
 }
 
 export const getUserWorkspaceProjects = async (
@@ -67,14 +71,15 @@ export const getUserWorkspaceProjects = async (
     trx? : Transaction<DB>
 ) : Promise<TProject[]> => {
 
-    const query = trx ? trx.selectFrom( "project.workspace_projects" ) : taskprioKysely.selectFrom( "project.workspace_projects" )
+    const query = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
 
     const projects = await query
-        .innerJoin( "project.project", "project.project.project_id", "project.workspace_projects.project_id" )
         .leftJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
         .leftJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
         .select( (eb) => [
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as("workspace_id"),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as("created_by"),
             "project.project.created_at",
             "project.project.project_name",
             "project.project.project_abbreviation",
@@ -101,11 +106,12 @@ export const getUserWorkspaceProjects = async (
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.tag_id)`.as( "tag_id" ),
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.project_id)`.as( "project_id" )
                 ])
-                .where( "project.project_tags.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(project_id::text)` )
+                .whereRef( "project.project_tags.project_id", "=", "project.project.project_id" )
+                // .where( "project.project_tags.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(project_id)` )
             ).as( "project_tags" )
         ] )
         .where( eb => eb.and([
-            eb("project.workspace_projects.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`),
+            eb("project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`),
             // If the requesting user exists in the project members table, then the project is returned
             eb.exists(
                 eb.selectFrom( "project.project_members" )
@@ -114,7 +120,10 @@ export const getUserWorkspaceProjects = async (
             ),
             eb("tp_user.user.user_id", "is not", null)
         ]) )
+        .where( "project.project.active", "=", true )
         .groupBy([
+            "project.project.created_by",
+            "project.project.workspace_id",
             "project.project.project_id",
             "project.project.project_name",
             "project.project.project_abbreviation",
@@ -346,6 +355,45 @@ export const getProjectMembers = async (
         ])
         .where( "project.project_members.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})` )
         .where( "tp_user.user.user_id", "is not", null )
+        .execute()
+
+}
+
+export const getWorkpaceInactiveProjectList = async (
+    workspaceId : string,
+    trx? : Transaction<DB>
+) => {
+
+    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
+
+    return queryBuilder
+        .leftJoin( "taskboard.task_board", "taskboard.task_board.project_id", "project.project.project_id" )
+        .leftJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
+        .leftJoin( "tp_user.user", "tp_user.user.user_id", "project.project_members.user_id" )
+        .select( eb => [
+            "project.project.active",
+            "project.project.created_at",
+            "project.project.project_abbreviation",
+            "project.project.project_color",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as( "created_by" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as( "workspace_id" ),
+            "project.project.project_name",
+            eb.fn.count( "taskboard.task_board.task_board_id" ).as( "taskboards" ),
+            eb.fn.count( "project.project_members.user_id" ).filterWhere( "tp_user.user.user_id", "is not", null ).as( "members" )
+        ] )
+        .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+        .where( "project.project.active", "=", false )
+        .groupBy([
+            "project.project.active",
+            "project.project.created_at",
+            "project.project.project_abbreviation",
+            "project.project.project_color",
+            "project.project.project_name",
+            "project.project.project_id",
+            "project.project.created_by",
+            "project.project.workspace_id"
+        ])
         .execute()
 
 }

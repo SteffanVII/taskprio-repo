@@ -7,7 +7,7 @@ import { Camera } from "lucide-react";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import Cropper, { Area } from "react-easy-crop";
 import { ImageIcon } from "lucide-react";
-import { useUpdateUserProfilePhoto } from "@/services/private/profile/mutation";
+import { useUpdateProfilePhotoCrop, useUpdateUserProfilePhoto } from "@/services/private/profile/mutation";
 import { TProfilePhoto } from "@repo/taskprio-types/src";
 import { ProfilePhotoUrl } from "@/lib/globals";
 
@@ -26,6 +26,16 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
         setOpen( false )
         resetState()
     } )
+    
+    const {
+        mutateAsync : updateProfilePhotoCropTrigger,
+        isPending : updateProfilePhotoIsPending
+    } = useUpdateProfilePhotoCrop({
+        onSuccess : () => {
+            setOpen( false )
+            resetState()
+        }
+    })
 
     const [ imageFile, setImageFile ] = useState<File | null>( null )
     const [ imageSrc, setImageSrc ] = useState<string | null>( null )
@@ -34,6 +44,8 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
     const [ crop, setCrop ] = useState({ x: 0, y: 0 })
     const [ zoom, setZoom ] = useState(1)
     const [ cropArea, setCropArea ] = useState<Area | null>( null )
+
+    const [ replace, setReplace ] = useState<boolean>(false)
 
     const previewCanvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -68,6 +80,10 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
         setCropArea( null )
         setCrop({ x: 0, y: 0 })
         setZoom(1)
+        setReplace(false)
+        if ( fileInputRef.current ) {
+            fileInputRef.current.value = ""
+        }
     }
 
     const handlePreview = ( croppedArea : Area ) => {
@@ -102,18 +118,26 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
     }
 
     const handleApply = () => {
-        if ( imageSrc && cropArea && imageSize && imageFile ) {
-            updateUserProfilePhotoTrigger({
-                crop_area : cropArea,
-                file : imageFile
-            })
+        if ( profilePhoto && !replace ) {
+            if ( imageSize && cropArea ) {
+                updateProfilePhotoCropTrigger({
+                    crop_area : cropArea
+                })
+            }
+        } else {
+            if ( imageSrc && cropArea && imageSize && imageFile ) {
+                updateUserProfilePhotoTrigger({
+                    crop_area : cropArea,
+                    file : imageFile
+                })
+            }
         }
 
     }
 
-    useLayoutEffect(() => {
-        if ( profilePhoto ) {
-            setImageSrc(`${ProfilePhotoUrl}/${profilePhoto.user_id}/${profilePhoto.photo_file_name}`)
+    useLayoutEffect( () => {
+        if ( profilePhoto && open ) {
+            setImageSrc(`${ProfilePhotoUrl}/${profilePhoto.user_id}/${profilePhoto.photo_file_name}?v=${profilePhoto.last_modified}`)
             setCropArea({
                 x : profilePhoto.crop_x,
                 y : profilePhoto.crop_y,
@@ -121,7 +145,7 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
                 height : profilePhoto.crop_height
             })
         }
-    }, [ profilePhoto ])
+    }, [ profilePhoto, open ])
 
     return (
         <div
@@ -142,7 +166,7 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
                 {
                     profilePhoto ?
                     <img
-                        src={`${ProfilePhotoUrl}/${profilePhoto.user_id}/${profilePhoto.photo_file_name.replace("ppxoriginal", "512x512")}`}
+                        src={`${ProfilePhotoUrl}/${profilePhoto.user_id}/${profilePhoto.photo_file_name.replace("ppxoriginal", "512x512")}?v=${profilePhoto.last_modified}`}
                     />
                     :
                     <Camera className=" size-[4rem] text-background " />
@@ -151,6 +175,10 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
             <Dialog
                 open={open}
                 onOpenChange={ open => {
+                    if ( open ) {
+                        resetState()
+                        setReplace(false)
+                    }
                     setOpen( open )
                 } }
             >
@@ -197,6 +225,16 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
 
                                             cropShape="round"
                                             onCropComplete={onCropComplete}
+
+                                            onMediaLoaded={ size => {
+                                                if ( imageSize === null ) {
+                                                    console.log(size);
+                                                    setImageSize({
+                                                        width : size.naturalWidth ?? size.width,
+                                                        height : size.naturalHeight ?? size.height
+                                                    })
+                                                }
+                                            } }
                                         />
                                     </div>
                                     <div
@@ -224,11 +262,21 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
                                                     className=" size-[10rem] h-[10rem] object-cover bg-accent-foreground rounded-full "
                                                 />
                                             </div>
+                                            {
+                                                !replace &&
+                                                <Button
+                                                    onClick={() => {
+                                                        resetState()
+                                                        setReplace(true)
+                                                    }}
+                                                    disabled={isUpdatingUserProfilePhoto || updateProfilePhotoIsPending}
+                                                >Replace</Button>
+                                            }
                                             <Button
                                                 onClick={ () => {
                                                     handleApply()
                                                 } }
-                                                isLoading={isUpdatingUserProfilePhoto}
+                                                isLoading={isUpdatingUserProfilePhoto || updateProfilePhotoIsPending}
                                             >Apply</Button>
                                         </div>
                                     </div>
