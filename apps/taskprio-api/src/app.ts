@@ -18,7 +18,6 @@ import { OAuth2Client } from "google-auth-library";
 import { Resend } from "resend";
 import { registerInvitationPrivateRoutes, registerInvitationPublicRoutes } from "./routes/invitation/invitation.js";
 import { registerTagRoutes } from "./routes/tag/tag.js";
-import { redisConnect } from "./redis/index.js";
 import { createTaskprioKyselyConnection } from "./database/kysely/kysely.js";
 import { initAWSS3, testAWSS3Connection } from "./aws/index.js";
 import { registerProfileRoutes } from "./routes/profile/profile.js";
@@ -41,7 +40,7 @@ export const googleAuthClient = new OAuth2Client(
 
 // Middleware for cors
 APP.use(cors({
-    origin : [ "http://localhost:5001" ],
+    origin : [ "http://localhost:5001", "*" ],
     credentials: true,
 }));
 // Middleware to parse cookies
