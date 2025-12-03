@@ -8,7 +8,7 @@
     "sideEffects": false,
     "license": "MIT",
     "scripts": {
-        "build": "tsup",
+        "build": "kysely-codegen && node scripts/post-generate.js && tsup",
         "dev": "tsup --watch",
         "lint": "eslint .",
         "clean": "rimraf .turbo node_modules dist",
