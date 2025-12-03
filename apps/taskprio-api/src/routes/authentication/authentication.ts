@@ -43,7 +43,7 @@ function reigsterAuthenticationRoutes() {
                             {
                                 httpOnly : true,
                                 secure : true,
-                                sameSite : 'lax',
+                                sameSite : 'none',
                             }
                         )
                         res.status(200).json({ message: "Login successful", access_token : accessToken, user });
@@ -82,7 +82,7 @@ function reigsterAuthenticationRoutes() {
                         accessToken,
                         {
                             httpOnly : true,
-                            sameSite : "lax",
+                            sameSite : "none",
                             secure : true,
                             maxAge: 1000 * 60 * 60 * 24   
                         }
@@ -110,7 +110,7 @@ function reigsterAuthenticationRoutes() {
                         accessToken,
                         {
                             httpOnly : true,
-                            sameSite : "lax",
+                            sameSite : "none",
                             secure : true
                         }
                     )
@@ -172,7 +172,7 @@ function reigsterAuthenticationRoutes() {
                             accessToken,
                             {
                                 httpOnly : true,
-                                sameSite : "lax",
+                                sameSite : "none",
                                 secure : true
                             }
                         )
