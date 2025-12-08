@@ -4,9 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { updateDialogsStore } from "@/stores/dialogs"
-import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_workspaceIsLoading, useGlobalsStore_workspaceRole } from "@/stores/globals"
+import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_user, useGlobalsStore_workspaceIsLoading, useGlobalsStore_workspaceRole } from "@/stores/globals"
 
-import { EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
+import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
 import { Plus } from "lucide-react"
 import { useMemo } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
@@ -17,6 +17,7 @@ const ProjectsList_MainDashboardPane = () => {
     const { workspace_id } = useParams()
     const { pathname } = useLocation()
 
+    const user = useGlobalsStore_user()
     const workspaceRole = useGlobalsStore_workspaceRole()
     const workspaceIsLoading = useGlobalsStore_workspaceIsLoading()
     const projectsIsLoading = useGlobalsStore_projectsIsLoading()
@@ -37,8 +38,10 @@ const ProjectsList_MainDashboardPane = () => {
     }, [projectsIsLoading, workspaceIsLoading, projects])
 
     const handleProjectButtonOnClick = ( project : TProject ) => {
+        const projectRole : EProjectRole | null = project.project_members.find( member => member.user_id === user?.user_id )?.project_role ?? null
         updateGlobalsStore({
             selectedProject : project,
+            projectRole,
             noTaskboards : false,
             noProjects : false
         })

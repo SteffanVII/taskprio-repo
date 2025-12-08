@@ -93,7 +93,7 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
             </div>
 
             {/* <div className="sticky bottom-0 w-full flex gap-4 p-4 bg-accent rounded-lg rounded-t-none border-t" > */}
-            <div className="sticky bottom-0 w-full flex gap-4 p-4 bg-card rounded-lg rounded-t-none" >
+            <div className="sticky bottom-[-1px] w-full flex gap-4 p-4 bg-card rounded-lg rounded-t-none" >
                 <CommentEditor_CommentSection
                     editor={editor}
                     onContentChange={setCommentContent}

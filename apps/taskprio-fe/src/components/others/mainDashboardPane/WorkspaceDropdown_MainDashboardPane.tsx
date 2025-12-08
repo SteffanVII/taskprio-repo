@@ -8,13 +8,14 @@ import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_
 import { CheckCircle2Icon, ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router";
-import { TWorkspace } from "@repo/taskprio-types/src";
-import { StateManager_TaskTodoPageContext } from "../taskTodo/StateManager_TaskTodoPage";
+import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
+import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const ignoreTodoSessionIsActiveLocalStorageName = import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME;
 
@@ -26,6 +27,10 @@ type TTodoSessionActiveWarning = {
 const WorkspaceDropdown_MainDashboardPane = () => {
 
     const navigate = useNavigate()
+
+    const {
+        pathChangeMethods
+    } = useContext(WebSocketContext)
 
     const {
         handlePauseSession,
@@ -72,11 +77,15 @@ const WorkspaceDropdown_MainDashboardPane = () => {
             handlePauseSession()
             invalidateUseGetUserTaskTodoState()
         }
+        const workspaceRole : EWorkspaceRole | null = workspace.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null
         updateGlobalsStore({
+            selectedWorkspace : workspace,
+            workspaceRole,
             selectedProject : null,
             selectedTaskboard : null
         })
         navigate(`/p/w/${workspace.workspace_id}`)
+        pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
     }
 
     const handleIgnoreTodoSessionActiveWarningCheckbox = ( value : boolean ) => {
@@ -90,7 +99,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                 <PopoverTrigger asChild >
                     <div
                         className={cn(
-                            `border border-primary/30 bg-accent text-accent-foreground shadow rounded-md px-3 py-2`,
+                            `border bg-background text-foreground rounded-md px-3 py-2`,
                             ` cursor-pointer flex items-center justify-between `
                         )}
                     >

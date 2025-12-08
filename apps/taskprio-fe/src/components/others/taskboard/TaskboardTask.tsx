@@ -29,9 +29,6 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
     const navigate = useNavigate()
 
     const [ taskTitle, setTaskTitle ] = useState<string>(task.task_title)
-    // const [ taskDescription, setTaskDescription ] = useState<string | null>(task.task_description)
-    // const [ taskDeadline, setTaskDeadline ] = useState<string | null>(task.task_deadline)
-    // const [ taskEstimate, setTaskEstimate ] = useState<number | null>(task.task_estimate)
 
     const [ mainKey, setMainKey ] = useState( 0)
     const [ assignees, setAssignees ] = useState<string[]>( task.assignees.map( assignee => assignee.user_id ) )
@@ -78,9 +75,12 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
             if ( selectedTask.task_title !== taskTitle ) {
                 setTaskTitle(selectedTask.task_title)
             }
-            setAssignees( selectedTask.assignees.map( assignee => assignee.user_id ) )
         }
     }, [selectedTask])
+
+    useLayoutEffect(() => {
+        setAssignees( task.assignees.map( assignee => assignee.user_id ) )
+    }, [task])
 
     useLayoutEffect(() => {
         const timeout = setTimeout(() => {
@@ -107,7 +107,6 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
             onMouseDown={ onMouseDownHandler }
             onClick={ onClickHandler }
         >
-            {/* <p className="text-right" >{task.display_order}</p> */}
             <div
                 className={cn(
                     `flex justify-between`,

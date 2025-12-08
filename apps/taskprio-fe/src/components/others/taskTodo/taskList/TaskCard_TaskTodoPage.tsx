@@ -145,7 +145,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
             <div className=" flex justify-between " >
                 <p
                     className={cn(
-                        ` text-lg font-medium p-3 `
+                        `text-sm font-medium p-3 `
                     )}
                 >{data.task_title}</p>
                 {
@@ -200,13 +200,13 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
             <div
                 className={cn(
                     ` flex flex-col gap-4 `,
-                    ` p-4 `
+                    ` px-4 `
                 )}
             >
                 <div className=" flex gap-2 justify-end items-center " >
                     {/* <p className=" text-lg " >{ formatTaskTodoTimeSeconds(currentWorkTime + (timerCount ?? 0))} ⏱️</p>/ */}
-                    <p className=" text-lg " >{ formatTaskTodoTimeSeconds(totalWorkTime + (timerCount ?? 0))} ⏱️</p>/
-                    <p className=" text-lg " >{ formatTaskTodoTimeSeconds(workTimeGoal) } 🏁</p>
+                    <p className=" text-sm " >{ formatTaskTodoTimeSeconds(totalWorkTime + (timerCount ?? 0))}</p>/
+                    <p className=" text-sm " >{ formatTaskTodoTimeSeconds(workTimeGoal) }</p>
                 </div>
                 {/* {
                     active &&
@@ -218,11 +218,10 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                     )}
                 >
                     <Slider
-                        value={[currentWorkTime]}
+                        value={[totalWorkTime + (timerCount??0)]}
                         min={0}
                         max={workTimeGoal}
                         step={1}
-                        disabled
                         hideThumb
                     />
                 </div>

@@ -203,7 +203,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
             >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
             <p
                 className={cn(
-                    ` p-3 `
+                    `text-sm p-3 `
                 )}
             >{data.task_title}</p>
             {

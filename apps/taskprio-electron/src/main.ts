@@ -1,6 +1,9 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import { registerEventHandlers } from './handlers';
+import { registerMainWindowListeners } from './listeners';
+import { registerRoute } from './lib/electron-router-dom';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -16,29 +19,31 @@ const createWindow = () => {
     titleBarStyle : "hidden",
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-    },
-    ...(process.platform !== 'darwin' ? { titleBarOverlay : true } : {})
+    }
   });
 
-  // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+      path.join(__dirname, `../dist/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
 
+  mainWindow.webContents.openDevTools()
   mainWindow.maximize()
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  return mainWindow
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  const mainWindow = createWindow()
+  registerMainWindowListeners( mainWindow )
+  registerEventHandlers( ipcMain )
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

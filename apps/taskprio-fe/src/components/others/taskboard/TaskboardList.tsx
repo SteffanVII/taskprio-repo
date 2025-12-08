@@ -34,7 +34,7 @@ const TaskboardList = () => {
 
     return (
         <div
-            className="pl-1 grid w-full max-w-full min-w-0 gap-1 bg-background"
+            className="pl-1 grid w-full max-w-full min-w-0 gap-1 bg-accent/50"
             style={{
                 gridTemplateColumns : "min-content 1fr"
             }}
@@ -57,10 +57,10 @@ const TaskboardList = () => {
             <ScrollArea className="min-w-0" >
                 <Tabs
                     value={selectedTaskboard?.task_board_id}
-                    className=" bg-background"
                 >
                     <TabsList
                         variant={"taskboardSelect"}
+                        className="bg-transparent pl-1"
                     >
                         {
                             (showSkeleton && !taskboards) &&
@@ -102,12 +102,24 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
 
     const handleTaskboardTabOnClick = () => {
         updateGlobalsStore({
-            selectedTaskboard : taskboard
+            selectedTaskboard : taskboard,
+            noTaskboards : false
         })
         navigate( `/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}` )
     }
 
     const handleOpenRenameTaskboardDialog = ( e : React.MouseEvent ) => {
+        e.stopPropagation()
+        e.preventDefault()
+        updateDialogsStore({
+            renameTaskboardDialog : {
+                open : true,
+                taskboard
+            }
+        })
+    }
+
+    const handleOpenTrashTaskboardDialog = ( e : React.MouseEvent ) => {
         e.stopPropagation()
         e.preventDefault()
         updateDialogsStore({
@@ -160,6 +172,9 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
                     <ContextMenuItem
                         onClick={handleOpenRenameTaskboardDialog}
                     >Rename <Pencil className="ml-auto" /></ContextMenuItem>
+                    <ContextMenuItem
+                        onClick={handleOpenRenameTaskboardDialog}
+                    >Trash <Trash2 className="ml-auto" /></ContextMenuItem>
                     <ContextMenuSeparator/>
                     <ContextMenuGroup>
                         <ContextMenuLabel className="text-destructive" >Danger Zone</ContextMenuLabel>

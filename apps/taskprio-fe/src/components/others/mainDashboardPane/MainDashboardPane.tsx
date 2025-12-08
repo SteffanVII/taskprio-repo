@@ -9,6 +9,7 @@ import TodoCard_MainDashboardPane from "./TodoCard_MainDashboardPane";
 import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { useGlobalsStore_noWorkspaces } from "@/stores/globals";
+import { useElectronStore_isElectron } from "@/stores/electron";
 
 const MainDashboardPane = () => {
 
@@ -17,11 +18,15 @@ const MainDashboardPane = () => {
         setTheme
     } = useTheme()
 
+    const isElectron = useElectronStore_isElectron()
     const noWorkspaces = useGlobalsStore_noWorkspaces()
 
     return (
         <>
-            <Sidebar>
+            <Sidebar
+                variant="inset"
+                electron={isElectron} 
+            >
                 {
                     !noWorkspaces ?
                     <>

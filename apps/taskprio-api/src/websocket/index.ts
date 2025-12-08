@@ -6,8 +6,9 @@ import { pathUpdateEventHandlerSimple } from "./eventHandlers/pathUpdateEventHan
 import cookie from "cookie"
 import { TJWTPayload } from "../middlewares/types.js"
 import jwt from "jsonwebtoken"
-import { WebSocketConnectionsManagerSimple } from "./connectionsManager.js"
+import { EWebsocketConnectionType, WebSocketConnectionsManagerSimple } from "./connectionsManager.js"
 import { taskTodoTimerHeartbeatEventHandler } from "./eventHandlers/taskTodoEventHandlers.js"
+import { v4 as uuidV4 } from "uuid";
 
 export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsManagerSimple : WebSocketConnectionsManagerSimple ) => {
     
@@ -19,6 +20,8 @@ export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsMana
     wss.on("connection", ( ws : WebSocket, req : IncomingMessage ) => {
         const cookies = cookie.parse(req.headers.cookie || "")
         const accessToken = cookies["access_token"]
+        const url = new URL(req.url || "", `ws://${req.headers.host}`);
+        const connectionType = url.searchParams.get('connection_type')
 
         const decodedToken = jwt.verify(accessToken, process.env.JSONWEBTOKEN_SECRET) as TJWTPayload;
 
@@ -30,6 +33,8 @@ export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsMana
         
         // Add the user_id value to the WebSocket class instance
         ws.user_id = decodedToken.user_id;
+        ws.connection_type = connectionType as EWebsocketConnectionType;
+        ws.client_id = uuidV4()
 
         // Add the WebSocket to list of connections in the connections manager
         // wsConnectionsManager.addConnection(ws);
@@ -45,7 +50,7 @@ export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsMana
         } )
 
         ws.on( "close" , () => {
-            wsConnectionsManagerSimple.removeConnection( decodedToken.user_id )
+            wsConnectionsManagerSimple.removeConnection( decodedToken.user_id, ws.client_id )
             console.log("Client disconnected")
         } )
 

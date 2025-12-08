@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
 import { Plus } from "lucide-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import TaskboardTaskInitialCreator from "./TaskboardTaskInitialCreator";
 import { useCreateTask } from "@/services/private/task/mutation";
 import { useGlobalsStore_selectedTaskboard } from "@/stores/globals";
@@ -33,10 +33,10 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
     const [ rename, setRename ] = useState( false )
     const [ renameValue, setRenameValue ] = useState( "" )
 
-    const [ taskVisibility, setTaskVisibility ] = useState<Record<string, boolean>>({})
+    // const [ taskVisibility, setTaskVisibility ] = useState<Record<string, boolean>>({})
 
-    const taskRefs = useRef<Record<string, HTMLDivElement>>({});
-    const intersectionObserverRef = useRef<IntersectionObserver>(null)
+    // const taskRefs = useRef<Record<string, HTMLDivElement>>({});
+    // const intersectionObserverRef = useRef<IntersectionObserver>(null)
 
     const {
         mutateAsync : createTaskMutation,
@@ -49,7 +49,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
 
     const sortedTaskSectionTasks = useMemo(() => {
         return [...taskSection.tasks].sort( ( a, b ) => {
-            taskVisibility[a.task_id] = taskVisibility[a.task_id] ?? false;
+            // taskVisibility[a.task_id] = taskVisibility[a.task_id] ?? false;
             return b.display_order - a.display_order
         } )
     }, [taskSection.tasks])
@@ -104,45 +104,45 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
         closeRenameModal()
     }
 
-    useEffect(() => { 
-        intersectionObserverRef.current = new IntersectionObserver(( entries ) => {
-            const updates : Record<string, boolean> = {};
-            entries.forEach( entry => {
-                const taskId = (entry.target as HTMLElement).dataset.taskId;
-                if (taskId) {
-                    updates[taskId] = entry.isIntersecting;
-                }
-            } )
-            setTaskVisibility( prev => ({...prev, ...updates}) )
-        }, {
-            root : null,
-            rootMargin : "200px",
-            threshold: 0.1,
-        })
-        return () => {
-            intersectionObserverRef.current?.disconnect()
-        }
-    }, [])
+    // useEffect(() => { 
+    //     intersectionObserverRef.current = new IntersectionObserver(( entries ) => {
+    //         const updates : Record<string, boolean> = {};
+    //         entries.forEach( entry => {
+    //             const taskId = (entry.target as HTMLElement).dataset.taskId;
+    //             if (taskId) {
+    //                 updates[taskId] = entry.isIntersecting;
+    //             }
+    //         } )
+    //         setTaskVisibility( prev => ({...prev, ...updates}) )
+    //     }, {
+    //         root : null,
+    //         rootMargin : "400px",
+    //         threshold: 0.1,
+    //     })
+    //     return () => {
+    //         intersectionObserverRef.current?.disconnect()
+    //     }
+    // }, [])
 
-    useEffect(() => {
-        const currentObserver = intersectionObserverRef.current;
-        if (!currentObserver) return;
+    // useEffect(() => {
+    //     const currentObserver = intersectionObserverRef.current;
+    //     if (!currentObserver) return;
 
-        // Disconnect previous observer
-        currentObserver.disconnect();
+    //     // Disconnect previous observer
+    //     currentObserver.disconnect();
 
-        // Observe all task elements
-        Object.keys(taskRefs.current).forEach(taskId => {
-            const element = document.querySelector(`[data-task-id="${taskId}"]`);
-            if (element) {
-                currentObserver.observe(element);
-            }
-        });
+    //     // Observe all task elements
+    //     Object.keys(taskRefs.current).forEach(taskId => {
+    //         const element = document.querySelector(`[data-task-id="${taskId}"]`);
+    //         if (element) {
+    //             currentObserver.observe(element);
+    //         }
+    //     });
 
-        return () => {
-            currentObserver.disconnect();
-        };
-    }, [taskSection.tasks])
+    //     return () => {
+    //         currentObserver.disconnect();
+    //     };
+    // }, [taskSection.tasks])
 
     return (
         <div
@@ -267,7 +267,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                                             bottomTaskId={task?.task_id}
                                         />
                                     }
-                                    <div
+                                    {/* <div
                                         data-task-id={task.task_id}
                                         className={cn(
                                             `w-[20rem] min-h-[8rem] h-fit pointer-events-none`
@@ -282,12 +282,12 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                                     >
                                         {
                                             taskVisibility[task.task_id] &&
-                                            <TaskboardTask
-                                                key={task.task_id}
-                                                task={task}
-                                            />
                                         }
-                                    </div> 
+                                    </div>  */}
+                                    <TaskboardTask
+                                        key={task.task_id}
+                                        task={task}
+                                    />
                                     <TaskboardTaskDrop
                                         task_section_id={taskSection.task_section_id}
                                         display_order={displayOrderBottom}

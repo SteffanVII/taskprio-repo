@@ -30,7 +30,7 @@ const TaskboardSidebar = () => {
                 className={cn(
                     `relative flex flex-col items-center py-2`,
                     `w-[3rem] h-full min-w-0 min-h-0`,
-                    `bg-background border-l`
+                    `bg-background`
                     // `bg-background border-l`
                 )}
             >

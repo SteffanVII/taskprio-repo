@@ -1,5 +1,5 @@
 import './App.css'
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createHashRouter, RouteObject } from 'react-router'
 import LoginRoute from './routes/public/login'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AuthLayout from './routes/layouts/authLayout'
@@ -15,10 +15,14 @@ import TaskTodoPage from './routes/private/taskTodo/taskTodoPage'
 import MousePositionProvider from './lib/utils/mousePositionProvider'
 import WorkspaceSettingsPage from './routes/private/workspace/settings/workspaceSettingsPage'
 import { Toaster } from './components/ui/sonner'
+import StateManager_Electron from './stateManagers/StateManager_Electron'
+import RouterProviderCustom from './components/others/shared/RouterProviderCustom'
 
 const queryClient = new QueryClient()
 
-const router = createBrowserRouter([
+createHashRouter
+
+const routeObjects : RouteObject[] = [
 	{
 		path : "/",
 		element : <AuthLayout/>,
@@ -71,21 +75,26 @@ const router = createBrowserRouter([
 			}
 		]
 	}
-])
+]
+
+// const routerBrowser = createBrowserRouter(routeObjects)
+// const routerHash = createHashRouter(routeObjects)
 
 function App() {
 
 	return (
-		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
-			<MousePositionProvider>
-				<QueryClientProvider client={queryClient}>
-					<RouterProvider router={router} />
-				</QueryClientProvider>
-			</MousePositionProvider>
-			<Toaster
-				position="top-center"
-			/>
-		</ThemeProvider>
+		<StateManager_Electron>
+			<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
+				<MousePositionProvider>
+					<QueryClientProvider client={queryClient}>
+						<RouterProviderCustom routeObjects={routeObjects} />
+					</QueryClientProvider>
+				</MousePositionProvider>
+				<Toaster
+					position="top-center"
+				/>
+			</ThemeProvider>
+		</StateManager_Electron>
 	)
 }
 

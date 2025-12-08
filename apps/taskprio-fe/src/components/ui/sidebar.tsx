@@ -24,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useElectronStore_isElectron } from "@/stores/electron"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -155,13 +156,15 @@ function Sidebar({
   side = "left",
   variant = "sidebar",
   collapsible = "offcanvas",
+  electron = false,
   className,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   side?: "left" | "right"
   variant?: "sidebar" | "floating" | "inset"
-  collapsible?: "offcanvas" | "icon" | "none"
+  collapsible?: "offcanvas" | "icon" | "none",
+  electron? : boolean
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
@@ -238,6 +241,7 @@ function Sidebar({
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+          electron && "h-[calc(100dvh-2rem)] !bottom-0 !mt-auto",
           className
         )}
         {...props}
@@ -305,14 +309,23 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   )
 }
 
-function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+function SidebarInset({ className, custom, ...props }: React.ComponentProps<"main"> & {
+  custom? : boolean
+}) {
+
+  const { isMobile } = useSidebar()
+  const isElectron = useElectronStore_isElectron()
+
   return (
     <main
       data-slot="sidebar-inset"
       className={cn(
         "bg-background relative flex w-full flex-1 flex-col",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
-        className
+        custom && "relative size-full max-w-full min-w-0 max-h-[calc(100dvh-1.1rem)] min-h-[calc(100dvh-1.1rem)] border overflow-hidden",
+        (custom && isElectron) && "!mt-auto max-h-[calc(100dvh-3.5rem)] min-h-[calc(100dvh-3.5rem)]",
+        (custom && isMobile) && "max-h-[calc(100dvh-2.45rem)] min-h-[calc(100dvh-2.45rem)]",
+        className,
       )}
       {...props}
     />

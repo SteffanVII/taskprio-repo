@@ -2,6 +2,7 @@ import { useGlobalsStore_authenticated, useGlobalsStore_selectedWorkspace } from
 import { EWebsocketClientEventType, TWebSocketChangePathMessageSimple, TWebSocketMessage } from "@repo/taskprio-types/src"
 import { createContext, useLayoutEffect, useRef, useState } from "react"
 import { useWebSocketEventHandlers } from "./eventHandlers/WebsocketEventHandlers"
+import { useElectronStore_isElectron } from "@/stores/electron"
 
 type TWebSocketContext = {
     connected : boolean,
@@ -33,10 +34,12 @@ type TWebSocketProviderProps = {
 
 export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
 
+    const isElectron = useElectronStore_isElectron()
     const authenticated = useGlobalsStore_authenticated()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
-    const [ connected, setConnected ] = useState(false)
+    const [ connected, setConnected ] = useState<boolean>(false)
+    const [ connecting, setConnecting ] = useState<boolean>(true)
     const socket = useRef<WebSocket | null>(null)
 
     const updateWorkspacePath = ( workspace_id : string ) => {
@@ -71,7 +74,7 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         if ( !authenticated ) return
 
         socket.current = new WebSocket(
-            `${import.meta.env.VITE_TASKPRIO_WSS_URL}`
+            `${import.meta.env.VITE_TASKPRIO_WSS_URL}?connection_type=${isElectron ? "electron" : "webapp"}`
         )
         socket.current.onopen = () => {
             setConnected(true)
@@ -79,7 +82,7 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         socket.current.onclose = () => {
             setConnected(false)
         }
-    }, [ authenticated ] )
+    }, [ authenticated, isElectron ] )
 
     // Attach the message handlers to the socket
     useLayoutEffect(() => {

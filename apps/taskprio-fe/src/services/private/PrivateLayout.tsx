@@ -1,8 +1,8 @@
-import StateManager_Project from "@/components/others/project/StateManager_Project";
-import StateManager_Taskboard from "@/components/others/taskboard/StateManager_Taskboard";
-import StateManager_TaskTodoPage from "@/components/others/taskTodo/StateManager_TaskTodoPage";
 import { WebSocketProvider } from "@/components/others/websocket/WebsocketProvider";
-import StateManager_Workspace from "@/components/others/workspace/StateManager_Workspace";
+import StateManager_Project from "@/stateManagers/StateManager_Project";
+import StateManager_Taskboard from "@/stateManagers/StateManager_Taskboard";
+import StateManager_TaskTodoPage from "@/stateManagers/StateManager_TaskTodoPage";
+import StateManager_Workspace from "@/stateManagers/StateManager_Workspace";
 import { Outlet } from "react-router"
 
 

@@ -51,7 +51,7 @@ const tabsTriggerVariants = cva(
           variants : {
             variant : {
               default : "",
-              taskboardSelect : "font-normal rounded-none px-3 border-0 hover:bg-accent/50 data-[state=active]:!bg-accent",
+              taskboardSelect : "font-normal rounded-none px-3 border-0 hover:bg-accent/50 data-[state=active]:!bg-background data-[state=active]:!text-foreground",
               button : "font-normal !text-foreground border-2 border-b-4 border-background rounded-md px-2 bg-accent !transition-all duration-100 hover:!bg-primary hover:!text-primary-foreground"
             }
           },

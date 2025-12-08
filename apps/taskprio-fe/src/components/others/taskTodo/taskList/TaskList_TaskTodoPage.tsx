@@ -13,13 +13,14 @@ import {
     useTaskTodoPageStore_totalCurrentWorkTimeNumber,
     useTaskTodoPageStore_totalWorkTimeGoalNumber
 } from "@/stores/taskTodoPage";
-import { StateManager_TaskTodoPageContext } from "../StateManager_TaskTodoPage";
 import TaskTodoFinishSessionDialog from "../../dialogs/TaskTodoFinishSessionDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TaskCard from "./TaskCard_TaskTodoPage";
 import TaskCardDrop from "./TaskCardDrop_TaskTodoPage";
 import { Skeleton } from "@/components/ui/skeleton";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
+import { Slider } from "@/components/ui/slider";
+import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
 
 const TaskList_TaskTodoPage = () => {
 
@@ -139,14 +140,20 @@ const TaskList_TaskTodoPage = () => {
                             </Tooltip>
                         </div>
                         <div
-                            className=" w-full h-fit py-[1rem] "
+                            className=" w-full h-fit pb-[1rem] "
                         >
+                            <Slider
+                                value={[totalCurrentWorkTimeNumber]}
+                                max={totalWorkTimeGoalNumber}
+                                step={1}
+                                hideThumb
+                            />
                             <div
-                                className=" flex gap-4 h-fit "
+                                className=" flex gap-4 h-fit pt-4 "
                             >
                                 <Button
                                     size={"icon"}
-                                    variant={sessionActive ? "destructive" : "secondary"}
+                                    variant={sessionActive ? "destructive" : "default"}
                                     isLoading={loading}
                                     disabled={userTaskTodoStateIsLoading}
                                     spinnerSize="xl"
@@ -166,16 +173,13 @@ const TaskList_TaskTodoPage = () => {
                                     }
                                     { sessionActive ? <PauseIcon className=" size-[50%] " /> : <PlayIcon className=" size-[50%] " /> }   
                                 </Button>
-                                {
-                                    !sessionActive &&
-                                    <div>
-                                        <Button
-                                            variant={"secondary"}
-                                            onClick={() => setFinishSessionDialogOpen(true)}
-                                            disabled={userTaskTodoStateIsLoading}
-                                        >Finish Session</Button>
-                                    </div>
-                                }
+                                <div>
+                                    <Button
+                                        variant={"secondary"}
+                                        onClick={() => setFinishSessionDialogOpen(true)}
+                                        disabled={userTaskTodoStateIsLoading || sessionActive}
+                                    >Finish Session</Button>
+                                </div>
                             </div>
                         </div>
 

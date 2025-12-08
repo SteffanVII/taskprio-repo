@@ -3,7 +3,6 @@ import {
     useTaskTodoPageStore_timerCount 
 } from "@/stores/taskTodoPage";
 import { useContext, useMemo, useState } from "react";
-import { StateManager_TaskTodoPageContext } from "../taskTodo/StateManager_TaskTodoPage";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { TUserTaskTodoState } from "@repo/taskprio-types/src";
 import dayjs from "@/lib/dayjs";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
+import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
 
 
 const TodoCard_MainDashboardPane = () => {

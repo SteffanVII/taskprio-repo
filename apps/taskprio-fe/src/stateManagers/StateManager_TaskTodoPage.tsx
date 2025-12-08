@@ -9,11 +9,11 @@ import {
 import { EWebsocketClientEventType, TGetUserTaskTodoStateResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { useParams } from "react-router"
-import { taskTodoTimerHeartbeatEventHandler } from "../websocket/eventHandlers/outgoing/taskTodoEventHandlers"
-import { WebSocketContext } from "../websocket/WebsocketProvider"
 import { useQueryClient } from "@tanstack/react-query"
 import { QueryKeys } from "@/services/enum"
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider"
+import { taskTodoTimerHeartbeatEventHandler } from "@/components/others/websocket/eventHandlers/outgoing/taskTodoEventHandlers"
 
 type TStateManager_TaskTodoPageContext = {
     handleStartSession : () => Promise<void>,

@@ -32,7 +32,7 @@ const NoWorkspaceStage = () => {
         <div
             className={cn(
                 ` size-full max-w-screen max-h-screen `,
-                ` flex items-center justify-center `,
+                ` flex items-center justify-center grow `,
                 ` bg-background z-50 `
             )}
         >

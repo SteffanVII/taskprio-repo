@@ -20,7 +20,7 @@ const ProjectSettingsPage = () => {
     return (
         <div
             className={cn(
-                `SettingsBodyContainer`
+                `SettingsBodyContainer`,
             )}
         >
             <div

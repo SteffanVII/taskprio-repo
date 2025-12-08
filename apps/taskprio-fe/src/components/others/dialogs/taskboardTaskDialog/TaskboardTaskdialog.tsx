@@ -172,7 +172,7 @@ export const TaskboardTaskDialog = () => {
             <DialogContent
                 noCloseButton={ true }
                 className={cn(
-                    ` !max-w-screen !max-h-[calc(100vh-2rem)] w-fit h-fit `,
+                    ` !max-w-screen !max-h-[calc(100vh-4rem)] min-h-0 w-fit h-fit `,
                     ` shadow-none !border-none !bg-card !p-0 !outline-none `
                 )}
                 onMouseDown={ e => {
@@ -182,7 +182,7 @@ export const TaskboardTaskDialog = () => {
                 <div
                     className={cn(
                         // ` absolute bottom-0 right-[1rem] `,
-                        ` w-[80rem] h-fit min-h-[60rem] max-h-[calc(100vh-2rem)] `,
+                        ` w-[80rem] h-fit min-h-0 max-h-[calc(100vh-4rem)] `,
                         ` flex flex-col `,
                         ` border border-border rounded-md shadow `,
                         ` animate-in fade-in slide-in-from-bottom-60 duration-200 ease-out `,
@@ -208,7 +208,7 @@ export const TaskboardTaskDialog = () => {
                 >
                     {
                         isLoadingTask || isFetchingTask ? 
-                        <div className=" size-full p-8 flex items-center justify-center " >
+                        <div className=" size-full p-8 flex items-center justify-center min-h-[58.5rem] " >
                             <Spinner size="md"/>
                         </div>
                         :

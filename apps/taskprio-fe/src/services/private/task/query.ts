@@ -18,6 +18,7 @@ export const useGetTask = ( payload : {
             )
             return response.data
         },
+        refetchOnWindowFocus : false,
         enabled : !!payload.pathParameter.task_id && payload.enabled
     })
 }

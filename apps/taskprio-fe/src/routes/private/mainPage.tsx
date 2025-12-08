@@ -8,7 +8,7 @@ import WorkspaceInvitationDialog from "@/components/others/dialogs/WorkspaceInvi
 import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboardPane";
 import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStage";
 import Spinner from "@/components/others/Spinner";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_authenticated, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 import { Outlet } from "react-router";
@@ -19,10 +19,17 @@ import DropProjectDialog from "@/components/others/dialogs/DropProjectDialog";
 import ReactivateProjectDialog from "@/components/others/dialogs/ReactivateProjectDialog";
 import NoWorkspaceStage from "@/components/others/mainPageComponents/NoWorkspaceStage";
 import TaskboardTaskAssignerDialog from "@/components/others/dialogs/TaskboardTaskAssignerDialog";
-
+import ElectronCustomTitlebar from "@/components/others/shared/ElectronCustomTitlebar";
+import { useElectronStore_isElectron } from "@/stores/electron";
+import { useContext } from "react";
+import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 
 const MainPage = () => {
-
+    
+    const {
+        connected : webSocketConnected
+    } = useContext(WebSocketContext)
+    const isElectron = useElectronStore_isElectron()
     const authenticated = useGlobalsStore_authenticated()
     const noProjects = useGlobalsStore_noProjects()
     const projectsIsLoading = useGlobalsStore_projectsIsLoading()
@@ -32,7 +39,7 @@ const MainPage = () => {
     return (
         <>
             {
-                ( !authenticated ) ?
+                ( !authenticated || !webSocketConnected ) ?
                 // Show loading screen when not authenticated
                 <div
                     className={cn(
@@ -44,47 +51,57 @@ const MainPage = () => {
                     <Spinner size="xl" />
                 </div>
                 :
-                <SidebarProvider>
-                    <MainDashboardPane/>
-                    <main
-                        className={cn(
-                            ` w-full min-w-0 min-h-0 grow max-h-screen overflow-hidden `,
-                            ` flex flex-col `
-                        )}
-                    >
-                        {
-                            (noWorkspaces && !workspacesIsLoading) ?
-                            // Show no workspaces stage
-                            <NoWorkspaceStage/>
-                            :
-                            // Show main page
-                            <>
+                <>
+                    {
+                        isElectron &&
+                        <ElectronCustomTitlebar/>
+                    }
+                    <SidebarProvider>
+                        <MainDashboardPane/>
+                        <SidebarInset
+                            custom
+                        >
+                            <div
+                                className={cn(
+                                    `relative w-full min-w-0 min-h-0 max-h-full overflow-hidden `,
+                                    `flex flex-col grow`
+                                )}
+                            >
                                 {
-                                    ( noProjects && !projectsIsLoading ) ?
-                                    // Show no projects stage
-                                    <NoProjectStage/>
+                                    (noWorkspaces && !workspacesIsLoading) ?
+                                    // Show no workspaces stage
+                                    <NoWorkspaceStage/>
                                     :
-                                    <>                  
-                                        <Outlet/>
+                                    // Show main page
+                                    <>
+                                        {
+                                            ( noProjects && !projectsIsLoading ) ?
+                                            // Show no projects stage
+                                            <NoProjectStage/>
+                                            :
+                                            <>                  
+                                                <Outlet/>
+                                            </>
+                                        }
                                     </>
                                 }
-                            </>
-                        }
-                    </main>
-                    <CreateProjectDialog/>
-                    <CreateWorkspaceDialog/>
-                    <CreateTaskboardDialog/>
-                    <RenameTaskboardDialog/>
-                    <DropTaskboardDialog/>
-                    <DeactivateTaskboardDialog/>
-                    <ReactivateTaskboardDialog/>
-                    <DropProjectDialog/>
-                    <DeactivateProjectDialog/>
-                    <ReactivateProjectDialog/>
-                    <WorkspaceInvitationDialog/>
-                    <TagDialog/>
-                    <TaskboardTaskAssignerDialog/>
-                </SidebarProvider>
+                            </div>
+                        </SidebarInset>
+                        <CreateProjectDialog/>
+                        <CreateWorkspaceDialog/>
+                        <CreateTaskboardDialog/>
+                        <RenameTaskboardDialog/>
+                        <DropTaskboardDialog/>
+                        <DeactivateTaskboardDialog/>
+                        <ReactivateTaskboardDialog/>
+                        <DropProjectDialog/>
+                        <DeactivateProjectDialog/>
+                        <ReactivateProjectDialog/>
+                        <WorkspaceInvitationDialog/>
+                        <TagDialog/>
+                        <TaskboardTaskAssignerDialog/>
+                    </SidebarProvider>
+                </>
             }
         </>
     )

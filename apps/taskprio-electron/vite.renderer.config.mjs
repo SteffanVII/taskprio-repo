@@ -12,7 +12,7 @@ export default defineConfig({
     strictPort: true,
   },
   build: {
-    outDir: path.resolve(__dirname, 'dist/renderer'),
+    outDir: path.resolve(__dirname, `./.vite/dist/renderer/main_window`),
     emptyOutDir: true,
   },
   resolve: {

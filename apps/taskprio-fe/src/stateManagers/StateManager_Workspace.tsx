@@ -2,7 +2,8 @@ import { useGetUserWorkspaces } from "@/services/private/workspace/query";
 import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
 import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { WebSocketContext } from "../websocket/WebsocketProvider";
+import { EWorkspaceRole } from "@repo/taskprio-types/src";
+import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 
 type TStateManager_Workspace = {
     children : React.ReactNode
@@ -18,14 +19,19 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
     const user = useGlobalsStore_user()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
-    const { pathChangeMethods } = useContext(WebSocketContext)
+    const {
+        connected : webSocketConnected,
+        pathChangeMethods
+    } = useContext(WebSocketContext)
 
     const {
         data : workspaces,
         isFetching : workspacesIsFetching,
         isLoading : workspacesIsLoading,
         isError : workspacesIsError
-    } = useGetUserWorkspaces()
+    } = useGetUserWorkspaces({
+        enabled : webSocketConnected
+    })
 
     useEffect(() => {
         updateGlobalsStore({
@@ -63,9 +69,10 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
         // Try to find the workspace in workspaces data to be set as selectedWorkspace
         // This doesn't set to other the first workspace if workspace isn't found
         // This is only for when the webapp is loaded already in a workspace route but doesn't have selectedWorkspace data set yet
-        if ( (!selectedWorkspace || ( selectedWorkspace && selectedWorkspace.workspace_id !== workspace_id )) && workspace_id ) {
+        // if ( (!selectedWorkspace || ( selectedWorkspace && selectedWorkspace.workspace_id !== workspace_id )) && workspace_id ) {
+        if ( !selectedWorkspace && workspace_id ) {
             const foundWorkspace = workspaces?.find( workspace => workspace.workspace_id === workspace_id ) ?? null;
-            const workspaceRole = foundWorkspace?.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null;
+            const workspaceRole : EWorkspaceRole | null = foundWorkspace?.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null;
             updateGlobalsStore({
                 selectedWorkspace : foundWorkspace,
                 workspaceRole,

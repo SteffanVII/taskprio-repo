@@ -1,4 +1,3 @@
-import DangerZone_WorkspaceSettingsPage from "@/components/others/workspace/DangerZone_WorkspaceSettingsPage";
 import DeactivatedProjects_WorkspaceSettingsPage from "@/components/others/workspace/DeactivatedProjects_workspaceSettingsPage";
 import Members_WorkspaceSettingsPage from "@/components/others/workspace/members_workspaceSettingsPage";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,6 @@ export const WorkspaceSettingsPage = () => {
     return (
         <div
             className={cn(
-                `relative`,
                 `SettingsBodyContainer`
             )}
         >
@@ -37,13 +35,6 @@ export const WorkspaceSettingsPage = () => {
                     `SettingsBody`
                 )}
             >
-                {/* <div
-                    className={cn(
-                        ` flex flex-col space-y-16 `,
-                        ` py-16 `
-                    )}
-                >
-                </div> */}
                 <h2 className={` SettingsHeader `} >Workspace Settings</h2>
                 <div
                     className={cn(
@@ -55,7 +46,7 @@ export const WorkspaceSettingsPage = () => {
                         isWorkspaceAdminOrOwner &&
                         <>
                             <DeactivatedProjects_WorkspaceSettingsPage/>
-                            <DangerZone_WorkspaceSettingsPage/>
+                            {/* <DangerZone_WorkspaceSettingsPage/> */}
                         </>
                     }
                 </div>

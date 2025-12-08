@@ -120,6 +120,7 @@ export const useUpdateTaskPrimitiveFields = () => {
 export const useAddTaskAssignee = () => {
 
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedTask = useGlobalsStore_selectedTask()
 
     const queryClient = useQueryClient()
 
@@ -133,6 +134,14 @@ export const useAddTaskAssignee = () => {
         },
         onSuccess : ( _, variables ) => {
             if ( variables.optimisticData !== undefined ) {
+                if ( variables.task_id === selectedTask?.task_id ) {
+                    updateGlobalsStore({
+                        selectedTask : {
+                            ...selectedTask,
+                            assignees : [ ...selectedTask.assignees, variables.optimisticData ]
+                        }
+                    })
+                }
                 queryClient.setQueryData(
                     [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard?.task_board_id, true ],
                     ( oldData : TGetTaskboardSectionsResponse ) => produce( oldData, draft => {
@@ -155,6 +164,7 @@ export const useAddTaskAssignee = () => {
 export const useRemoveTaskAssignee = () => {
 
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedTask = useGlobalsStore_selectedTask()
 
     const queryClient = useQueryClient()
 
@@ -170,6 +180,14 @@ export const useRemoveTaskAssignee = () => {
             return response.data
         },
         onSuccess : ( _, variables ) => {
+           if ( variables.task_id === selectedTask?.task_id ) {
+                updateGlobalsStore({
+                    selectedTask : {
+                        ...selectedTask,
+                        assignees : selectedTask.assignees.filter( assignee => assignee.user_id === variables.body.user_id )
+                    }
+                })
+            }
             queryClient.setQueryData(
                 [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard?.task_board_id, true ],
                 ( oldData : TGetTaskboardSectionsResponse ) => {

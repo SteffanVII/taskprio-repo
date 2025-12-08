@@ -1,12 +1,14 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery, UseQueryOptions } from "@tanstack/react-query"
 import { TGetUserWorkspaceResponse, TGetUserWorkspacesResponse, TGetWorkspaceMemberPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { useGlobalsStore_authenticated } from "@/stores/globals"
 import { QueryKeys } from "@/services/enum"
 import { TWorkspaceMember } from "@repo/taskprio-types/src"
 
-export const useGetUserWorkspaces = () => {
-    
+type TUseGetUserWorkspacesOptions = Partial<UseQueryOptions<any, any, TGetUserWorkspacesResponse>>
+
+export const useGetUserWorkspaces = ( options? : TUseGetUserWorkspacesOptions ) => {
+
     const authenticated = useGlobalsStore_authenticated()
 
     return useQuery<any, any, TGetUserWorkspacesResponse>({
@@ -18,7 +20,8 @@ export const useGetUserWorkspaces = () => {
             return response.data
         },
         placeholderData : keepPreviousData,
-        enabled : authenticated
+        ...options,
+        enabled : authenticated && (options?.enabled ?? true)
     })
 }
 

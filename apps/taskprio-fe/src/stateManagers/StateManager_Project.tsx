@@ -75,7 +75,8 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
     ])
 
     useLayoutEffect(() => {
-        if ( (!selectedProject || (selectedProject && selectedProject.project_id === project_id)) && project_id ) {
+        // if ( (!selectedProject || (selectedProject && selectedProject.project_id === project_id)) && project_id ) {
+        if ( !selectedProject && project_id ) {
             const foundProject = projects?.find( project => project.project_id === project_id ) ?? null;
             const projectMemberRole = foundProject?.project_members.find( projectMember => projectMember.user_id === user?.user_id )?.project_role ?? null
             updateGlobalsStore({

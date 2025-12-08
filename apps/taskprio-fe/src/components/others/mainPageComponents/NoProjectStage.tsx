@@ -41,7 +41,7 @@ const NoProjectStage = () => {
 
     return (
         <div
-            className={` size-full flex items-center justify-center `}
+            className={` size-full grow flex items-center justify-center `}
         >
             <Card
                 className={cn(
