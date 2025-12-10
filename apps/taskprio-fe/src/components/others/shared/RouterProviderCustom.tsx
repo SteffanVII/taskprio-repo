@@ -1,6 +1,6 @@
 import { useElectronStore_isElectron } from "@/stores/electron";
 import React from "react";
-import { createBrowserRouter, createHashRouter, Navigate, RouteObject, RouterProvider } from "react-router"
+import { createBrowserRouter, createHashRouter, RouteObject, RouterProvider } from "react-router"
 
 type TRouterProviderCustomProps = {
     routeObjects : RouteObject[]

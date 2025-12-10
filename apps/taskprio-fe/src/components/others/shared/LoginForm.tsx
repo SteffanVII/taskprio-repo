@@ -10,6 +10,7 @@ import { z } from "zod"
 import Spinner from "../Spinner"
 import { Separator } from "@/components/ui/separator"
 import { GoogleLogin } from "@react-oauth/google"
+import { useElectronStore_isElectron } from "@/stores/electron"
 
 type TLoginFormProps = {
     setRegisterFormOpen : ( isRegister : boolean ) => void,
@@ -27,6 +28,8 @@ const LoginForm : React.FC<TLoginFormProps> = ({
     dontNavigate = false,
     invitationPurpose = false
 }) => {
+
+    const isElectron = useElectronStore_isElectron()
 
     const navigate = useNavigate()
 
@@ -142,13 +145,25 @@ const LoginForm : React.FC<TLoginFormProps> = ({
                         if ( !credentialResponse.clientId || !credentialResponse.credential ) {
                             return
                         }
-                        googleLoginT({
-                            clientId : credentialResponse.clientId,
-                            credential : credentialResponse.credential,
-                            for_invitation_purpose : invitationPurpose
-                        })
+                        if ( isElectron ) {
+                            const url = new URL(window.location.origin)
+                            url.protocol = "taskprio-app:"
+                            url.pathname = "googlelogin"
+                            url.searchParams.append("credential", credentialResponse.credential)
+                            url.searchParams.append("client_id", credentialResponse.clientId)
+                            console.log(url.toString());
+                            window.location.href = url.toString()
+                        } else {
+                            googleLoginT({
+                                clientId : credentialResponse.clientId,
+                                credential : credentialResponse.credential,
+                                for_invitation_purpose : invitationPurpose
+                            })
+                        }
                     }}
                     auto_select={true}
+                    ux_mode={ isElectron ? "redirect" : "popup" }
+                    login_uri={ isElectron ? "https://taskprio-repo.onrender.com/redirect-to-electron-app" : undefined }
                 />
             </form>
         </Form>

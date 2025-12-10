@@ -1,15 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthenticate } from "@/services/authentication";
-import { updateGlobalsStore } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_authenticated } from "@/stores/globals";
 
 const AuthLayout = () => {
 
     const navigate = useNavigate()
     const location = useLocation()
     const [ searchParams ] = useSearchParams()
-
+    const authenticated = useGlobalsStore_authenticated()
+    
     const onAuthenticateSuccess = () => {
         updateGlobalsStore({
             authenticated : true
@@ -29,15 +30,24 @@ const AuthLayout = () => {
     }
 
     const {
-        mutateAsync : authenticate
+        mutateAsync : authenticate,
+        isPending : authenticateIsPending,
     } = useAuthenticate(
         onAuthenticateSuccess,
         onAuthenticateError
     )
 
     useEffect( () => {
-        authenticate()
-    }, [] )
+        if ( !authenticated ) authenticate()
+    }, [ authenticated ] )
+
+    useLayoutEffect(() => {
+        updateGlobalsStore({
+            authenticateIsPending,
+        })
+    }, [
+        authenticateIsPending,
+    ])
 
     return (
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>

@@ -10,7 +10,7 @@ import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStag
 import Spinner from "@/components/others/Spinner";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_authenticated, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
+import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 import { Outlet } from "react-router";
 import DeactivateTaskboardDialog from "@/components/others/dialogs/DeactivateTaskboardDialog";
 import ReactivateTaskboardDialog from "@/components/others/dialogs/ReactivateTaskboardDialog";
@@ -23,6 +23,8 @@ import ElectronCustomTitlebar from "@/components/others/shared/ElectronCustomTit
 import { useElectronStore_isElectron } from "@/stores/electron";
 import { useContext } from "react";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
+import { Label } from "@/components/ui/label";
+import { Check } from "lucide-react";
 
 const MainPage = () => {
     
@@ -31,6 +33,7 @@ const MainPage = () => {
     } = useContext(WebSocketContext)
     const isElectron = useElectronStore_isElectron()
     const authenticated = useGlobalsStore_authenticated()
+    const authenticateIsPending = useGlobalsStore_authenticateIsPending()
     const noProjects = useGlobalsStore_noProjects()
     const projectsIsLoading = useGlobalsStore_projectsIsLoading()
     const noWorkspaces = useGlobalsStore_noWorkspaces()
@@ -39,16 +42,32 @@ const MainPage = () => {
     return (
         <>
             {
-                ( !authenticated || !webSocketConnected ) ?
+                ( !authenticated || !webSocketConnected || authenticateIsPending ) ?
                 // Show loading screen when not authenticated
                 <div
                     className={cn(
                         ` size-full max-w-screen max-h-screen `,
-                        ` flex items-center justify-center `,
+                        ` flex flex-col gap-[4rem] items-center justify-center `,
                         ` bg-background z-50 `
                     )}
                 >
                     <Spinner size="xl" />
+                    <div className="flex flex-col gap-2" >
+                        <div className="flex gap-4 items-center" >
+                            <Label>Authenticated</Label>
+                            {
+                                authenticateIsPending ?
+                                <Spinner/> : <Check className="text-green-400" />
+                            }
+                        </div>
+                        <div className="flex gap-4 items-center" >
+                            <Label>Websocket</Label>
+                            {
+                                !webSocketConnected ?
+                                <Spinner/> : <Check className="text-green-400"/>
+                            }
+                        </div>
+                    </div>
                 </div>
                 :
                 <>

@@ -14,6 +14,17 @@ configDotenv();
 
 function reigsterAuthenticationRoutes() {
 
+    APP.get(
+        `/redirect-to-electron-app`,
+        async ( req : Request, res : Response ) => {
+            const { code, state } = req.query;
+            const redirectUrl = new URL('taskprio-app://googlelogin');
+            if (code) redirectUrl.searchParams.append('code', code.toString());
+            if (state) redirectUrl.searchParams.append('state', state.toString());
+            res.redirect(302, redirectUrl.toString())
+        }
+    )
+
     APP.post(
         "/login",
         async ( req : ILoginRequest, res : Response ) => {

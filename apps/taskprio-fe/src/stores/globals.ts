@@ -7,7 +7,10 @@ import { TWorkspace } from "@repo/taskprio-types/src/index"
 import { Store, useStore } from "@tanstack/react-store"
 
 export type TGlobalsStore = {
+
     authenticated : boolean,
+    authenticateIsPending : boolean,
+
     user : TUserSecure | null,
     workspaceRole : EWorkspaceRole | null,
     projectRole : EProjectRole | null,
@@ -45,6 +48,8 @@ export type TGlobalsStore = {
 
 const initialState : TGlobalsStore = {
     authenticated : false,
+    authenticateIsPending : false,
+
     user : null,
     workspaceRole : null,
     projectRole : null,
@@ -99,6 +104,10 @@ export const useGlobalsStore = () => {
 
 export const useGlobalsStore_authenticated = () => {
     return useStore( GlobalsStore, store => store.authenticated )
+}
+
+export const useGlobalsStore_authenticateIsPending = () => {
+    return useStore( GlobalsStore, store => store.authenticateIsPending )
 }
 
 export const useGlobalsStore_user = () => {
