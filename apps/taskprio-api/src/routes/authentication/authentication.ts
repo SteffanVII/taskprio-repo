@@ -14,7 +14,7 @@ configDotenv();
 
 function reigsterAuthenticationRoutes() {
 
-    APP.get(
+    APP.post(
         `/redirect-to-electron-app`,
         async ( req : Request, res : Response ) => {
             const { code, state } = req.query;
