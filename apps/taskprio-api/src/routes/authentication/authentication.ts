@@ -18,7 +18,8 @@ function reigsterAuthenticationRoutes() {
         `/redirect-to-electron-app`,
         async ( req : Request, res : Response ) => {
             const { code, state } = req.query;
-            console.log( req.query )
+            const query = req.query;
+            console.log( query )
             console.log( req.url )
             console.log( req.originalUrl )
             console.log( code, state )
