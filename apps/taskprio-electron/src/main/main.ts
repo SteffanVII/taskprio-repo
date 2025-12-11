@@ -57,7 +57,7 @@ if ( !gotTheLock ) {
         if ( mainWindow.isMinimized() ) mainWindow.restore()
             mainWindow.focus()
             mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop() )
-            mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop().includes("/redirect-to-electron-app") )
+            mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop().includes("/googlelogin") )
             if ( commandLine.pop().includes("/redirect-to-electron-app") ) {
                 const url = new URL(commandLine.pop())
                 const searchParams = url.searchParams
