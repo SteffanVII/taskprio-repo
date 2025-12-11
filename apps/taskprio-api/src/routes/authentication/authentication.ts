@@ -238,7 +238,7 @@ function reigsterAuthenticationRoutes() {
     APP.post(
         `/logout`,
         async ( _req : Request, res : Response ) => {
-            res.clearCookie(process.env.ACCESS_TOKEN_COOKIE_NAME).status(200).json({ message : "Logged out" });
+            res.clearCookie(process.env.ACCESS_TOKEN_COOKIE_NAME, { httpOnly : true, sameSite : "none", secure : true }).status(200).json({ message : "Logged out" });
         }
     )
 

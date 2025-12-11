@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthenticate } from "@/services/authentication";
-import { updateGlobalsStore, useGlobalsStore_authenticated } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_authenticated, useGlobalsStore_logoutIsPending } from "@/stores/globals";
 import StateManager_Electron from "@/stateManagers/StateManager_Electron";
 
 const AuthLayout = () => {
@@ -11,6 +11,7 @@ const AuthLayout = () => {
     const location = useLocation()
     const [ searchParams ] = useSearchParams()
     const authenticated = useGlobalsStore_authenticated()
+    const logoutIsPending = useGlobalsStore_logoutIsPending()
     
     const onAuthenticateSuccess = () => {
         updateGlobalsStore({
@@ -38,9 +39,9 @@ const AuthLayout = () => {
         onAuthenticateError
     )
 
-    useEffect( () => {
+    useLayoutEffect( () => {
         if ( !authenticated ) authenticate()
-    }, [ authenticated ] )
+    }, [] )
 
     useLayoutEffect(() => {
         updateGlobalsStore({

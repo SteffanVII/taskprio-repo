@@ -56,13 +56,15 @@ if ( !gotTheLock ) {
         if ( mainWindow ) {
         if ( mainWindow.isMinimized() ) mainWindow.restore()
             mainWindow.focus()
-            mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop() )
-            mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop().includes("/googlelogin") )
-            if ( commandLine.pop().includes("/redirect-to-electron-app") ) {
-                const url = new URL(commandLine.pop())
+            const urlString = commandLine.pop()
+            mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString )
+            mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
+            if ( urlString.includes("taskprio-app://googlelogin") ) {
+                const url = new URL(urlString)
                 const searchParams = url.searchParams
-                const code = searchParams.get("code")
-                mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, code )
+                const credential = searchParams.get("credential")
+                const clientId = searchParams.get("clientId")
+                mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, credential, clientId )
             }
         }
         // dialog.showErrorBox('Welcome back', `You arrived from ${commandLine.pop()}`)

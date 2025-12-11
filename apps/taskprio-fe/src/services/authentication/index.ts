@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, UseMutationOptions } from "@tanstack/react-query"
 import { TAuthenticateResponse, TLoginPayload, TLoginResponse, TRegisterPayload, TRegisterResponse } from "./types"
 import { axiosInstance } from "../axios"
 import { AxiosResponse } from "axios"
@@ -148,17 +148,22 @@ export const useAuthenticate = (
 
 }
 
+type TUseLogoutRequestOptions = Partial<UseMutationOptions>
+
 /**
  * @description Logout mutation.
  * @returns A mutation object with the logout mutation function
  */
-export const useLogoutRequest = () => {
+export const useLogoutRequest = ( options? : TUseLogoutRequestOptions ) => {
     return useMutation({
         mutationFn : async () => {
             const response = await axiosInstance.post(
                 `/logout`
             )
             return response.data
-        }
+        },
+        onSuccess(data, variables, context) {
+            options?.onSuccess?.(data, variables, context)
+        },
     })
 }

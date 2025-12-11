@@ -52,7 +52,7 @@ export type TDialogStore = {
     }
 }
 
-const DialogsStore = new Store<TDialogStore>({
+const initialState : TDialogStore = {
     createProjectDialog : {
         open : false
     },
@@ -101,7 +101,9 @@ const DialogsStore = new Store<TDialogStore>({
         open : false,
         task : null
     }
-})
+}
+
+const DialogsStore = new Store<TDialogStore>(initialState)
 
 export const updateDialogsStore = (store : Partial<TDialogStore>) => {
     DialogsStore.setState( (prev) => ({
@@ -112,6 +114,10 @@ export const updateDialogsStore = (store : Partial<TDialogStore>) => {
 
 export const useDialogsStore = () => {
     return useStore(DialogsStore);
+}
+
+export const resetDialogsStore = () => {
+    DialogsStore.setState(initialState)
 }
 
 export const useDialogsStore_createProjectDialog = () => {

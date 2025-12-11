@@ -15,7 +15,6 @@ import TaskTodoPage from './routes/private/taskTodo/taskTodoPage'
 import MousePositionProvider from './lib/utils/mousePositionProvider'
 import WorkspaceSettingsPage from './routes/private/workspace/settings/workspaceSettingsPage'
 import { Toaster } from './components/ui/sonner'
-import StateManager_Electron from './stateManagers/StateManager_Electron'
 import RouterProviderCustom from './components/others/shared/RouterProviderCustom'
 
 const queryClient = new QueryClient()

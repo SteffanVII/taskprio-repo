@@ -13,7 +13,7 @@ const RouterProviderCustom : React.FC<TRouterProviderCustomProps> = ({
     const isElectron = useElectronStore_isElectron()
 
     // return <RouterProvider router={ isElectron ? createHashRouter([ { path: "*", element : <Navigate to={"./"} replace /> }, ...routeObjects]) : createBrowserRouter(routeObjects) } />
-    return <RouterProvider router={ createHashRouter(routeObjects) } />
+    return <RouterProvider router={ createBrowserRouter(routeObjects) } />
 
 }
 

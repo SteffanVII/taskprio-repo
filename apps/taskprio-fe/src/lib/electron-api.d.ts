@@ -6,7 +6,7 @@ declare global {
             unmaximizeWindow : () => void,
             minimizeWindow : () => void,
             onWindowMaximizeStateChange : ( callback : ( value : boolean ) => void ) => void,
-            onGoogleLoginSuccess : ( callback : ( value : string ) => void ) => void,
+            onGoogleLoginSuccess : ( callback : ( credential : string, clientId : string ) => void ) => void,
             onConsoleLog : ( callback : ( value : string ) => void ) => void
         }
     }

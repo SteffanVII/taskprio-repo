@@ -10,7 +10,7 @@ import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStag
 import Spinner from "@/components/others/Spinner";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
+import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_logoutIsPending, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 import { Outlet } from "react-router";
 import DeactivateTaskboardDialog from "@/components/others/dialogs/DeactivateTaskboardDialog";
 import ReactivateTaskboardDialog from "@/components/others/dialogs/ReactivateTaskboardDialog";
@@ -38,11 +38,12 @@ const MainPage = () => {
     const projectsIsLoading = useGlobalsStore_projectsIsLoading()
     const noWorkspaces = useGlobalsStore_noWorkspaces()
     const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
+    const logoutIsPending = useGlobalsStore_logoutIsPending()
 
     return (
         <>
             {
-                ( !authenticated || !webSocketConnected || authenticateIsPending ) ?
+                (( !authenticated || !webSocketConnected || authenticateIsPending ) && !logoutIsPending) ?
                 // Show loading screen when not authenticated
                 <div
                     className={cn(

@@ -10,6 +10,7 @@ export type TGlobalsStore = {
 
     authenticated : boolean,
     authenticateIsPending : boolean,
+    logoutIsPending : boolean,
 
     user : TUserSecure | null,
     workspaceRole : EWorkspaceRole | null,
@@ -49,6 +50,7 @@ export type TGlobalsStore = {
 const initialState : TGlobalsStore = {
     authenticated : false,
     authenticateIsPending : false,
+    logoutIsPending : false,
 
     user : null,
     workspaceRole : null,
@@ -108,6 +110,10 @@ export const useGlobalsStore_authenticated = () => {
 
 export const useGlobalsStore_authenticateIsPending = () => {
     return useStore( GlobalsStore, store => store.authenticateIsPending )
+}
+
+export const useGlobalsStore_logoutIsPending = () => {
+    return useStore( GlobalsStore, store => store.logoutIsPending )
 }
 
 export const useGlobalsStore_user = () => {

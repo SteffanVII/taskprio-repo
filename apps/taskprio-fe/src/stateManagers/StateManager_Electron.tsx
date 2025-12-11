@@ -1,6 +1,7 @@
 import { useGoogleLoginT } from "@/services/authentication";
 import { updateElectronStore } from "@/stores/electron";
 import React, { useLayoutEffect } from "react";
+import { useNavigate } from "react-router";
 
 type TStateManager_ElectronProps = {
     children : React.ReactNode
@@ -8,10 +9,12 @@ type TStateManager_ElectronProps = {
 
 const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ children }) => {
 
+    const navigate = useNavigate()
+
     const {
         mutateAsync: googleLoginT,
     } = useGoogleLoginT( () => {
-        console.log("Authenticated")
+        navigate("/p/w")
     } )
 
     useLayoutEffect(() => {
@@ -24,11 +27,10 @@ const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ childre
                     windowMaximize : value
                 })                
             } )
-            window.electronAPI.onGoogleLoginSuccess( ( value ) => {
-                console.log(value)
+            window.electronAPI.onGoogleLoginSuccess( ( credential, clientId ) => {
                 googleLoginT({
-                    clientId : process.env.VITE_GOOGLE_AUTH_CLIENT_ID!,
-                    credential : value
+                    clientId : clientId,
+                    credential : credential
                 })
             } )
             window.electronAPI.onConsoleLog( ( value ) => {
