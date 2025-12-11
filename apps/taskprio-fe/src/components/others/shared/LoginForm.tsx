@@ -145,15 +145,14 @@ const LoginForm : React.FC<TLoginFormProps> = ({
                         if ( !credentialResponse.clientId || !credentialResponse.credential ) {
                             return
                         }
-                        if ( isElectron ) {
-                            const url = new URL(window.location.origin)
-                            url.protocol = "taskprio-app:"
-                            url.pathname = "googlelogin"
-                            url.searchParams.append("credential", credentialResponse.credential)
-                            url.searchParams.append("client_id", credentialResponse.clientId)
-                            console.log(url.toString());
-                            window.location.href = url.toString()
-                        } else {
+                        if ( !isElectron ) {
+                            // const url = new URL(window.location.origin)
+                            // url.protocol = "taskprio-app:"
+                            // url.pathname = "googlelogin"
+                            // url.searchParams.append("credential", credentialResponse.credential)
+                            // url.searchParams.append("client_id", credentialResponse.clientId)
+                            // console.log(url.toString());
+                            // window.location.href = url.toString()
                             googleLoginT({
                                 clientId : credentialResponse.clientId,
                                 credential : credentialResponse.credential,

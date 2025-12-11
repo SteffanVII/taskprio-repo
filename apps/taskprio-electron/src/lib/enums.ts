@@ -1,6 +1,7 @@
 
 
 export enum EEvents {
+    CONSOLE_LOG = "console-log",
     MAXIMIZE_WINDOW = "maximize-window",
     MINIMIZE_WINDOW = "minimize-window",
     UNMAXIMIZE_WINDOW = "unmaximize-window",

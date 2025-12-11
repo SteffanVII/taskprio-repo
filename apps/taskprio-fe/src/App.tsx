@@ -83,18 +83,16 @@ const routeObjects : RouteObject[] = [
 function App() {
 
 	return (
-		<StateManager_Electron>
-			<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
-				<MousePositionProvider>
-					<QueryClientProvider client={queryClient}>
-						<RouterProviderCustom routeObjects={routeObjects} />
-					</QueryClientProvider>
-				</MousePositionProvider>
-				<Toaster
-					position="top-center"
-				/>
-			</ThemeProvider>
-		</StateManager_Electron>
+		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
+			<MousePositionProvider>
+				<QueryClientProvider client={queryClient}>
+					<RouterProviderCustom routeObjects={routeObjects} />
+				</QueryClientProvider>
+			</MousePositionProvider>
+			<Toaster
+				position="top-center"
+			/>
+		</ThemeProvider>
 	)
 }
 

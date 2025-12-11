@@ -2,6 +2,8 @@ import { app, BrowserWindow, dialog, ipcMain, ipcRenderer } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { titlebarMain } from './titlebar';
+import { EEvents } from 'src/lib/enums';
+import { URL } from 'node:url';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -54,8 +56,14 @@ if ( !gotTheLock ) {
         if ( mainWindow ) {
         if ( mainWindow.isMinimized() ) mainWindow.restore()
             mainWindow.focus()
-        if ( commandLine.pop().includes("googlelogin") )
-            mainWindow.webContents.send( "google-login-success", commandLine.pop() )
+            mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop() )
+            mainWindow.webContents.send( EEvents.CONSOLE_LOG, commandLine.pop().includes("/redirect-to-electron-app") )
+            if ( commandLine.pop().includes("/redirect-to-electron-app") ) {
+                const url = new URL(commandLine.pop())
+                const searchParams = url.searchParams
+                const code = searchParams.get("code")
+                mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, code )
+            }
         }
         // dialog.showErrorBox('Welcome back', `You arrived from ${commandLine.pop()}`)
     } )

@@ -4,8 +4,10 @@
 import { contextBridge } from "electron/renderer";
 import { titlebarAPI } from "./titlebar";
 import { authenticationAPI } from "./authentication";
+import { generalAPI } from "./general";
 
 contextBridge.exposeInMainWorld( "electronAPI", {
+    ...generalAPI,
     ...titlebarAPI,
     ...authenticationAPI
 } )

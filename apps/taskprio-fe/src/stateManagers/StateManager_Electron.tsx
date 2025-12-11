@@ -1,3 +1,4 @@
+import { useGoogleLoginT } from "@/services/authentication";
 import { updateElectronStore } from "@/stores/electron";
 import React, { useLayoutEffect } from "react";
 
@@ -6,6 +7,12 @@ type TStateManager_ElectronProps = {
 }
 
 const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ children }) => {
+
+    const {
+        mutateAsync: googleLoginT,
+    } = useGoogleLoginT( () => {
+        console.log("Authenticated")
+    } )
 
     useLayoutEffect(() => {
         if ( !!window.electronAPI ) {
@@ -16,6 +23,16 @@ const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ childre
                 updateElectronStore({
                     windowMaximize : value
                 })                
+            } )
+            window.electronAPI.onGoogleLoginSuccess( ( value ) => {
+                console.log(value)
+                googleLoginT({
+                    clientId : process.env.VITE_GOOGLE_AUTH_CLIENT_ID!,
+                    credential : value
+                })
+            } )
+            window.electronAPI.onConsoleLog( ( value ) => {
+                console.log( value )
             } )
         }
     }, [])

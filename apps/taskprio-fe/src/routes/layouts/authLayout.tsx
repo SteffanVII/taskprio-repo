@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router"
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthenticate } from "@/services/authentication";
 import { updateGlobalsStore, useGlobalsStore_authenticated } from "@/stores/globals";
+import StateManager_Electron from "@/stateManagers/StateManager_Electron";
 
 const AuthLayout = () => {
 
@@ -50,9 +51,11 @@ const AuthLayout = () => {
     ])
 
     return (
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>
-            <Outlet/>   
-        </GoogleOAuthProvider>
+        <StateManager_Electron>
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>
+                <Outlet/>   
+            </GoogleOAuthProvider>
+        </StateManager_Electron>
     )
 
 }
