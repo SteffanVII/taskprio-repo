@@ -17,16 +17,10 @@ function reigsterAuthenticationRoutes() {
     APP.post(
         `/redirect-to-electron-app`,
         async ( req : Request, res : Response ) => {
-            const { code, state } = req.query;
-            console.log( req.baseUrl )
-            console.log( req.body )
-            console.log( req.params )
-            console.log( req.url )
-            console.log( req.originalUrl )
-            console.log( code, state )
+            const { credential, client_id } = req.body;
             const redirectUrl = new URL('taskprio-app://googlelogin');
-            if (code) redirectUrl.searchParams.append('code', code.toString());
-            if (state) redirectUrl.searchParams.append('state', state.toString());
+            if (credential) redirectUrl.searchParams.append('credential', credential);
+            if (client_id) redirectUrl.searchParams.append('clientId', client_id);
             res.redirect(302, redirectUrl.toString())
         }
     )
