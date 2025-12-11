@@ -19,6 +19,7 @@ function reigsterAuthenticationRoutes() {
         async ( req : Request, res : Response ) => {
             const { code, state } = req.query;
             console.log( req.url )
+            console.log( req.originalUrl )
             console.log( code, state )
             const redirectUrl = new URL('taskprio-app://googlelogin');
             if (code) redirectUrl.searchParams.append('code', code.toString());
