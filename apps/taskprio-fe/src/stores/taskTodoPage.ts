@@ -12,6 +12,8 @@ type TTaskTodoPageStore = {
 
     userTaskTodoStateIsLoading : boolean,
     userTaskTodoStateIsFetching : boolean,
+
+    taskTodoPageCompactMode : boolean
 }
 
 const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
@@ -26,6 +28,8 @@ const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
 
     userTaskTodoStateIsLoading : false,
     userTaskTodoStateIsFetching : false,
+
+    taskTodoPageCompactMode : false
 }
 
 const TaskTodoPageStore = new Store<TTaskTodoPageStore>(taskTodoPageStoreDefaultState)
@@ -53,5 +57,6 @@ export const useTaskTodoPageStore_totalWorkTimeGoalNumber = () => useStore( Task
 export const useTaskTodoPageStore_timerCount = () => useStore( TaskTodoPageStore, store => store.timerCount)
 export const useTaskTodoPageStore_userTaskTodoStateIsLoading = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsLoading)
 export const useTaskTodoPageStore_userTaskTodoStateIsFetching = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsFetching)
+export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore( TaskTodoPageStore, store => store.taskTodoPageCompactMode)
 
 export default useTaskTodoPageStore

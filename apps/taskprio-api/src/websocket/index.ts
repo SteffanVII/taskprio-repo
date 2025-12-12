@@ -9,12 +9,14 @@ import jwt from "jsonwebtoken"
 import { EWebsocketConnectionType, WebSocketConnectionsManagerSimple } from "./connectionsManager.js"
 import { taskTodoTimerHeartbeatEventHandler } from "./eventHandlers/taskTodoEventHandlers.js"
 import { v4 as uuidV4 } from "uuid";
+import { checkHealthEventHandler } from "./eventHandlers/generalEventHandlers.js"
 
 export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsManagerSimple : WebSocketConnectionsManagerSimple ) => {
     
     // Register incoming event handlers
     wsConnectionsManagerSimple.addEventHandler( EWebsocketClientEventType.PATH_CHANGE, pathUpdateEventHandlerSimple )
     wsConnectionsManagerSimple.addEventHandler( EWebsocketClientEventType.TASK_TODO_TIMER_HEARTBEAT, taskTodoTimerHeartbeatEventHandler )
+    wsConnectionsManagerSimple.addEventHandler( EWebsocketClientEventType.CHECK_HEALTH, checkHealthEventHandler )
 
     // Connection event
     wss.on("connection", ( ws : WebSocket, req : IncomingMessage ) => {

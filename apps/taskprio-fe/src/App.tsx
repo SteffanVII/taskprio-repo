@@ -16,6 +16,8 @@ import MousePositionProvider from './lib/utils/mousePositionProvider'
 import WorkspaceSettingsPage from './routes/private/workspace/settings/workspaceSettingsPage'
 import { Toaster } from './components/ui/sonner'
 import RouterProviderCustom from './components/others/shared/RouterProviderCustom'
+import ElectronCustomTitlebar from './components/others/shared/ElectronCustomTitlebar'
+import { useElectronStore_isElectron } from './stores/electron'
 
 const queryClient = new QueryClient()
 
@@ -81,8 +83,14 @@ const routeObjects : RouteObject[] = [
 
 function App() {
 
+	const isElectron = useElectronStore_isElectron()
+
 	return (
 		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
+			{
+				isElectron &&
+				<ElectronCustomTitlebar/>
+			}
 			<MousePositionProvider>
 				<QueryClientProvider client={queryClient}>
 					<RouterProviderCustom routeObjects={routeObjects} />

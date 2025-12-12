@@ -8,7 +8,7 @@ import WorkspaceInvitationDialog from "@/components/others/dialogs/WorkspaceInvi
 import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboardPane";
 import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStage";
 import Spinner from "@/components/others/Spinner";
-import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_logoutIsPending, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 import { Outlet } from "react-router";
@@ -19,9 +19,8 @@ import DropProjectDialog from "@/components/others/dialogs/DropProjectDialog";
 import ReactivateProjectDialog from "@/components/others/dialogs/ReactivateProjectDialog";
 import NoWorkspaceStage from "@/components/others/mainPageComponents/NoWorkspaceStage";
 import TaskboardTaskAssignerDialog from "@/components/others/dialogs/TaskboardTaskAssignerDialog";
-import ElectronCustomTitlebar from "@/components/others/shared/ElectronCustomTitlebar";
 import { useElectronStore_isElectron } from "@/stores/electron";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
@@ -40,10 +39,19 @@ const MainPage = () => {
     const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
     const logoutIsPending = useGlobalsStore_logoutIsPending()
 
+    const showLoadingScreen = useMemo(() => {
+        return (( !authenticated || !webSocketConnected || authenticateIsPending ) && !logoutIsPending);
+    }, [
+        authenticated,
+        webSocketConnected,
+        authenticateIsPending,
+        logoutIsPending
+    ])
+
     return (
         <>
             {
-                (( !authenticated || !webSocketConnected || authenticateIsPending ) && !logoutIsPending) ?
+                showLoadingScreen ?
                 // Show loading screen when not authenticated
                 <div
                     className={cn(
@@ -72,10 +80,6 @@ const MainPage = () => {
                 </div>
                 :
                 <>
-                    {
-                        isElectron &&
-                        <ElectronCustomTitlebar/>
-                    }
                     <SidebarProvider>
                         <MainDashboardPane/>
                         <SidebarInset

@@ -11,10 +11,14 @@ import { updateTaskboardDragStore } from "@/stores/taskboardDrag";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Filter, Search } from "lucide-react";
+import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
+import { useTaskTodoPageStore_taskTodoPageCompactMode } from "@/stores/taskTodoPage";
 
 const AvailableTasksSection_TaskTodoPage = () => {
 
     const { workspace_id } = useParams()
+    const taskTodoPageCompactMode = useTaskTodoPageStore_taskTodoPageCompactMode()
+    const taskTodoPageShowAvailableTasks = useGlobalsStore_taskTodoPageShowAvailableTasks()
 
     const {
         data : assignedTasksGroups,
@@ -28,8 +32,11 @@ const AvailableTasksSection_TaskTodoPage = () => {
     return (
         <div
             className={cn(
-                ` w-full h-full min-h-0 `,
+                ` w-full h-full min-h-0 bg-background `,
                 ` flex flex-col grow `,
+                taskTodoPageCompactMode && `absolute bottom-0 left-0 translate-x-full w-full h-[calc(100%-3rem)] min-h-0 transition-transform duration-500 `,
+                (taskTodoPageShowAvailableTasks && taskTodoPageCompactMode) && `translate-x-0`
+
             )}
             // style={{
             //     gridTemplateRows : "min-content 1fr"
@@ -94,7 +101,7 @@ const ProjectColumn : React.FC<TProjectColumnProps> = ({
                 ` max-w-[27rem] min-h-0 grow shrink-0 `,
                 ` grid `,
                 ` p-4 pb-0 space-y-4 `,
-                ` rounded-md `
+                ` rounded-md animate-in fade-in fill-mode-both duration-500 `,
             )}
             style={{
                 gridTemplateRows : "min-content min-content 1fr"

@@ -25,7 +25,7 @@ const MainDashboardPane = () => {
         <>
             <Sidebar
                 variant="inset"
-                electron={isElectron} 
+                electron={isElectron}
             >
                 {
                     !noWorkspaces ?

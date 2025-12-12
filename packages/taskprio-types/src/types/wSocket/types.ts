@@ -11,6 +11,10 @@ export type TWebSocketChangePathMessageSimple = {
     workspace_id : string
 }
 
+export type TCheckHealthWebSocketMessage = {
+    message : "ping" | "pong"
+}
+
 // Task messages
 export type TTaskCreateWebSocketMessageSimple = {
     data : TTask,

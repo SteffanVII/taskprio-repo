@@ -2,7 +2,9 @@
 
 // Events coming from the server to client
 export enum EWebSocketEventType {
-    
+
+    CHECK_HEALTH = "check_health",
+
     // Task events
     TASK_CREATED = "task_created",
     TASK_UPDATED = "task_updated",
@@ -27,6 +29,9 @@ export enum EWebSocketEventType {
 
 // Events coming from the client to server
 export enum EWebsocketClientEventType {
+
+    CHECK_HEALTH = "check_health",
+
     PATH_CHANGE = "path_change",
 
     // Task Todo events

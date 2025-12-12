@@ -80,7 +80,7 @@ const ProjectsList_MainDashboardPane = () => {
                         }}
                         className={cn(
                             `opacity-0 pointer-events-none`,
-                            workspaceRole === EWorkspaceRole.OWNER && `opacity-100 pointer-events-auto`
+                            (workspaceRole === EWorkspaceRole.OWNER || workspaceRole === EWorkspaceRole.ADMIN)  && `opacity-100 pointer-events-auto`
                         )}
                     >
                         <Plus/>

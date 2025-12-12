@@ -119,16 +119,16 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
         })
     }
 
-    const handleOpenTrashTaskboardDialog = ( e : React.MouseEvent ) => {
-        e.stopPropagation()
-        e.preventDefault()
-        updateDialogsStore({
-            renameTaskboardDialog : {
-                open : true,
-                taskboard
-            }
-        })
-    }
+    // const handleOpenTrashTaskboardDialog = ( e : React.MouseEvent ) => {
+    //     e.stopPropagation()
+    //     e.preventDefault()
+    //     updateDialogsStore({
+    //         renameTaskboardDialog : {
+    //             open : true,
+    //             taskboard
+    //         }
+    //     })
+    // }
 
     const handleOpenDropTaskboardDialog = ( e : React.MouseEvent ) => {
         e.stopPropagation()

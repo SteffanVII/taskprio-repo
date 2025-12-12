@@ -41,7 +41,7 @@ const createWindow = () => {
         );
     }
 
-    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools()
     mainWindow.maximize()
 
     return mainWindow

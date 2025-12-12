@@ -39,8 +39,8 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ connected, setConnected ] = useState<boolean>(false)
-    const [ connecting, setConnecting ] = useState<boolean>(true)
     const socket = useRef<WebSocket | null>(null)
+    const checkHealthTimerWorker = useRef<Worker>(null)
 
     const updateWorkspacePath = ( workspace_id : string ) => {
         const message : TWebSocketMessage<TWebSocketChangePathMessageSimple> = {
@@ -69,6 +69,31 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
     // Event Handlers
     const websocketEventHandlers = useWebSocketEventHandlers();
 
+    const createCheckHealthTimer = () => {
+        if ( checkHealthTimerWorker.current === null ) {
+            checkHealthTimerWorker.current = new Worker("./checkHealthTimer.js")
+            checkHealthTimerWorker.current!.onmessage = ( event : MessageEvent ) => {
+                const count = event.data
+                if ( count % 180 === 0 ) {
+                    sendWebSocketMessage({
+                        type : EWebsocketClientEventType.CHECK_HEALTH,
+                        data : {
+                            message : "ping"
+                        }
+                    })
+                }
+            }
+        }
+    }
+
+    const clearCheckHealthTimer = () => {
+        if ( checkHealthTimerWorker.current ) {
+            checkHealthTimerWorker.current.onmessage = null
+            checkHealthTimerWorker.current.terminate()
+            checkHealthTimerWorker.current = null
+        }
+    }
+
     useLayoutEffect(() => {
         if ( socket.current ) return
         if ( !authenticated ) return
@@ -77,11 +102,20 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
             `${import.meta.env.VITE_TASKPRIO_WSS_URL}?connection_type=${isElectron ? "electron" : "webapp"}`
         )
         socket.current.onopen = () => {
+            console.log("Connection open")
+            createCheckHealthTimer()
             setConnected(true)
         }
         socket.current.onclose = () => {
+            console.log("Connection closed")
+            clearCheckHealthTimer()
             setConnected(false)
         }
+        
+        return () => {
+            clearCheckHealthTimer()
+        }
+
     }, [ authenticated, isElectron ] )
 
     // Attach the message handlers to the socket

@@ -261,7 +261,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                 data.tags.length > 0 && (
                     <div
                         className={cn(
-                            ` flex flex-wrap gap-1 overflow-hidden rounded-bl-[0.3rem] `,
+                            ` flex flex-wrap gap-1 `,
                             ` m-2 `
                         )}
                     >

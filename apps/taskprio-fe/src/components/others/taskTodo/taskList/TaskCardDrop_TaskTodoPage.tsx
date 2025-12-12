@@ -96,10 +96,10 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
         <div
             className={cn(
                 `relative`,
-                `flex items-center`,
+                `grow flex items-center`,
                 `h-[1rem] w-full`,
                 draggedOver && ` h-[6rem] `,
-                fullSize && ` h-full `
+                fullSize && ` h-[80rem] `
             )}
         >
             <div
@@ -120,7 +120,7 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
                     ` pointer-events-none `,
                     fullSize && ` mt-auto `,
                     draggedOver && !fullSize && ` border h-[3rem]  `,
-                    draggedOver && fullSize && ` border h-[calc(100%-2rem)] `
+                    draggedOver && fullSize && ` border h-[14rem] mb-auto mt-[1rem] `
                 )}
             ></div>
         </div>
