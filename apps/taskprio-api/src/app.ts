@@ -130,7 +130,7 @@ const toDoRoutes = express.Router()
 registerToDoRoutes(toDoRoutes)
 
 // Mount the private routes
-privateRoutes.post("ping", async ( _req : IAuthenticatedRequest, res : Response ) => {
+privateRoutes.post("/ping", async ( _req : IAuthenticatedRequest, res : Response ) => {
     res.status(200).json({ message : "Pong" })
 })
 privateRoutes.use("/workspace", workspaceRoutes)
