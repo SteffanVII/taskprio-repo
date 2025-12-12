@@ -24,6 +24,7 @@ import { registerProfileRoutes } from "./routes/profile/profile.js";
 import multer from "multer";
 import { registerToDoRoutes } from "./routes/todo/todo.js";
 import { initializeTaskTodoTimerHeartbeatTimeouts } from "./initializers/taskTodoTimerHeartbeatTimeoutManager.js";
+import { IAuthenticatedRequest } from "./middlewares/interfaces.js";
 
 dotenv.config();
 
@@ -129,6 +130,9 @@ const toDoRoutes = express.Router()
 registerToDoRoutes(toDoRoutes)
 
 // Mount the private routes
+privateRoutes.post("ping", async ( _req : IAuthenticatedRequest, res : Response ) => {
+    res.status(200).json({ message : "Pong" })
+})
 privateRoutes.use("/workspace", workspaceRoutes)
 privateRoutes.use("/project", projectRoutes)
 privateRoutes.use("/taskboard", taskBoardRoutes)

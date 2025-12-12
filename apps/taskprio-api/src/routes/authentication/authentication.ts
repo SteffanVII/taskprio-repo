@@ -13,7 +13,7 @@ import { configDotenv } from "dotenv";
 configDotenv();
 
 function reigsterAuthenticationRoutes() {
-
+    
     APP.post(
         `/redirect-to-electron-app`,
         async ( req : Request, res : Response ) => {

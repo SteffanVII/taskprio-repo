@@ -19,7 +19,6 @@ import DropProjectDialog from "@/components/others/dialogs/DropProjectDialog";
 import ReactivateProjectDialog from "@/components/others/dialogs/ReactivateProjectDialog";
 import NoWorkspaceStage from "@/components/others/mainPageComponents/NoWorkspaceStage";
 import TaskboardTaskAssignerDialog from "@/components/others/dialogs/TaskboardTaskAssignerDialog";
-import { useElectronStore_isElectron } from "@/stores/electron";
 import { useContext, useMemo } from "react";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 import { Label } from "@/components/ui/label";
@@ -30,7 +29,6 @@ const MainPage = () => {
     const {
         connected : webSocketConnected
     } = useContext(WebSocketContext)
-    const isElectron = useElectronStore_isElectron()
     const authenticated = useGlobalsStore_authenticated()
     const authenticateIsPending = useGlobalsStore_authenticateIsPending()
     const noProjects = useGlobalsStore_noProjects()

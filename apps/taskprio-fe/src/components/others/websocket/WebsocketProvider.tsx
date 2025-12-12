@@ -3,6 +3,7 @@ import { EWebsocketClientEventType, TWebSocketChangePathMessageSimple, TWebSocke
 import { createContext, useLayoutEffect, useRef, useState } from "react"
 import { useWebSocketEventHandlers } from "./eventHandlers/WebsocketEventHandlers"
 import { useElectronStore_isElectron } from "@/stores/electron"
+import { usePingServer } from "@/services/private/PrivateLayout"
 
 type TWebSocketContext = {
     connected : boolean,
@@ -42,6 +43,10 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
     const socket = useRef<WebSocket | null>(null)
     const checkHealthTimerWorker = useRef<Worker>(null)
 
+    const {
+        mutateAsync : pingServerMutateAsync
+    } = usePingServer()
+
     const updateWorkspacePath = ( workspace_id : string ) => {
         const message : TWebSocketMessage<TWebSocketChangePathMessageSimple> = {
             type : EWebsocketClientEventType.PATH_CHANGE,
@@ -71,10 +76,11 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
 
     const createCheckHealthTimer = () => {
         if ( checkHealthTimerWorker.current === null ) {
-            checkHealthTimerWorker.current = new Worker("./checkHealthTimer.js")
+            checkHealthTimerWorker.current = new Worker(new URL("./checkHealthTimer.js", import.meta.url))
             checkHealthTimerWorker.current!.onmessage = ( event : MessageEvent ) => {
                 const count = event.data
                 if ( count % 180 === 0 ) {
+                    pingServerMutateAsync()
                     sendWebSocketMessage({
                         type : EWebsocketClientEventType.CHECK_HEALTH,
                         data : {
