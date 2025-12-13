@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
-import { IAddProjectMembersRequest, ICreateProjectRequest, IDeactivateProjectRequest, IDropProjectRequest, IGetDeactivatedProjectsRequest, IGetProjectMemberRequest, IGetProjectMembersRequest, IGetUserWorkspaceProjectsRequest, IReactivateProjectRequest, IUpdateProjectCustomizationRequest, IUpdateProjectMemberRoleRequest } from "./interfaces.js";
+import { IAddProjectMembersRequest, ICreateProjectRequest, IDeactivateProjectRequest, IDropProjectRequest, IGetDeactivatedProjectsRequest, IGetProjectListWithUserAssignedTasksRequest, IGetProjectMemberRequest, IGetProjectMembersRequest, IGetUserWorkspaceProjectsRequest, IReactivateProjectRequest, IUpdateProjectCustomizationRequest, IUpdateProjectMemberRoleRequest } from "./interfaces.js";
 import { Response, Router } from "express";
-import { getProject, getProjectMember, getProjectMembers, getUserProjects, getUserWorkspaceProjects, getWorkpaceInactiveProjectList } from "../../database/queries/project/query.js";
+import { getProject, getProjectListWithUserAssignedTasks, getProjectMember, getProjectMembers, getUserProjects, getUserWorkspaceProjects, getWorkpaceInactiveProjectList } from "../../database/queries/project/query.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
 import { addMembersToProject, createProject, deactivateProject, dropProject, reactivateProject, updateProjectCustomization, updateProjectMemberRole } from "../../database/queries/project/mutation.js";
-import { verifyProjectMemberMiddleware, verifyProjectOwnerOrAdminMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
+import { verifyProjectMemberMiddleware, verifyProjectOwnerOrAdminMiddleware, verifyWorkspaceMemberMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
 import { getWorkspaceMemberByTaskSectionId, getWorkspaceMembers } from "../../database/queries/workspace/query.js";
 import { EWebSocketEventType, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectReactivatedSocketMessage } from "@repo/taskprio-types";
 import { wsConnectionsManagerSimple } from "../../app.js";
@@ -128,6 +128,25 @@ const registerProjectRoutes = ( router : Router ) => {
             }
 
         }
+    )
+
+    // Get project list by workspace with tasks assigned to user
+    router.get(
+        "/project-list-with-user-assigned-tasks/:workspace_id",
+        verifyWorkspaceMemberMiddleware,
+        async ( req : IGetProjectListWithUserAssignedTasksRequest, res : Response ) => {
+
+            const { workspace_id } = req.params;
+            const { user_id } = req.user;
+            try {
+                const data = await getProjectListWithUserAssignedTasks( workspace_id, user_id )
+                res.status(200).json(data)
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        } 
     )
 
     // POST

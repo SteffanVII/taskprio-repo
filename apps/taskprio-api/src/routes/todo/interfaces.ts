@@ -1,4 +1,4 @@
-import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetTaskAssignedToUserByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams } from "@repo/taskprio-types";
+import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams } from "@repo/taskprio-types";
 import { IAuthenticatedRequest, IAuthenticatedWorkspaceMemberRequest } from "../../middlewares/interfaces.js";
 
 // Mutation
@@ -25,10 +25,15 @@ export interface IStartOrStopTaskTodoTimerRequest extends IAuthenticatedWorkspac
 }
 
 // Query
-export interface IGetAvailableTasksRequest extends IAuthenticatedRequest {
-    params : TGetTaskAssignedToUserByWorkspaceRequestPathParams
+export interface IGetAvailableTasksByWorkspaceRequest extends IAuthenticatedRequest {
+    params : TGetAvailableTasksByWorkspaceRequestPathParams
 }
 
 export interface IGetUserTaskTodoStateRequest extends IAuthenticatedRequest {
     params : TGetUserTaskTodoStateRequestPathParams
+}
+
+export interface IGetAvailableTasksByProjectRequest extends IAuthenticatedRequest {
+    params : TGetAvailableTasksByProjectRequestPathParams,
+    query : TGetAvailableTasksByProjectRequestQuery
 }

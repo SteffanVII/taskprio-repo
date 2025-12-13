@@ -1,10 +1,9 @@
 import { Router, Response } from "express";
-import { IAddTaskToTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
-import { verifyWorkspaceMemberMiddleware } from "../../middlewares/authentication.js";
-import { getTasksAssignedToUserByWorkspaceId, getUserTaskTodoState } from "../../database/queries/task/query.js";
+import { IAddTaskToTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksByProjectRequest, IGetAvailableTasksByWorkspaceRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
+import { verifyProjectMemberMiddleware, verifyWorkspaceMemberMiddleware } from "../../middlewares/authentication.js";
+import { getTasksAssignedToUserByProjectId, getTasksAssignedToUserByWorkspaceId, getUserTaskTodoState } from "../../database/queries/task/query.js";
 import { addTaskToTodo, updateTaskTodoState } from "../../database/queries/task/mutation.js";
 import { finishTaskTodoSession, startOrStopTaskTimer } from "../../database/queries/todo/mutation.js";
-import { TStartOrStopTaskTodoTimerRequestPathParams } from "@repo/taskprio-types";
 import { taskTodoTimerHeartbeatTimeoutManager } from "../../initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 
 export function registerToDoRoutes( router : Router ) {
@@ -13,7 +12,7 @@ export function registerToDoRoutes( router : Router ) {
     router.get(
         "/available-tasks/:workspace_id",
         verifyWorkspaceMemberMiddleware,
-        async ( req : IGetAvailableTasksRequest, res : Response ) => {
+        async ( req : IGetAvailableTasksByWorkspaceRequest, res : Response ) => {
 
             const { workspace_id } = req.params;
             const { user_id } = req.user;
@@ -21,7 +20,7 @@ export function registerToDoRoutes( router : Router ) {
             if ( !workspace_id ) {
                 res.status( 401 ).json({ message : "Workspace Id is required" })
             }
-
+            
             try {
                 const assignedTasks = await getTasksAssignedToUserByWorkspaceId( workspace_id, user_id, undefined, true )
                 res.status(200).json(assignedTasks)
@@ -29,7 +28,33 @@ export function registerToDoRoutes( router : Router ) {
                 console.log( error )
                 res.status(500).json({ message : "Internal server error" })
             }
+            
+        }
+    )
+    
+    router.get(
+        "/available-tasks-by-project/:project_id",
+        verifyProjectMemberMiddleware,
+        async ( req : IGetAvailableTasksByProjectRequest, res : Response ) => {
+            
+            const { project_id } = req.params;
+            const { user_id } = req.user;
+            const { search, taskboards } = req.query;
 
+            const parsedTodo = !!taskboards ? JSON.parse(taskboards as unknown as string) : undefined
+            
+            if ( !project_id ) {
+                res.status( 401 ).json({ message : "Workspace Id is required" })
+            }
+            
+            try {
+                const assignedTasks = await getTasksAssignedToUserByProjectId( project_id, user_id, { search, taskboards : parsedTodo || undefined }, true )
+                res.status(200).json(assignedTasks)
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+            
         }
     )
 

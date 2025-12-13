@@ -1,4 +1,4 @@
-import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetTaskAssignedToUserByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
 
 // Mutation
 
@@ -30,7 +30,7 @@ export type TStartOrStopTaskTodoTimerPayload = {
 // Query
 
 export type TGetTasksAssignedToUserByWorkspacePayload = {
-    pathParameter : Partial<TGetTaskAssignedToUserByWorkspaceRequestPathParams>
+    pathParameter : Partial<TGetAvailableTasksByWorkspaceRequestPathParams>
 }
 
 export type TGetUserTaskTodoStatePayload = {

@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { databaseFunctionWrapper, EDatabaseFunction, getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { DB, TProject, TProjectMember } from "@repo/taskprio-types";
+import { DB, TProject, TProjectMember, TProjectWithUserAssignedTasks } from "@repo/taskprio-types";
 import { Transaction } from "kysely";
 import { taskprioKysely } from "../../kysely/kysely.js";
 import { sql } from "kysely";
@@ -393,6 +393,43 @@ export const getWorkpaceInactiveProjectList = async (
             "project.project.project_id",
             "project.project.created_by",
             "project.project.workspace_id"
+        ])
+        .execute()
+
+}
+
+export const getProjectListWithUserAssignedTasks = (
+    workspaceId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<TProjectWithUserAssignedTasks[]> => {
+
+    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
+
+    return queryBuilder
+        .leftJoin( "taskboard.task_board", "taskboard.task_board.project_id", "project.project.project_id" )
+        .leftJoin( "taskboard.task", "taskboard.task.task_board_id", "taskboard.task_board.task_board_id" )
+        .leftJoin( "taskboard.task_assignee", "taskboard.task_assignee.task_id", "taskboard.task.task_id" )
+        .select( [
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" ),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as( "workspace_id" ),
+            "project.project.project_name",
+            "project.project.project_color",
+            "project.project.project_abbreviation",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as( "created_by" )
+        ] )
+        .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+        .where( "project.project.active", "=", true )
+        .where( "taskboard.task_board.inactive", "=", false )
+        .where( "taskboard.task.in_trash", "=", false )
+        .where( "taskboard.task_assignee.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .groupBy([
+            "project.project.project_id",
+            "project.project.workspace_id",
+            "project.project.project_name",
+            "project.project.project_color",
+            "project.project.project_abbreviation",
+            "project.project.created_by",
         ])
         .execute()
 

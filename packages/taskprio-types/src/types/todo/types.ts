@@ -2,6 +2,7 @@ import { Selectable } from "kysely"
 import { TTask } from "../task/types"
 import { ProjectProject, TaskboardTaskTodoState, TaskboardTaskTodoTimer } from "../../db"
 import { TTaskTag } from "../tag/types"
+import { TTaskboard } from "../taskboard/types"
 
 // Mutation
 export type TAddTaskToTodoRequestPathParams = {
@@ -38,11 +39,11 @@ export type TStartOrStopTaskTodoTimerRequestPathParams = {
 export type TStartOrStopTaskTodoTimerResponseData = TTaskTodoTimer;
 
 // Query
-export type TGetTaskAssignedToUserByWorkspaceRequestPathParams = {
+export type TGetAvailableTasksByWorkspaceRequestPathParams = {
     workspace_id : string
 }
 
-export type TGetTaskAssignedToUserByWorkspaceResponseData = TUserAvailableTaskTodoByProject[]
+export type TGetAvailableTasksByWorkspaceResponseData = TUserAvailableTaskTodoByProject[]
 
 export type TGetUserTaskTodoStateRequestPathParams = {
     workspace_id : string
@@ -50,18 +51,52 @@ export type TGetUserTaskTodoStateRequestPathParams = {
 
 export type TGetUserTaskTodoStateResponseData = TUserTaskTodoState[]
 
+export type TGetAvailableTasksByProjectRequestPathParams = {
+    project_id : string
+}
+
+export type TGetAvailableTasksByProjectRequestQuery = {
+    search : string,
+    taskboards : string[]
+}
+
+export type TGetAvailableTasksByProjectResponseData = TUserAvailableTaskTodoByProject;
+
 // Task Todo
 
 export type TTaskTodoTimer = Selectable<TaskboardTaskTodoTimer>
 
-export type TUserAvailableTaskTodoByProject = Pick<Selectable<ProjectProject>, "project_id" | "created_by" | "workspace_id" | "project_name" | "project_abbreviation" | "project_color"> & {
-    tasks : (TUserTaskTodoState | TUserAvailableTaskTodo)[]
+export type TUserAvailableTaskTodoByProject = Pick<
+    Selectable<ProjectProject>,
+    "project_id" |
+    "created_by" |
+    "workspace_id" |
+    "project_name" |
+    "project_abbreviation" |
+    "project_color"
+> & {
+    tasks : (TUserTaskTodoState | TUserAvailableTaskTodo)[],
+    taskboards : Pick<TTaskboard, "task_board_id" | "task_board_name">[]
 }
 
 export type TUserAvailableTaskTodo = {
     tags : TTaskTag[]
-} & Pick<TTask, "project_abbreviation" | "project_color" | "task_id" | "task_title" | "task_deadline" | "task_depth">
+} & Pick<
+    TTask,
+    "project_abbreviation" |
+    "project_color" |
+    "task_id" |
+    "task_title" |
+    "task_deadline" |
+    "task_depth"
+>
 
-export type TUserTaskTodoState = TUserAvailableTaskTodo & Pick<Selectable<TaskboardTaskTodoState>, "work_time_goal" | "current_work_time" | "display_order" | "active"> & {
+export type TUserTaskTodoState = TUserAvailableTaskTodo & Pick<
+    Selectable<TaskboardTaskTodoState>,
+    "work_time_goal" |
+    "current_work_time" |
+    "display_order" |
+    "active"
+> & {
     timers : TTaskTodoTimer[]
 }

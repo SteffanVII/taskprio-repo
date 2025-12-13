@@ -4,7 +4,7 @@ import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 
-import { TGetTaskAssignedToUserByWorkspaceResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TGetAvailableTasksByWorkspaceResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
 import { produce } from "immer"
 import { AxiosError } from "axios"
 
@@ -25,7 +25,7 @@ export const useMoveTaskToTodo = ( onSuccess?: () => void ) => {
         onMutate: (variables) => {
             queryClient.setQueryData(
                 [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id],
-                (oldData: TGetTaskAssignedToUserByWorkspaceResponseData) => produce(oldData, draft => {
+                (oldData: TGetAvailableTasksByWorkspaceResponseData) => produce(oldData, draft => {
                     draft.forEach(project => {
                         project.tasks = project.tasks.filter(task => task.task_id !== variables.pathParameters.task_id)
                     })

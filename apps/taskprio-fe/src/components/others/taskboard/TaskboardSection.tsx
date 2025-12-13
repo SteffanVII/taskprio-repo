@@ -191,7 +191,6 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                     :
                     <div className=" flex items-center gap-2 " >
                         <Badge variant={"secondary"} >
-                            {/* {taskSection.tasks.length > 99 ? "99+" : taskSection.tasks.length} */}
                             <NumberFlow
                                 value={taskSection.tasks.length > 99 ? 99 : taskSection.tasks.length}
                             />

@@ -1,4 +1,4 @@
-import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TDropProjectRequestQueryParams, TGetDeactivatedProjectsRequestParams, TGetProjectMemberRequestParams, TGetProjectMembersRequestParams, TGetUserWorkspaceProjectsParams, TReactivateProjectRequestBody, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams, TUpdateProjectMemberRoleRequestBody, TUpdateProjectMemberRoleRequestParams } from "@repo/taskprio-types";
+import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TDropProjectRequestQueryParams, TGetDeactivatedProjectsRequestParams, TGetProjectListWithUserAssignedTasksRequestPathParams, TGetProjectMemberRequestParams, TGetProjectMembersRequestParams, TGetUserWorkspaceProjectsParams, TReactivateProjectRequestBody, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams, TUpdateProjectMemberRoleRequestBody, TUpdateProjectMemberRoleRequestParams } from "@repo/taskprio-types";
 import { IAuthenticatedProjectMemberRequest, IAuthenticatedRequest, IAuthenticatedWorkspaceMemberRequest } from "../../middlewares/interfaces.js";
 import { TDeactivateProjectRequestBody } from "@repo/taskprio-types";
 
@@ -47,4 +47,8 @@ export interface IReactivateProjectRequest extends IAuthenticatedWorkspaceMember
 
 export interface IGetDeactivatedProjectsRequest extends IAuthenticatedWorkspaceMemberRequest {
     params : TGetDeactivatedProjectsRequestParams
+}
+
+export interface IGetProjectListWithUserAssignedTasksRequest extends IAuthenticatedRequest {
+    params : TGetProjectListWithUserAssignedTasksRequestPathParams
 }

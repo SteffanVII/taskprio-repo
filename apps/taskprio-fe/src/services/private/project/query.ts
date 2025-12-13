@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query"
-import { TGetDeactivatedProjectsRequestParams, TGetDeactivatedprojectsResponseData, TGetProjectMembersResponseData, TProject, TProjectMember, TProjectPrimitive } from "@repo/taskprio-types/src/index"
+import { TGetDeactivatedProjectsRequestParams, TGetDeactivatedprojectsResponseData, TGetProjectListWithUserAssignedTasksRequestPathParams, TGetProjectListWithUserAssignedTasksResponseData, TGetProjectMembersResponseData, TProject, TProjectMember, TProjectPrimitive } from "@repo/taskprio-types/src/index"
 import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { TGetProjectMemberPayload } from "./types"
@@ -97,6 +97,26 @@ export const useGetDeactivatedProjects = ( config? : TUseGetDeactivatedProjectsC
                 `/private/project/deactivated/${config?.payload?.workspace_id!}`,
             )
             return response.data;
+        },
+        enabled : ( config?.options?.enabled ?? true ) && !!config?.payload?.workspace_id
+    })
+
+}
+
+type TUseGetProjectListWithUserAssignedTasksConfig = {
+    options? : Omit<UseQueryOptions<TGetProjectListWithUserAssignedTasksResponseData, AxiosError>, "queryKey" | "queryFn">,
+    payload? : Partial<TGetProjectListWithUserAssignedTasksRequestPathParams>
+}
+
+export const useGetProjectListWithUserAssignedTasks = ( config? : TUseGetProjectListWithUserAssignedTasksConfig ) => {
+
+    return useQuery<TGetProjectListWithUserAssignedTasksResponseData, AxiosError>({
+        queryKey : [ ...QueryKeys.GET_PROJECT_LIST_WITH_USER_ASSIGNED_TASKS.split, config?.payload?.workspace_id ],
+        queryFn : async () => {
+            const response = await axiosInstance.get<TGetProjectListWithUserAssignedTasksResponseData>(
+                `/private/project/project-list-with-user-assigned-tasks/${config?.payload?.workspace_id}`
+            )
+            return response.data
         },
         enabled : ( config?.options?.enabled ?? true ) && !!config?.payload?.workspace_id
     })

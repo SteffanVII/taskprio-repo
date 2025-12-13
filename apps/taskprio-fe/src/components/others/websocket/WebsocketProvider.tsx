@@ -79,7 +79,7 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
             checkHealthTimerWorker.current = new Worker(new URL("./checkHealthTimer.js", import.meta.url))
             checkHealthTimerWorker.current!.onmessage = ( event : MessageEvent ) => {
                 const count = event.data
-                if ( count % 180 === 0 ) {
+                if ( count % 60 === 0 || count === 0 ) {
                     pingServerMutateAsync()
                     sendWebSocketMessage({
                         type : EWebsocketClientEventType.CHECK_HEALTH,

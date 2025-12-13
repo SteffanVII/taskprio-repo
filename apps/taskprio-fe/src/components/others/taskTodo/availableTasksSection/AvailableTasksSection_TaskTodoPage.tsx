@@ -1,18 +1,11 @@
 import { cn } from "@/lib/utils";
-import { useGetTasksAssignedToUserByWorkspace } from "@/services/private/todo/query";
-import React from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import getHexLuminance from "@/lib/utils/hexColorLuminance";
-import { TUserAvailableTaskTodo, TUserAvailableTaskTodoByProject } from "@repo/taskprio-types/src";
-import TagBadge from "../../shared/tag/TagBadge";
-import { Badge } from "@/components/ui/badge";
-import { updateTaskboardDragStore } from "@/stores/taskboardDrag";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Filter, Search } from "lucide-react";
 import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
 import { useTaskTodoPageStore_taskTodoPageCompactMode } from "@/stores/taskTodoPage";
+import { useGetProjectListWithUserAssignedTasks } from "@/services/private/project/query";
+import { Skeleton } from "@/components/ui/skeleton";
+import ProjectColumn from "./AvailableTasksSectionProjectColumn_TaskTodoPage";
 
 const AvailableTasksSection_TaskTodoPage = () => {
 
@@ -20,14 +13,56 @@ const AvailableTasksSection_TaskTodoPage = () => {
     const taskTodoPageCompactMode = useTaskTodoPageStore_taskTodoPageCompactMode()
     const taskTodoPageShowAvailableTasks = useGlobalsStore_taskTodoPageShowAvailableTasks()
 
+    const [ projectColumnVisibility, setProjectColumnVisibility ] = useState<Record<string, boolean>>({})
+    const columnsRefs = useRef<Record<string, HTMLDivElement>>({});
+    const intersectionObserverRef = useRef<IntersectionObserver>(null)
+
     const {
-        data : assignedTasksGroups,
-        // isLoading : assignedTasksGroupsIsLoading
-    } = useGetTasksAssignedToUserByWorkspace({
-        pathParameter : {
+        data : projectListWithAssignedTasks,
+        isLoading : projectListWithAssignedTasksIsLoading
+    } = useGetProjectListWithUserAssignedTasks({
+        payload : {
             workspace_id
         }
     })
+
+    useEffect(() => { 
+        intersectionObserverRef.current = new IntersectionObserver(( entries ) => {
+            const updates : Record<string, boolean> = {};
+            entries.forEach( entry => {
+                const projectColumnId = (entry.target as HTMLElement).dataset.projectColumnId;
+                if (projectColumnId) {
+                    updates[projectColumnId] = entry.isIntersecting;
+                }
+            } )
+            setProjectColumnVisibility( prev => ({...prev, ...updates}) )
+        }, {
+            threshold: 0.5,
+        })
+        return () => {
+            intersectionObserverRef.current?.disconnect()
+        }
+    }, [])
+
+    useEffect(() => {
+        const currentObserver = intersectionObserverRef.current;
+        if (!currentObserver) return;
+
+        // Disconnect previous observer
+        currentObserver.disconnect();
+
+        // Observe all task elements
+        Object.keys(columnsRefs.current).forEach(taskId => {
+            const element = document.querySelector(`[data-project-column-id="${taskId}"]`);
+            if (element) {
+                currentObserver.observe(element);
+            }
+        });
+
+        return () => {
+            currentObserver.disconnect();
+        };
+    }, [projectListWithAssignedTasks])
 
     return (
         <div
@@ -71,12 +106,35 @@ const AvailableTasksSection_TaskTodoPage = () => {
                 } }
             >
                 {
-                    ( assignedTasksGroups && assignedTasksGroups.length === 0 ) &&
+                    projectListWithAssignedTasksIsLoading &&
+                    Array.from({ length : 5 }).map( (_, i) => (
+                        <Skeleton
+                            key={i}
+                            className={cn(
+                                `grow w-[25rem] h-full min-h-0`
+                            )}
+                        />
+                    ) )
+                }
+                {
+                    ( !projectListWithAssignedTasksIsLoading && projectListWithAssignedTasks && projectListWithAssignedTasks.length === 0 ) &&
                     <p className=" mx-auto mt-[8rem] text-lg font-semibold " >No available tasks</p>
                 }
                 {
-                    assignedTasksGroups &&
-                    assignedTasksGroups.map( group => <ProjectColumn data={group} /> )
+                    ( !projectListWithAssignedTasksIsLoading && projectListWithAssignedTasks ) &&
+                    projectListWithAssignedTasks.map( group => (
+                        <ProjectColumn
+                            ref={(el) => {
+                                if (el) {
+                                    columnsRefs.current[group.project_id] = el;
+                                } else {
+                                    delete columnsRefs.current[group.project_id];
+                                }
+                            }}
+                            data={group}
+                            visible={projectColumnVisibility[group.project_id] ? projectColumnVisibility[group.project_id] : false }
+                        />
+                    ) )
                 }
             </div>
 
@@ -86,154 +144,3 @@ const AvailableTasksSection_TaskTodoPage = () => {
 }
 
 export default AvailableTasksSection_TaskTodoPage;
-
-type TProjectColumnProps = {
-    data : TUserAvailableTaskTodoByProject
-}
-
-const ProjectColumn : React.FC<TProjectColumnProps> = ({
-    data
-}) => {
-
-    return (
-        <div
-            className={cn(
-                ` max-w-[27rem] min-h-0 grow shrink-0 `,
-                ` grid `,
-                ` p-4 pb-0 space-y-4 `,
-                ` rounded-md animate-in fade-in fill-mode-both duration-500 `,
-            )}
-            style={{
-                gridTemplateRows : "min-content min-content 1fr"
-            }}
-        >
-            <div>
-                <h3
-                    className={cn(
-                        "flex justify-between items-center px-3 py-2 bg-primary rounded-md text-lg text-primary-foreground ",
-                        data.project_color !== "#ffffff" && getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
-                    )}
-                    style={{
-                        backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
-                    }}
-                >
-                    {data.project_name}
-                    <Badge variant={"secondary"} >{data.tasks.length > 99 ? "99+" : data.tasks.length}</Badge>
-                </h3>
-            </div>
-
-            <div className="flex justify-end gap-2" >
-                <Input
-                    placeholder="Seach"
-                />
-                <Button
-                    size={"icon"}
-                    variant={"ghost"}
-                >
-                    <Search/>
-                </Button>
-                <Button
-                    size={"icon"}
-                    variant={"ghost"}
-                >
-                    <Filter/>
-                </Button>
-            </div>
-
-            <ScrollArea
-                className="relative flex flex-col w-full h-full min-h-full "
-            >
-                <div
-                    className={cn(
-                        ` space-y-4 pb-[10rem] `
-                    )}
-                >
-                    {
-                        data.tasks.map( task => <TaskCard data={task} /> )
-                    }
-                </div>
-            </ScrollArea>
-        </div>
-    )
-
-}
-
-type TTaskCardProps = {
-    data : TUserAvailableTaskTodo
-}
-
-const TaskCard : React.FC<TTaskCardProps> = ({
-    data
-}) => {
-
-    const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        updateTaskboardDragStore({
-            taskboardTaskTodoDrag : {
-                taskboardTaskTodo : data
-            }
-        })
-    }
-
-    const onDragEndHandler = () => {
-        updateTaskboardDragStore({
-            taskboardTaskTodoDrag : {
-                taskboardTaskTodo : null
-            }
-        })
-    }
-
-    const onMouseDownHandler = ( e : React.MouseEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-    }
-
-    return (
-        <div
-            className={cn(
-                ` w-full h-fit `,
-                ` bg-card border border-border shadow `,
-                `rounded-md`
-            )}
-            draggable={true}
-            onDragStart={onDragStartHandler}
-            onDragEnd={onDragEndHandler}
-            onMouseDown={onMouseDownHandler}
-        >
-            <p
-                className={cn(
-                    `w-fit px-2 py-1 ml-2 mt-2 rounded bg-primary text-xs text-primary-foreground font-semibold`,
-                    data.project_color !== "#ffffff" && getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
-                )}
-                style={{
-                    backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
-                }}
-            >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
-            <p
-                className={cn(
-                    `text-sm p-3 `
-                )}
-            >{data.task_title}</p>
-            {
-                data.tags.length > 0 && (
-                    <div
-                        className={cn(
-                            ` flex flex-wrap gap-1 rounded-bl-[0.3rem] `,
-                            ` m-2 `
-                        )}
-                    >
-                        {
-                            data.tags.map( tag => (
-                                <TagBadge
-                                    tag={tag}
-                                    key={tag.tag_id}
-                                    size="sm"
-                                />
-                            ) )
-                        }
-                    </div>
-                )
-            }
-        </div>
-    )
-
-}

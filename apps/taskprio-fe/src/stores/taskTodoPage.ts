@@ -1,3 +1,4 @@
+import { TGetAvailableTasksByProjectRequestQuery } from "@repo/taskprio-types/src";
 import { Store, useStore } from "@tanstack/react-store";
 
 type TTaskTodoPageStore = {
@@ -13,7 +14,9 @@ type TTaskTodoPageStore = {
     userTaskTodoStateIsLoading : boolean,
     userTaskTodoStateIsFetching : boolean,
 
-    taskTodoPageCompactMode : boolean
+    taskTodoPageCompactMode : boolean,
+
+    projectColumnsFilterState : Record<string, TGetAvailableTasksByProjectRequestQuery>
 }
 
 const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
@@ -29,7 +32,9 @@ const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
     userTaskTodoStateIsLoading : false,
     userTaskTodoStateIsFetching : false,
 
-    taskTodoPageCompactMode : false
+    taskTodoPageCompactMode : false,
+
+    projectColumnsFilterState : {}
 }
 
 const TaskTodoPageStore = new Store<TTaskTodoPageStore>(taskTodoPageStoreDefaultState)
@@ -58,5 +63,6 @@ export const useTaskTodoPageStore_timerCount = () => useStore( TaskTodoPageStore
 export const useTaskTodoPageStore_userTaskTodoStateIsLoading = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsLoading)
 export const useTaskTodoPageStore_userTaskTodoStateIsFetching = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsFetching)
 export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore( TaskTodoPageStore, store => store.taskTodoPageCompactMode)
+export const useTaskTodoPageStore_projectColumnsFilterState = () => useStore( TaskTodoPageStore, store => store.projectColumnsFilterState)
 
 export default useTaskTodoPageStore

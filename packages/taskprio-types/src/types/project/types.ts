@@ -76,6 +76,12 @@ export type TGetDeactivatedProjectsRequestParams = {
 
 export type TGetDeactivatedprojectsResponseData = TProjectInactiveForTable[]
 
+export type TGetProjectListWithUserAssignedTasksRequestPathParams = {
+    workspace_id : string
+}
+
+export type TGetProjectListWithUserAssignedTasksResponseData = TProjectWithUserAssignedTasks[]
+
 // Project
 
 export type TProject = Selectable<ProjectProject> & {
@@ -91,3 +97,13 @@ export type TProjectInactiveForTable = TProjectPrimitive & {
     taskboards : number,
     members : number   
 }
+
+export type TProjectWithUserAssignedTasks = Pick<
+    TProject,
+    "project_id" |
+    "created_by" |
+    "workspace_id" |
+    "project_name" |
+    "project_abbreviation" |
+    "project_color"
+>
