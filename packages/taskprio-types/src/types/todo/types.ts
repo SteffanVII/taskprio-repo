@@ -3,6 +3,7 @@ import { TTask } from "../task/types"
 import { ProjectProject, TaskboardTaskTodoState, TaskboardTaskTodoTimer } from "../../db"
 import { TTaskTag } from "../tag/types"
 import { TTaskboard } from "../taskboard/types"
+import { TProject } from "../project/types"
 
 // Mutation
 export type TAddTaskToTodoRequestPathParams = {
@@ -89,7 +90,7 @@ export type TUserAvailableTaskTodo = {
     "task_title" |
     "task_deadline" |
     "task_depth"
->
+> & Pick<TProject, "project_id">
 
 export type TUserTaskTodoState = TUserAvailableTaskTodo & Pick<
     Selectable<TaskboardTaskTodoState>,

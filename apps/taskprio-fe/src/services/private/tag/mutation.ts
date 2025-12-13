@@ -3,6 +3,7 @@ import { TCreateProjectTagPayload, TDeleteProjectTagPayload, TUpdateProjectTagPa
 import { TCreateProjectTagResponse, TDeleteProjectTagResponse, TUpdateProjectTagResponse } from "@repo/taskprio-types/src";
 import { axiosInstance } from "@/services/axios";
 import { QueryKeys } from "@/services/enum";
+import { updateGlobalsStore, useGlobalsStore_selectedProject } from "@/stores/globals";
 
 
 export const useCreateProjectTag = (
@@ -10,6 +11,7 @@ export const useCreateProjectTag = (
 ) => {
 
     const queryClient = useQueryClient()
+    const selectedProject = useGlobalsStore_selectedProject()
 
     return useMutation<TCreateProjectTagResponse, Error, TCreateProjectTagPayload>({
         mutationFn : async ( payload ) => {
@@ -20,6 +22,17 @@ export const useCreateProjectTag = (
             return response.data
         },
         onSuccess : ( data, variables ) => {
+            if ( selectedProject?.project_id === data.project_id ) {
+                updateGlobalsStore({
+                    selectedProject : {
+                        ...selectedProject,
+                        project_tags : [
+                            ...selectedProject.project_tags,
+                            data
+                        ]
+                    }
+                })
+            }
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_PROJECT_TAGS.split, variables.params.project_id ]
             })
@@ -64,6 +77,7 @@ export const useDeleteProjectTag = (
 ) => {
 
     const queryClient = useQueryClient()
+    const selectedProject = useGlobalsStore_selectedProject()
 
     return useMutation<TDeleteProjectTagResponse, Error, TDeleteProjectTagPayload>({
         mutationFn : async ( payload) => {
@@ -73,6 +87,14 @@ export const useDeleteProjectTag = (
             return response.data
         },
         onSuccess : ( data, variables ) => {
+            if ( selectedProject?.project_id === variables.params.project_id ) {
+                updateGlobalsStore({
+                    selectedProject : {
+                        ...selectedProject,
+                        project_tags : selectedProject.project_tags.filter( tag => tag.tag_id !== variables.params.tag_id )
+                    }
+                })
+            }
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_PROJECT_TAGS.split, variables.params.project_id ]
             })

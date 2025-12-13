@@ -6,7 +6,7 @@ export type TMoveTaskToTodoPayload = {
     pathParameters : TAddTaskToTodoRequestPathParams,
     body : TAddTaskToTodoRequestBody,
     optimisticHelpers? : {
-        task : TUserTaskTodoState | TUserAvailableTaskTodo
+        task : TUserTaskTodoState | TUserAvailableTaskTodo,
     }
 }
 
@@ -16,7 +16,10 @@ export type TUpdateTaskTodoStatePayload = {
 }
 
 export type TRemoveTaskFromTodoPayload = {
-    pathParameters : TRemoveTaskFromTodoRequestPathParams
+    pathParameters : TRemoveTaskFromTodoRequestPathParams,
+    optimisticHelpers? : {
+        task : TUserTaskTodoState
+    }
 }
 
 export type TFinishTaskTodoSessionPayload = {

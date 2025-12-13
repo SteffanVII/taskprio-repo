@@ -71,6 +71,9 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         await removeTaskFromTodoTrigger({
             pathParameters : {
                 task_id : data.task_id
+            },
+            optimisticHelpers : {
+                task : data
             }
         })
     }

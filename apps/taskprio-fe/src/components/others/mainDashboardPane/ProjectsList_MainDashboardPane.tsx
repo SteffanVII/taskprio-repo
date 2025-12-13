@@ -117,7 +117,7 @@ const ProjectsList_MainDashboardPane = () => {
                                 ` transition-all `,
                                 ` border-r-[0.6rem] rounded-md `,
                                 ` hover:bg-border `,
-                                selectedProject?.project_id === project.project_id && ` text-primary bg-border shadow-2xl overflow-hidden `,
+                                selectedProject?.project_id === project.project_id && ` text-primary bg-border overflow-hidden `,
                                 getHexLuminance(project.project_color) > 0.4 ?
                                 `text-black` :
                                 `text-white`

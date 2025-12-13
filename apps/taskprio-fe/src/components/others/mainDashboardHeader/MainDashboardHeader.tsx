@@ -28,7 +28,7 @@ const MainDashboardHeader = () => {
             <div
                 className={cn(
                     ` relative w-full p-3 `,
-                    ` flex items-center gap-4 bg-accent/50 border-b `
+                    ` flex items-center gap-4 bg-accent/50 `
                 )}
             >
                 {

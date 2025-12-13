@@ -210,6 +210,7 @@ export const getTasksAssignedToUserByWorkspaceId = async (
                         "task_depth" : eb.ref( "taskboard.task.task_depth" ),
                         "project_abbreviation" : eb.ref( "project.project.project_abbreviation" ),
                         "project_color" : eb.ref( "project.project.project_color" ),
+                        "project_id" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`,
                         ...(addTodoState ? {
                             "display_order" : eb.ref( "taskboard.task_todo_state.display_order" ),
                             "active" : eb.ref( "taskboard.task_todo_state.active" ),
@@ -307,6 +308,7 @@ export const getTasksAssignedToUserByProjectId = async (
                         "task_depth" : eb.ref( "taskboard.task.task_depth" ),
                         "project_abbreviation" : eb.ref( "project.project.project_abbreviation" ),
                         "project_color" : eb.ref( "project.project.project_color" ),
+                        "project_id" : sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`,
                         ...(addTodoState ? {
                             "display_order" : eb.ref( "taskboard.task_todo_state.display_order" ),
                             "active" : eb.ref( "taskboard.task_todo_state.active" ),
@@ -334,6 +336,14 @@ export const getTasksAssignedToUserByProjectId = async (
                         return aggBuilder.filterWhere( "taskboard.task_board.task_board_id", "=", eb.fn.any( sql<string[]>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID_ARRAY)}(${filters.taskboards})` ))
                     }
                     return aggBuilder
+                } )
+                .$call( arggBuilder => {
+                    if ( filters.search && filters.search.trim() !== "" ) {
+                        return arggBuilder.filterWhere( re => re.or([
+                            re("taskboard.task.task_title", "ilike", `%${filters.search}%`),
+                        ]) )
+                    }
+                    return arggBuilder
                 } )
                 ,
                 sql<TUserAvailableTaskTodo[]>`'[]'`
@@ -427,7 +437,8 @@ export const getUserTaskTodoState = async (
             "taskboard.task_todo_state.display_order",
             "taskboard.task_todo_state.active",
             "project.project.project_abbreviation",
-            "project.project.project_color"
+            "project.project.project_color",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" )
         ])
         .where( "taskboard.task.task_id", "is not", null )
         .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
@@ -445,7 +456,8 @@ export const getUserTaskTodoState = async (
             "taskboard.task_todo_state.display_order",
             "taskboard.task_todo_state.active",
             "project.project.project_abbreviation",
-            "project.project.project_color"
+            "project.project.project_color",
+            "project.project.project_id"
         ])
         .execute()
 

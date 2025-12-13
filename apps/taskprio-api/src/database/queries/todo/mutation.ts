@@ -169,12 +169,16 @@ export const updateTaskTodoTimerLastSeen = async (
     trx? : Transaction<DB>
 ) : Promise<TTaskTodoTimer> => {
 
+    console.log(taskId);
+    console.log(userId);
+    console.log(workspaceId);
+
     const query = async ( trx : Transaction<DB> ) => {
         return await trx.updateTable( "taskboard.task_todo_timer" )
             .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
             .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
             .where( "taskboard.task_todo_timer.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
-            .where( "taskboard.task_todo_timer.stop", "is not", null )
+            .where( "taskboard.task_todo_timer.stop", "is", null )
             .set({
                 last_seen : sql.raw("CURRENT_TIMESTAMP")
             })

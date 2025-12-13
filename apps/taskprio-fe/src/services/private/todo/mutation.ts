@@ -4,15 +4,17 @@ import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 
-import { TGetAvailableTasksByWorkspaceResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
 import { produce } from "immer"
 import { AxiosError } from "axios"
+import { useTaskTodoPageStore_projectColumnsFilterState } from "@/stores/taskTodoPage"
 
 export const useMoveTaskToTodo = ( onSuccess?: () => void ) => {
 
     const queryClient = useQueryClient()
 
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const projectColumnsFilterState = useTaskTodoPageStore_projectColumnsFilterState()
 
     return useMutation({
         mutationFn: async (payload: TMoveTaskToTodoPayload) => {
@@ -23,12 +25,26 @@ export const useMoveTaskToTodo = ( onSuccess?: () => void ) => {
             return response.data
         },
         onMutate: (variables) => {
+
+            const filtersKey : Partial<TGetAvailableTasksByProjectRequestQuery> = {}
+
+            if ( variables.optimisticHelpers?.task.project_id ) {
+                const search = projectColumnsFilterState[variables.optimisticHelpers?.task.project_id].search
+                if ( search && search.trim() !== "" ) {
+                    filtersKey["search"] = search
+                }
+                const taskboards = projectColumnsFilterState[variables.optimisticHelpers?.task.project_id].taskboards
+                if ( taskboards && taskboards.length > 0 ) {
+                    filtersKey["taskboards"] = taskboards
+                }
+            }
+
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id],
-                (oldData: TGetAvailableTasksByWorkspaceResponseData) => produce(oldData, draft => {
-                    draft.forEach(project => {
-                        project.tasks = project.tasks.filter(task => task.task_id !== variables.pathParameters.task_id)
-                    })
+                [...QueryKeys.GET_AVAILABLE_TASKS_BY_PROJECT.split, variables.optimisticHelpers?.task.project_id, JSON.stringify(filtersKey) ],
+                (oldData: TGetAvailableTasksByProjectResponseData) => produce(oldData, draft => {
+                    if ( draft ) {
+                        draft.tasks = draft.tasks.filter(task => task.task_id !== variables.pathParameters.task_id)
+                    }
                 })
             )
             queryClient.setQueryData(
@@ -122,9 +138,12 @@ export const useRemoveTaskFromTodo = (onSuccess?: () => void) => {
                 })
             )
         },
-        onSuccess: () => {
+        onSuccess: ( _, variables ) => {
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+            })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_AVAILABLE_TASKS_BY_PROJECT.split, variables.optimisticHelpers?.task.project_id ]
             })
             onSuccess?.()
         }
