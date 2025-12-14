@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { ContextMenu, ContextMenuContent, ContextMenuGroup, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -7,10 +6,12 @@ import { updateDialogsStore } from "@/stores/dialogs";
 import { updateGlobalsStore, useGlobalsStore_noTaskboards, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_selectedWorkspace, useGlobalsStore_taskboards, useGlobalsStore_taskboardsIsLoading } from "@/stores/globals";
 
 import { TTaskboard } from "@repo/taskprio-types/src";
-import { Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
+import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router";
 import TaskboardListSkeleton from "./TaskboardListSkeleton";
+import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const TaskboardList = () => {
 
@@ -99,6 +100,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
 
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const selectedProject = useGlobalsStore_selectedProject()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const handleTaskboardTabOnClick = () => {
         updateGlobalsStore({
@@ -119,16 +121,15 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
         })
     }
 
-    // const handleOpenTrashTaskboardDialog = ( e : React.MouseEvent ) => {
-    //     e.stopPropagation()
-    //     e.preventDefault()
-    //     updateDialogsStore({
-    //         renameTaskboardDialog : {
-    //             open : true,
-    //             taskboard
-    //         }
-    //     })
-    // }
+    const handleOpenTrashTaskboardDialog = ( e : React.MouseEvent ) => {
+        e.stopPropagation()
+        e.preventDefault()
+        updateDialogsStore({
+            taskboardTaskTrashSheet : {
+                open : true
+            }
+        })
+    }
 
     const handleOpenDropTaskboardDialog = ( e : React.MouseEvent ) => {
         e.stopPropagation()
@@ -155,40 +156,53 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
     return (
         <TabsTrigger
             variant={"taskboardSelect"}
-            className="relative rounded-t-md"
+            className={cn(
+                "relative rounded-t-md",
+                selectedTaskboard?.task_board_id === taskboard.task_board_id && "pr-0"
+            )}
             value={taskboard.task_board_id}
             onClick={handleTaskboardTabOnClick}
         >
             {taskboard.task_board_name}
-            <ContextMenu
-                modal={false}
-            >
-                <ContextMenuTrigger asChild >
-                    <div
-                        className="absolute top-0 left-0 size-full"
-                    ></div>
-                </ContextMenuTrigger>
-                <ContextMenuContent className="w-[14rem]" >
-                    <ContextMenuItem
-                        onClick={handleOpenRenameTaskboardDialog}
-                    >Rename <Pencil className="ml-auto" /></ContextMenuItem>
-                    <ContextMenuItem
-                        onClick={handleOpenRenameTaskboardDialog}
-                    >Trash <Trash2 className="ml-auto" /></ContextMenuItem>
-                    <ContextMenuSeparator/>
-                    <ContextMenuGroup>
-                        <ContextMenuLabel className="text-destructive" >Danger Zone</ContextMenuLabel>
-                        <ContextMenuItem
-                            variant="destructive"
-                            onClick={handleOpenDeactivateTaskboardDialog}
-                        >Deactivate <StopCircle className="ml-auto text-destructive" /></ContextMenuItem>
-                        <ContextMenuItem
-                            variant="destructive"
-                            onClick={handleOpenDropTaskboardDialog}
-                            >Drop <Trash2 className="ml-auto text-destructive" /></ContextMenuItem>
-                    </ContextMenuGroup>
-                </ContextMenuContent>
-            </ContextMenu>
+            {
+                selectedTaskboard?.task_board_id === taskboard.task_board_id &&
+                <DropdownMenu modal={false} >
+                    <DropdownMenuTrigger asChild >
+                        <Button
+                            variant={"ghost"}
+                            size={"icon-sm"}
+                        >
+                            <EllipsisVertical/>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[14rem]" >
+                        <DropdownMenuItem
+                            onClick={handleOpenRenameTaskboardDialog}
+                        >
+                            Rename
+                            <DropdownMenuShortcut><Pencil/></DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={handleOpenTrashTaskboardDialog}
+                        >
+                            Task Trash
+                            <DropdownMenuShortcut><Trash2/></DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator/>
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel className="text-destructive" >Danger Zone</DropdownMenuLabel>
+                            <DropdownMenuItem variant="destructive" onClick={handleOpenDeactivateTaskboardDialog} >
+                                Deactivate
+                                <DropdownMenuShortcut><StopCircle className="text-destructive" /></DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem variant="destructive" onClick={handleOpenDropTaskboardDialog} >
+                                Drop
+                                <DropdownMenuShortcut><Trash2 className="text-destructive" /></DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            }
         </TabsTrigger>
     )
 

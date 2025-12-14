@@ -1,6 +1,5 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import React, { useContext, useState } from "react";
-import { TaskboardSidebarContext } from "./TaskboardSidebar";
+import React, { useState } from "react";
 import { useGlobalsStore_selectedTaskboard } from "@/stores/globals";
 
 import { ArchiveRestore, Trash2, Undo2 } from "lucide-react";
@@ -15,15 +14,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRestoreTaskFromTrash } from "@/services/private/task/mutation";
 import { toast } from "sonner";
+import { updateDialogsStore, useDialogsStore_taskboardTaskTrashSheet } from "@/stores/dialogs";
 
 const TaskboardTrashSheet = () => {
 
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const {
-        openTrashSheet,
-        setOpenTrashSheet
-    } = useContext(TaskboardSidebarContext)
+        open
+    } = useDialogsStore_taskboardTaskTrashSheet()
 
     const {
         data : taskboardTrashTasks,
@@ -35,7 +34,7 @@ const TaskboardTrashSheet = () => {
             }
         },
         options : {
-            enabled : openTrashSheet
+            enabled : open
         }
     })
 
@@ -64,9 +63,13 @@ const TaskboardTrashSheet = () => {
     return (
         <>
             <Sheet
-                open={openTrashSheet}
+                open={open}
                 onOpenChange={(open) => {
-                    setOpenTrashSheet(open)
+                    updateDialogsStore({
+                        taskboardTaskTrashSheet : {
+                            open
+                        }
+                    })
                 }}
             >
                 <SheetContent

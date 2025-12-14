@@ -49,6 +49,9 @@ export type TDialogStore = {
     taskAssignerDialog : {
         open : boolean,
         task : TTaskForCardView | null
+    },
+    taskboardTaskTrashSheet : {
+        open : boolean
     }
 }
 
@@ -100,6 +103,9 @@ const initialState : TDialogStore = {
     taskAssignerDialog : {
         open : false,
         task : null
+    },
+    taskboardTaskTrashSheet : {
+        open : false
     }
 }
 
@@ -170,6 +176,10 @@ export const useDialogsStore_tagDialog = () => {
 
 export const useDialogsStore_taskAssignerDialog = () => {
     return useStore( DialogsStore, store => store.taskAssignerDialog )
+}
+
+export const useDialogsStore_taskboardTaskTrashSheet = () => {
+    return useStore( DialogsStore, store => store.taskboardTaskTrashSheet )
 }
 
 export default DialogsStore;

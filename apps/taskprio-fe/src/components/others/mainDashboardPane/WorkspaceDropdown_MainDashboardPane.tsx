@@ -107,13 +107,19 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                             (workspacesIsLoading) ?
                             <Skeleton className="bg-primary/20 w-[16rem] h-[1.8rem]" />
                             :
-                            <p
-                                className={cn(
-                                    " max-w-[16rem] truncate ",
-                                    " text-xl font-bold "
-                                )}
-                                title={selectedWorkspace?.workspace_name}
-                            >{selectedWorkspace?.workspace_name}</p>
+                            <>
+                                {
+                                    (workspaces && workspaces?.length === 0) &&
+                                    <p className="text-center font-bold" >No Workspaces Found</p>
+                                }
+                                <p
+                                    className={cn(
+                                        " max-w-[16rem] truncate ",
+                                        " text-xl font-bold "
+                                    )}
+                                    title={selectedWorkspace?.workspace_name}
+                                >{selectedWorkspace?.workspace_name}</p>
+                            </>
                         }
                         <ChevronDown className=" size-4 " />
                     </div>
@@ -132,6 +138,10 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                                 ` flex flex-col gap-2 `
                             )}
                         >
+                            {
+                                (workspaces && workspaces?.length === 0) &&
+                                <p className="text-center font-bold" >No Workspaces Found</p>
+                            }
                             {
                                 workspaces?.map( workspace => (
                                     <Button

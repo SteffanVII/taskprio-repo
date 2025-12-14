@@ -23,6 +23,7 @@ import { useContext, useMemo } from "react";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
+import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
 
 const MainPage = () => {
     
@@ -122,6 +123,7 @@ const MainPage = () => {
                         <WorkspaceInvitationDialog/>
                         <TagDialog/>
                         <TaskboardTaskAssignerDialog/>
+                        <TaskboardTrashSheet/>
                     </SidebarProvider>
                 </>
             }
