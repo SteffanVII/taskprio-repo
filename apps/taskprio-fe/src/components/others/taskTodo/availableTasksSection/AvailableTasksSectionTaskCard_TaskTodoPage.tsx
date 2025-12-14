@@ -6,7 +6,7 @@ import TagBadge from "../../shared/tag/TagBadge"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { useMoveTaskToTodo } from "@/services/private/todo/mutation"
-import { useTaskTodoPageStore_topTaskTodo } from "@/stores/taskTodoPage"
+import { useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_topTaskTodo } from "@/stores/taskTodoPage"
 
 type TTaskCardProps = {
     data : TUserAvailableTaskTodo
@@ -16,6 +16,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
     data
 }) => {
 
+    const sessionActive = useTaskTodoPageStore_sessionActive()
     const topTaskTodo = useTaskTodoPageStore_topTaskTodo()
 
     const {
@@ -84,7 +85,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
                     className={cn(
                         `flex gap-2 pt-2 pr-2`,
                         `opacity-0 pointer-events-none`,
-                        `group-hover:opacity-100 group-hover:pointer-events-auto`
+                        !sessionActive && `group-hover:opacity-100 group-hover:pointer-events-auto`
                     )}
                 >
                     <Button
