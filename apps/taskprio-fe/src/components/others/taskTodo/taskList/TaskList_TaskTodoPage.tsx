@@ -12,7 +12,8 @@ import {
     useTaskTodoPageStore_userTaskTodoStateIsLoading,
     useTaskTodoPageStore_totalCurrentWorkTimeNumber,
     useTaskTodoPageStore_totalWorkTimeGoalNumber,
-    useTaskTodoPageStore_taskTodoPageCompactMode
+    useTaskTodoPageStore_taskTodoPageCompactMode,
+    updateTaskTodoPageStore
 } from "@/stores/taskTodoPage";
 import TaskTodoFinishSessionDialog from "../../dialogs/TaskTodoFinishSessionDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,7 +46,11 @@ const TaskList_TaskTodoPage = () => {
     const [ loading, setLoading ] = useState<boolean>(false)
 
     const sortedUserTaskTodoState = useMemo(() => {
-        return [...(userTaskTodoState || [])!].sort( ( a, b ) => b.display_order - a.display_order )
+        const returnValue = [...(userTaskTodoState || [])!].sort( ( a, b ) => b.display_order - a.display_order )
+        updateTaskTodoPageStore({
+            topTaskTodo : returnValue[0] ?? null
+        })
+        return returnValue
     }, [userTaskTodoState])
 
     const handleSessionButtonOnClick = async () => {
@@ -152,7 +157,7 @@ const TaskList_TaskTodoPage = () => {
                                 size={"icon"}
                                 variant={sessionActive ? "destructive" : "default"}
                                 isLoading={loading}
-                                disabled={userTaskTodoStateIsLoading}
+                                disabled={userTaskTodoStateIsLoading || sortedUserTaskTodoState.length === 0}
                                 spinnerSize="xl"
                                 className={cn(
                                     ` relative `,
@@ -174,7 +179,7 @@ const TaskList_TaskTodoPage = () => {
                                 <Button
                                     variant={"secondary"}
                                     onClick={() => setFinishSessionDialogOpen(true)}
-                                    disabled={userTaskTodoStateIsLoading || sessionActive}
+                                    disabled={userTaskTodoStateIsLoading || sessionActive || sortedUserTaskTodoState.length === 0}
                                 >Finish Session</Button>
                             </div>
                         </div>
@@ -204,6 +209,7 @@ const TaskList_TaskTodoPage = () => {
                                 userTaskTodoState &&
                                 userTaskTodoState.length === 0 &&
                                 <TaskCardDrop
+                                    noTodoMessage
                                     displayOrder={0}
                                     fullSize
                                 />

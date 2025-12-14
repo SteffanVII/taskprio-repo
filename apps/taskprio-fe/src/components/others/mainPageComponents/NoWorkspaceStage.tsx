@@ -6,10 +6,13 @@ import { useCreateWorkspace } from "@/services/private/workspace/mutation"
 import { useState } from "react"
 import { useNavigate } from "react-router"
 import Spinner from "../Spinner"
+import { useSidebar } from "@/components/ui/sidebar"
+import { Menu } from "lucide-react"
 
 const NoWorkspaceStage = () => {
 
     const navigate = useNavigate()
+    const sidebar = useSidebar()
 
     const [ workspaceName, setWorkspaceName ] = useState<string>("")
 
@@ -31,11 +34,25 @@ const NoWorkspaceStage = () => {
     return (
         <div
             className={cn(
-                ` size-full max-w-screen max-h-screen `,
+                ` relative size-full max-w-screen max-h-screen `,
                 ` flex items-center justify-center grow `,
                 ` bg-background z-50 `
             )}
         >
+            {
+                // Show sidebar button when in mobile mode
+                sidebar.isMobile &&
+                <Button
+                    className={cn(
+                        `absolute top-4 left-4`
+                    )}
+                    variant={"ghost"}
+                    size={"icon"}
+                    onClick={() => {
+                        sidebar.toggleSidebar()
+                    }}
+                ><Menu/></Button>
+            }
             <Card
                 className={cn(
                     ` w-[30rem] `

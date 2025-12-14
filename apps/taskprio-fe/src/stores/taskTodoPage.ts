@@ -1,4 +1,4 @@
-import { TGetAvailableTasksByProjectRequestQuery } from "@repo/taskprio-types/src";
+import { TGetAvailableTasksByProjectRequestQuery, TUserTaskTodoState } from "@repo/taskprio-types/src";
 import { Store, useStore } from "@tanstack/react-store";
 
 type TTaskTodoPageStore = {
@@ -8,6 +8,8 @@ type TTaskTodoPageStore = {
     totalWorkTimeGoalString : string,
     totalCurrentWorkTimeNumber : number,
     totalWorkTimeGoalNumber : number,
+
+    topTaskTodo : TUserTaskTodoState | null,
 
     timerCount : number,
 
@@ -26,6 +28,8 @@ const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
     totalWorkTimeGoalString : "0m",
     totalCurrentWorkTimeNumber : 0,
     totalWorkTimeGoalNumber : 0,
+
+    topTaskTodo : null,
 
     timerCount : 0,
 
@@ -64,5 +68,6 @@ export const useTaskTodoPageStore_userTaskTodoStateIsLoading = () => useStore( T
 export const useTaskTodoPageStore_userTaskTodoStateIsFetching = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsFetching)
 export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore( TaskTodoPageStore, store => store.taskTodoPageCompactMode)
 export const useTaskTodoPageStore_projectColumnsFilterState = () => useStore( TaskTodoPageStore, store => store.projectColumnsFilterState)
+export const useTaskTodoPageStore_topTaskTodo = () => useStore( TaskTodoPageStore, store => store.topTaskTodo)
 
 export default useTaskTodoPageStore

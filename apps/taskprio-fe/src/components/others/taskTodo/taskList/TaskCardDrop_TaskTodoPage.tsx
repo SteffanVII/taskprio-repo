@@ -8,14 +8,16 @@ type TTaskCardDropProps = {
     displayOrder : number,
     fullSize? : boolean,
     topTaskId? : string,
-    bottomTaskId? : string
+    bottomTaskId? : string,
+    noTodoMessage? : boolean;
 }
 
 const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
     displayOrder,
     fullSize,
     topTaskId,
-    bottomTaskId
+    bottomTaskId,
+    noTodoMessage,
 }) => {
 
     const { taskboardTaskTodo } = useTaskboardDragStore_taskboardTaskTodoDrag()
@@ -102,6 +104,10 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
                 fullSize && ` h-[80rem] `
             )}
         >
+            {
+                noTodoMessage &&
+                <p className="absolute top-[4rem] w-full text-center font-semibold" >Drag and drop a task to start</p>
+            }
             <div
                 className={cn(
                     `absolute top-1/2 -translate-y-1/2`,

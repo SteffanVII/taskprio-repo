@@ -136,25 +136,22 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
             onDragStart={onDragStartHandler}
             onDragEnd={onDragEndHandler}
         >
-            <p
-                className={cn(
-                    `w-fit px-2 py-1 ml-2 mt-2 rounded bg-primary text-xs text-primary-foreground font-semibold`,
-                    getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
-                )}
-                style={{
-                    backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
-                }}
-            >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
-            <div className=" flex justify-between " >
+            <div className="flex items-start justify-between" >
                 <p
                     className={cn(
-                        `text-sm font-medium p-3 `
+                        `w-fit px-2 py-1 ml-2 mt-2 rounded bg-primary text-xs text-primary-foreground font-semibold`,
+                        getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                     )}
-                >{data.task_title}</p>
+                    style={{
+                        backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
+                    }}
+                >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
                 {
                     !active &&
-                    <div className=" flex items-center gap-4 m-4 " >
-                        <button
+                    <div className=" flex items-center gap-2 mt-2 mr-2 " >
+                        <Button
+                            size={"icon-sm"}
+                            variant={"outline"}
                             className={cn(
                                 `cursor-pointer`,
                                 `opacity-0 transition-opacity`,
@@ -164,21 +161,23 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                             onClick={handleEditModeOnClick}
                         >
                             {
-                                editMode ? <CheckSquareIcon className=" text-primary size-[1.2rem] " /> : <EditIcon className=" size-[1.2rem] " />
+                                editMode ? <CheckSquareIcon className="size-[1.2rem] " /> : <EditIcon className=" size-[1.2rem] " />
                             }
-                        </button>
+                        </Button>
                         {
                             !editMode &&
                             <>
                                 <Dialog>
                                     <DialogTrigger asChild >
-                                        <button
+                                        <Button
+                                            size={"icon-sm"}
+                                            variant={"outline"}
                                             className={cn(
                                                 `cursor-pointer`,
                                                 `opacity-0 transition-opacity`,
                                                 `group-hover:opacity-100`
                                             )}
-                                        ><TrashIcon className=" text-destructive size-[1.2rem] " /></button>
+                                        ><TrashIcon className=" text-destructive size-[1.2rem] " /></Button>
                                     </DialogTrigger>
                                     <DialogContent>
                                         <DialogHeader>
@@ -200,6 +199,11 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                     </div>
                 }
             </div>
+            <p
+                className={cn(
+                    `text-sm font-medium p-3 `
+                )}
+            >{data.task_title}</p>
             <div
                 className={cn(
                     ` flex flex-col gap-4 `,

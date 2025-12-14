@@ -8,11 +8,14 @@ import { useState } from "react";
 import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Menu } from "lucide-react";
 
 const NoProjectStage = () => {
 
     const navigate = useNavigate()
 
+    const sidebar = useSidebar()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ projectName, setProjectName ] = useState<string>("")
@@ -43,6 +46,20 @@ const NoProjectStage = () => {
         <div
             className={` size-full grow flex items-center justify-center `}
         >
+            {
+                // Show sidebar button when in mobile mode
+                sidebar.isMobile &&
+                <Button
+                    className={cn(
+                        `absolute top-4 left-4`
+                    )}
+                    variant={"ghost"}
+                    size={"icon"}
+                    onClick={() => {
+                        sidebar.toggleSidebar()
+                    }}
+                ><Menu/></Button>
+            }
             <Card
                 className={cn(
                     ` w-[30rem] border-none shadow-none `

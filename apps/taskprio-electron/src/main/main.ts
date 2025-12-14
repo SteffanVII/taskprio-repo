@@ -55,27 +55,35 @@ if ( !gotTheLock ) {
     app.on( "second-instance", ( _, commandLine, _workingDirectory ) => {
         if ( mainWindow ) {
         if ( mainWindow.isMinimized() ) mainWindow.restore()
-            mainWindow.focus()
-            const urlString = commandLine.pop()
-            mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString )
-            mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
-            if ( urlString.includes("taskprio-app://googlelogin") ) {
-                const url = new URL(urlString)
-                const searchParams = url.searchParams
-                const credential = searchParams.get("credential")
-                const clientId = searchParams.get("clientId")
-                mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, credential, clientId )
-            }
+        mainWindow.focus()
+        const urlString = commandLine.pop()
+        mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString )
+        mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
+        if ( urlString.includes("taskprio-app://googlelogin") ) {
+            const url = new URL(urlString)
+            const searchParams = url.searchParams
+            const credential = searchParams.get("credential")
+            const clientId = searchParams.get("clientId")
+            mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, credential, clientId )
         }
-        // dialog.showErrorBox('Welcome back', `You arrived from ${commandLine.pop()}`)
+        }
     } )
 }
 
 app.on( "open-url", (_, url) => {
-    if ( mainWindow ) {
-
+    if ( mainWindow )
+    if ( mainWindow.isMinimized() ) mainWindow.restore()
+    mainWindow.focus()
+    const urlString = url
+    mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString )
+    mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
+    if ( urlString.includes("taskprio-app://googlelogin") ) {
+        const url = new URL(urlString)
+        const searchParams = url.searchParams
+        const credential = searchParams.get("credential")
+        const clientId = searchParams.get("clientId")
+        mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, credential, clientId )
     }
-  // dialog.showErrorBox( 'Welcome Back', `You arrived from: ${url}` )
 } )
 
 // This method will be called when Electron has finished
@@ -99,7 +107,8 @@ app.on('activate', () => {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
+        mainWindow = createWindow();
+        titlebarMain()
     }
 });
 
