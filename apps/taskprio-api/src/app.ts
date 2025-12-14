@@ -41,7 +41,7 @@ export const googleAuthClient = new OAuth2Client(
 
 // Middleware for cors
 APP.use(cors({
-    origin : [ "http://localhost:5001", "*" ],
+    origin : [ "http://localhost:5001", "https://taskprio-webapp.onrender.com", "*" ],
     credentials: true,
 }));
 // Middleware to parse cookies
