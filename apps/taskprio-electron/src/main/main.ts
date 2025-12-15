@@ -4,6 +4,7 @@ import started from 'electron-squirrel-startup';
 import { titlebarMain } from './titlebar';
 import { EEvents } from 'src/lib/enums';
 import { URL } from 'node:url';
+import { taskTodoOverlayMain } from './taskTodoOverlay';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -92,6 +93,7 @@ app.on( "open-url", (_, url) => {
 app.on('ready', () => {
     mainWindow = createWindow()
     titlebarMain()
+    taskTodoOverlayMain()
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -109,6 +111,7 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         mainWindow = createWindow();
         titlebarMain()
+        taskTodoOverlayMain()
     }
 });
 

@@ -55,6 +55,7 @@ function reigsterAuthenticationRoutes() {
                                 httpOnly : true,
                                 secure : true,
                                 sameSite : 'none',
+                                maxAge : 1000 * 60 * 60 * 24 * 365 * 10
                             }
                         )
                         res.status(200).json({ message: "Login successful", access_token : accessToken, user });
@@ -94,7 +95,8 @@ function reigsterAuthenticationRoutes() {
                         {
                             httpOnly : true,
                             sameSite : "none",
-                            secure : true 
+                            secure : true,
+                            maxAge : 1000 * 60 * 60 * 24 * 365 * 10
                         }
                     )
 
@@ -121,7 +123,8 @@ function reigsterAuthenticationRoutes() {
                         {
                             httpOnly : true,
                             sameSite : "none",
-                            secure : true
+                            secure : true,
+                            maxAge : 1000 * 60 * 60 * 24 * 365 * 10
                         }
                     )
 
@@ -183,7 +186,8 @@ function reigsterAuthenticationRoutes() {
                             {
                                 httpOnly : true,
                                 sameSite : "none",
-                                secure : true
+                                secure : true,
+                                maxAge : 1000 * 60 * 60 * 24 * 365 * 10
                             }
                         )
                         .json({ message: "User created successfully", access_token : accessToken, user : userObject });

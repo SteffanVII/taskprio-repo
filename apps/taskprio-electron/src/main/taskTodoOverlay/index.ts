@@ -1,0 +1,18 @@
+import { BrowserWindow, ipcMain, IpcMainEvent, screen } from "electron"
+import { EEvents } from "src/lib/enums"
+
+
+export const taskTodoOverlayMain = () => {
+
+    ipcMain.on( EEvents.MAKE_WINDOW_TO_TASK_TODO_OVERLAY_MODE, ( event : IpcMainEvent ) => {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        if ( window ) {
+            window.unmaximize()
+            const { height } = screen.getPrimaryDisplay().workAreaSize;
+            window.setSize(400, height - 20)
+            window.setPosition(10, 10)
+            window.setResizable(false)
+        }
+    } )
+
+}

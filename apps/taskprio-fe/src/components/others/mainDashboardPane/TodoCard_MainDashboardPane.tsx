@@ -73,9 +73,14 @@ const TodoCard_MainDashboardPane = () => {
                 `p-4 mx-auto bg-card`,
                 `border border-primary/30 rounded-lg shadow-t-lg `,
                 `animate-in fade-in-0 duration-300 `,
-                sessionActive && `shadow-2xl shadow-primary/40`
             )}
-        >
+            >
+            <div
+                className={cn(
+                    `absolute top-0 left-0 size-full rounded-lg duration-[1500ms]`,
+                    sessionActive && `shadow-[0_3rem_14rem_0.7rem]  shadow-primary/40`
+                )}
+            ></div>
             <div className="flex justify-between" >
                 <div className="flex flex-col gap-2" >
                     <div className="flex gap-2" >

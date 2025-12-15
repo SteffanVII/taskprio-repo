@@ -1,6 +1,12 @@
 import { TGetAvailableTasksByProjectRequestQuery, TUserTaskTodoState } from "@repo/taskprio-types/src";
 import { Store, useStore } from "@tanstack/react-store";
 
+export enum ETaskTodoPageUIMode {
+    FULL = "full",
+    OVERLAY = "overlay",
+    WIDGET = "widget"
+}
+
 type TTaskTodoPageStore = {
     sessionActive : boolean,
 
@@ -17,6 +23,8 @@ type TTaskTodoPageStore = {
     userTaskTodoStateIsFetching : boolean,
 
     taskTodoPageCompactMode : boolean,
+
+    uIMode : ETaskTodoPageUIMode,
 
     projectColumnsFilterState : Record<string, TGetAvailableTasksByProjectRequestQuery>
 }
@@ -37,6 +45,8 @@ const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
     userTaskTodoStateIsFetching : false,
 
     taskTodoPageCompactMode : false,
+
+    uIMode : ETaskTodoPageUIMode.FULL,
 
     projectColumnsFilterState : {}
 }
@@ -69,5 +79,6 @@ export const useTaskTodoPageStore_userTaskTodoStateIsFetching = () => useStore( 
 export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore( TaskTodoPageStore, store => store.taskTodoPageCompactMode)
 export const useTaskTodoPageStore_projectColumnsFilterState = () => useStore( TaskTodoPageStore, store => store.projectColumnsFilterState)
 export const useTaskTodoPageStore_topTaskTodo = () => useStore( TaskTodoPageStore, store => store.topTaskTodo)
+export const useTaskTodoPageStore_uIMode = () => useStore( TaskTodoPageStore, store => store.uIMode)
 
 export default useTaskTodoPageStore

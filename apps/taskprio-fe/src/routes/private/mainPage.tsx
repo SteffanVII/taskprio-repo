@@ -83,6 +83,7 @@ const MainPage = () => {
                         <MainDashboardPane/>
                         <SidebarInset
                             custom
+                            className="z-10"
                         >
                             <div
                                 className={cn(

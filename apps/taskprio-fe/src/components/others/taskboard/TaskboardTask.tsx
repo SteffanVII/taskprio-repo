@@ -49,6 +49,7 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
     }
 
     const onDragEndHandler = () => {
+        console.log("DragEnd");
         updateTaskboardDragStore({
             taskboardTaskDrag : {
                 taskboardTask : null
@@ -99,7 +100,8 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
                 `bg-card border border-border transition-colors duration-500 shadow `,
                 `rounded-md`,
                 `hover:border-primary`,
-                `pointer-events-auto`
+                `pointer-events-auto`,
+                
             )}
             draggable={true}
             onDragStart={ onDragStartHandler }

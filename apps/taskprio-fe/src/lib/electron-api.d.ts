@@ -7,7 +7,9 @@ declare global {
             minimizeWindow : () => void,
             onWindowMaximizeStateChange : ( callback : ( value : boolean ) => void ) => void,
             onGoogleLoginSuccess : ( callback : ( credential : string, clientId : string ) => void ) => void,
-            onConsoleLog : ( callback : ( value : string ) => void ) => void
+            onConsoleLog : ( callback : ( value : string ) => void ) => void,
+
+            makeWindowToTaskTodoOverlayMode : () => void
         }
     }
 }

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
+import { useGlobalsStore_selectedWorkspace, useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
 
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { Minimize2, PauseIcon, PlayIcon } from "lucide-react";
 import React, { useContext, useMemo, useState } from "react";
 import { 
     useTaskTodoPageStore_sessionActive,
@@ -13,7 +13,8 @@ import {
     useTaskTodoPageStore_totalCurrentWorkTimeNumber,
     useTaskTodoPageStore_totalWorkTimeGoalNumber,
     useTaskTodoPageStore_taskTodoPageCompactMode,
-    updateTaskTodoPageStore
+    updateTaskTodoPageStore,
+    ETaskTodoPageUIMode
 } from "@/stores/taskTodoPage";
 import TaskTodoFinishSessionDialog from "../../dialogs/TaskTodoFinishSessionDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,9 +24,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Slider } from "@/components/ui/slider";
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
+import { useNavigate } from "react-router";
 
 const TaskList_TaskTodoPage = () => {
 
+    const navigate = useNavigate()
+
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const taskTodoPageCompactMode = useTaskTodoPageStore_taskTodoPageCompactMode()
     const userTaskTodoStateIsLoading = useTaskTodoPageStore_userTaskTodoStateIsLoading()
     const taskTodoPageShowAvailableTasks = useGlobalsStore_taskTodoPageShowAvailableTasks()
@@ -92,6 +97,12 @@ const TaskList_TaskTodoPage = () => {
                         ` w-full max-w-[30rem] h-fit min-h-0 m-4 mx-auto p-4 pt-[4rem] `,
                     )}
                 >
+                    <div
+                        className={cn(
+                            `flex`
+                        )}
+                    >
+                    </div>
                     <div
                         className=" flex items-center gap-4 "
                     >
@@ -175,12 +186,30 @@ const TaskList_TaskTodoPage = () => {
                                 }
                                 { sessionActive ? <PauseIcon className=" size-[50%] " /> : <PlayIcon className=" size-[50%] " /> }   
                             </Button>
-                            <div>
-                                <Button
-                                    variant={"secondary"}
-                                    onClick={() => setFinishSessionDialogOpen(true)}
-                                    disabled={userTaskTodoStateIsLoading || sessionActive || sortedUserTaskTodoState.length === 0}
-                                >Finish Session</Button>
+                            <Button
+                                variant={"secondary"}
+                                onClick={() => setFinishSessionDialogOpen(true)}
+                                disabled={userTaskTodoStateIsLoading || sessionActive || sortedUserTaskTodoState.length === 0}
+                            >Finish Session</Button>
+                            <div className="flex items-center ml-auto" >
+                                <Tooltip>
+                                    <TooltipTrigger asChild >
+                                        <Button
+                                            size={"icon"}
+                                            variant={"outline"}
+                                            onClick={() => {
+                                                navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
+                                                updateTaskTodoPageStore({
+                                                    uIMode : ETaskTodoPageUIMode.OVERLAY
+                                                })
+                                                window.electronAPI.makeWindowToTaskTodoOverlayMode()
+                                            }}
+                                        >
+                                            <Minimize2/>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Overlay Mode</TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
                     </div>

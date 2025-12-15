@@ -73,6 +73,14 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
         })
     }
 
+    const onDragEndHandler = () => {
+        updateTaskboardDragStore({
+            taskboardSectionDrag : {
+                taskboardSection : null
+            }
+        })
+    }
+
     // IMPORTANT : Prevent the taskboard from being drag scrolled
     const onMouseDownHandler = ( e : React.MouseEvent<HTMLDivElement> ) => {
         e.stopPropagation()
@@ -167,6 +175,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                 } : undefined }
                 draggable={true}
                 onDragStart={ onDragStartHandler }
+                onDragEnd={ onDragEndHandler }
                 onMouseDown={ onMouseDownHandler }
             >
                 {

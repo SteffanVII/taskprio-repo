@@ -5,9 +5,11 @@ import { contextBridge } from "electron/renderer";
 import { titlebarAPI } from "./titlebar";
 import { authenticationAPI } from "./authentication";
 import { generalAPI } from "./general";
+import { taskTodoAPI } from "./taskTodoOverlay";
 
 contextBridge.exposeInMainWorld( "electronAPI", {
     ...generalAPI,
     ...titlebarAPI,
-    ...authenticationAPI
+    ...authenticationAPI,
+    ...taskTodoAPI
 } )

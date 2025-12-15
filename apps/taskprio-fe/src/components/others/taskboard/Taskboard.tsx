@@ -6,9 +6,10 @@ import { TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types/src/in
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
 import TaskboardSectionDrop from "./TaskboardSectionDrop";
 import { TaskboardTaskDialog } from "../dialogs/taskboardTaskDialog/TaskboardTaskdialog";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
 import TaskboardSkeleton from "./TaskboardSkeleton";
+import { useTaskboardDragStore_taskboardSectionDrag, useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag";
 
 type TTaskboardSectionRenderInfo = {
     firstSection : boolean,
@@ -26,8 +27,15 @@ export const Taskboard = () => {
         task_board_id
     } = useParams()
 
+    const taskboardTaskDrag = useTaskboardDragStore_taskboardTaskDrag()
+    const taskboardSectionDrag = useTaskboardDragStore_taskboardSectionDrag()
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
     const taskboardsIsLoading = useGlobalsStore_taskboardsIsLoading()
+
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const animationFrameRef = useRef<ReturnType<typeof requestAnimationFrame>>(null)
+
+    const [ dragDirection, setDragDirection ] = useState<number>(0)
 
     const {
         data : taskboardSections,
@@ -110,6 +118,45 @@ export const Taskboard = () => {
         task_board_id
     ])
 
+    const onAutoScrollerLeftOnMouseEnter = () => {
+        setDragDirection(-1)
+    }
+    
+    const onAutoScrollerRightOnMouseEnter = () => {
+        setDragDirection(1)
+    }
+    
+    const onAutoScrollerOnMouseLeave = () => {
+        setDragDirection(0)
+    }
+
+    useEffect(() => {
+        const dragFunction = () => {
+            if ( scrollAreaRef.current ) {
+                if ( dragDirection < 0 ) {
+                    scrollAreaRef.current.scrollLeft = scrollAreaRef.current.scrollLeft - 10
+                    // scrollAreaRef.current.scrollBy({
+                    //     left : -40,
+                    //     behavior : "smooth"
+                    // })
+                } else {
+                    scrollAreaRef.current.scrollLeft = scrollAreaRef.current.scrollLeft + 10
+                    // scrollAreaRef.current.scrollBy({
+                    //     left : 40,
+                    //     behavior : "smooth"
+                    // })
+                }
+            }
+            animationFrameRef.current = requestAnimationFrame(dragFunction)
+        }
+        if ( animationFrameRef.current ) {
+            cancelAnimationFrame(animationFrameRef.current)
+        }
+        if ( dragDirection !== 0 ) {
+            animationFrameRef.current = requestAnimationFrame(dragFunction)
+        }
+    }, [dragDirection])
+
     return (
         <div
             className={cn(
@@ -119,10 +166,39 @@ export const Taskboard = () => {
                 gridTemplateColumns : "1fr"
             }}
         >
+            {
+                (!!taskboardTaskDrag.taskboardTask || !!taskboardSectionDrag.taskboardSection) && (
+                    <>
+                        {
+                            scrollAreaRef.current?.scrollLeft !== 0 &&
+                            <div
+                                onDragEnter={onAutoScrollerLeftOnMouseEnter}
+                                onDragLeave={onAutoScrollerOnMouseLeave}
+                                className={cn(
+                                    `absolute top-0 left-0 w-[2rem] h-full z-[9999]`,
+                                    // `bg-red-400 border border-destructive`
+                                )}
+                            ></div>
+                        }
+                        {
+                            scrollAreaRef.current?.scrollLeft !== (scrollAreaRef.current!.scrollWidth - scrollAreaRef.current!.clientWidth) &&
+                            <div
+                                onDragEnter={onAutoScrollerRightOnMouseEnter}
+                                onDragLeave={onAutoScrollerOnMouseLeave}
+                                className={cn(
+                                    `absolute top-0 right-0 w-[2rem] h-full z-[9999]`,
+                                    // `bg-red-400 border border-destructive`
+                                )}
+                            ></div>
+                        }
+                    </>
+                )
+            }
             <div
+                ref={scrollAreaRef}
                 className={cn(
                     ` relative`,
-                    ` size-full min-h-0 bg-background pt-6 overflow-x-auto overflow-y-hidden `,
+                    ` size-full min-h-0 bg-background pt-6 overflow-x-auto `,
                     ` flex grow flex-nowrap rounded-tl-md `,
                     ` cursor-grab active:cursor-grabbing select-none `,
                     // ` border border-red-500 `
@@ -163,6 +239,7 @@ export const Taskboard = () => {
                     !showSkeleton &&
                     <TaskboardSectionCreator/>
                 }
+                {/* <ScrollBar orientation="horizontal" /> */}
             </div>
             {/* <TaskboardSidebar/> */}
         </div>

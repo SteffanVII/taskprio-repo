@@ -26,6 +26,7 @@ const MainDashboardPane = () => {
             <Sidebar
                 variant="inset"
                 electron={isElectron}
+                className="z-10"
             >
                 {
                     !noWorkspaces ?
@@ -46,7 +47,7 @@ const MainDashboardPane = () => {
                     <div
                         className={cn(
                             ` w-full p-2 `,
-                            ` flex items-center justify-between gap-2 `
+                            ` flex items-center justify-between gap-2 z-20 `
                         )}
                     >
                         <UserPopoverMenu/>

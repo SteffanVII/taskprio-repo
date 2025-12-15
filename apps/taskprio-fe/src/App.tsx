@@ -18,6 +18,8 @@ import { Toaster } from './components/ui/sonner'
 import RouterProviderCustom from './components/others/shared/RouterProviderCustom'
 import ElectronCustomTitlebar from './components/others/shared/ElectronCustomTitlebar'
 import { useElectronStore_isElectron } from './stores/electron'
+import TaskTodoPageOverlay from './routes/private/taskTodo/taskTodoPageOverlay'
+import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from './stores/taskTodoPage'
 
 const queryClient = new QueryClient()
 
@@ -69,6 +71,10 @@ const routeObjects : RouteObject[] = [
 						]
 					},
 					{
+						path : "task_todo_overlay/:workspace_id",
+						element : <TaskTodoPageOverlay/>
+					},
+					{
 						path : "profile",
 						element : <ProfilePage/>
 					}
@@ -84,11 +90,12 @@ const routeObjects : RouteObject[] = [
 function App() {
 
 	const isElectron = useElectronStore_isElectron()
+	const taskTodoPageUIMode = useTaskTodoPageStore_uIMode()
 
 	return (
 		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
 			{
-				isElectron &&
+				(isElectron && (taskTodoPageUIMode !== ETaskTodoPageUIMode.OVERLAY && taskTodoPageUIMode !== ETaskTodoPageUIMode.WIDGET)) &&
 				<ElectronCustomTitlebar/>
 			}
 			<MousePositionProvider>
