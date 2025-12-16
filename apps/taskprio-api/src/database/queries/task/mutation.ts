@@ -350,14 +350,18 @@ export const addTaskToTodo = async (
                 .executeTakeFirstOrThrow();
         } else {
 
-            const lastDisplayOrder = await getTasksTodoLastDisplayOrder( workspaceId, userId, trx )
+            let displayOrderToUse = displayOrder;
+
+            if ( !displayOrderToUse ) {
+                displayOrderToUse = await getTasksTodoLastDisplayOrder( workspaceId, userId, trx ) + 100
+            }
 
             await trx.insertInto( "taskboard.task_todo_state" )
                 .values({
                     task_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})`,
                     user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
                     active : true,
-                    display_order : lastDisplayOrder + 100
+                    display_order : displayOrderToUse
                 })
                 .executeTakeFirstOrThrow();
         }

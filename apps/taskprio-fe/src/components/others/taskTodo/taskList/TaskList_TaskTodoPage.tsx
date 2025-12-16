@@ -68,6 +68,14 @@ const TaskList_TaskTodoPage = () => {
         setLoading(false)
     }
 
+    const handleOverlayModeOnClick = () => {
+        navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
+        updateTaskTodoPageStore({
+            uIMode : ETaskTodoPageUIMode.OVERLAY
+        })
+        window.electronAPI.makeWindowToTaskTodoOverlayMode()
+    }
+
     return (
         <div
             className={cn(
@@ -197,13 +205,7 @@ const TaskList_TaskTodoPage = () => {
                                         <Button
                                             size={"icon"}
                                             variant={"outline"}
-                                            onClick={() => {
-                                                navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
-                                                updateTaskTodoPageStore({
-                                                    uIMode : ETaskTodoPageUIMode.OVERLAY
-                                                })
-                                                window.electronAPI.makeWindowToTaskTodoOverlayMode()
-                                            }}
+                                            onClick={handleOverlayModeOnClick}
                                         >
                                             <Minimize2/>
                                         </Button>

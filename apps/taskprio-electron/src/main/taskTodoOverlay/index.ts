@@ -15,4 +15,14 @@ export const taskTodoOverlayMain = () => {
         }
     } )
 
+    ipcMain.on( EEvents.MAKE_WINDOW_TO_FULL_MODE, ( event : IpcMainEvent ) => {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        if ( window ) {
+            const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+            window.setResizable(true)
+            window.setSize( width - 40, height - 40 )
+            window.setPosition( 20, 20 )
+        }
+    } )
+
 }

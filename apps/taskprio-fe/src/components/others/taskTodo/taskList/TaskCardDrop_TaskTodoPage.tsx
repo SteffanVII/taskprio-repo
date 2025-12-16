@@ -48,6 +48,8 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
 
     const onDropHandler = () => {
 
+        console.log(displayOrder);
+
         if ( taskboardTaskTodo ) {
             if ( !topTaskId && !bottomTaskId ) {
                 moveTaskToTodoTrigger({

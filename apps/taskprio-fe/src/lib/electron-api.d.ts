@@ -9,7 +9,8 @@ declare global {
             onGoogleLoginSuccess : ( callback : ( credential : string, clientId : string ) => void ) => void,
             onConsoleLog : ( callback : ( value : string ) => void ) => void,
 
-            makeWindowToTaskTodoOverlayMode : () => void
+            makeWindowToTaskTodoOverlayMode : () => void,
+            makeWindowToFullMode : () => void
         }
     }
 }

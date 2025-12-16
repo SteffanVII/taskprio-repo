@@ -5,7 +5,7 @@ import React from "react"
 
 type TTagBadgeProps = {
     tag : TTag | TTaskTag,
-    size? : "sm" | "default"
+    size? : "sm" | "xs" | "default"
 } & React.ComponentProps<"div">
 
 const TagBadge : React.FC<TTagBadgeProps> = ({
@@ -18,10 +18,12 @@ const TagBadge : React.FC<TTagBadgeProps> = ({
     return (
         <div
             className={cn(
+                ` flex items-center `,
                 ` px-3 py-1 rounded-md `,
                 ` cursor-pointer transition-shadow `,
                 ` hover:shadow-lg hover:shadow-foreground/30 hover:z-10 `,
                 size === "sm" && ` text-xs font-extralight px-2 py-0.5 `,
+                size === "xs" && ` text-[0.7rem] font-extralight px-1 py-0.25 `,
                 className
             )}
             style={{
@@ -33,7 +35,8 @@ const TagBadge : React.FC<TTagBadgeProps> = ({
             <p
                 className={cn(
                     ` text-sm font-medium `,
-                    size === "sm" && ` text-normal font-normal `
+                    size === "sm" && ` text-normal font-normal `,
+                    size === "xs" && ` text-[0.7rem] font-normal `,
                 )}
             >{tag.tag_name}</p>
         </div>
