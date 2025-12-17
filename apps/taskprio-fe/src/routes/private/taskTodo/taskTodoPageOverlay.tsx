@@ -7,8 +7,8 @@ const TaskTodoPageOverlay = () => {
     return (
         <div
             className={cn(
-                ` size-full min-w-0 min-h-0 overflow-hidden `,
-                ` grid `,
+                ` size-full min-w-0 min-h-0 rounded-lg overflow-hidden `,
+                ` grid bg-background `,
             )}
             style={{
                 gridTemplateRows : "min-content 1fr"

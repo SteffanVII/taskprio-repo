@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS taskboard."task_todo_timer" (
 	workspace_id UUID NOT NULL REFERENCES workspace."workspace", -- Use for a container to group timers
     task_id UUID NOT NULL REFERENCES taskboard."task" ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES tp_user."user",
+	task_time_log_id UUID REFERENCES tp_taskboard."task_time_log",
 	last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- TODO - Implement auto pause
     start NOT NULL TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     stop TIMESTAMP DEFAULT NULL,

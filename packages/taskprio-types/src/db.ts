@@ -226,6 +226,7 @@ export interface TaskboardTaskTodoTimer {
   start: Generated<ColumnType<string, string | string, Date | string>>;
   stop: ColumnType<string, string | string, Date | string> | null;
   task_id: string;
+  task_time_log_id: string | null;
   user_id: string;
   workspace_id: string;
 }

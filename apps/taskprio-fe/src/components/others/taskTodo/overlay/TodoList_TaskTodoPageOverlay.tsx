@@ -6,7 +6,7 @@ import { useGlobalsStore_selectedWorkspace, useGlobalsStore_taskTodoPageShowAvai
 import { updateTaskTodoPageStore, useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_taskTodoPageCompactMode, useTaskTodoPageStore_timerCount, useTaskTodoPageStore_totalCurrentWorkTimeNumber, useTaskTodoPageStore_totalCurrentWorkTimeString, useTaskTodoPageStore_totalWorkTimeGoalNumber, useTaskTodoPageStore_userTaskTodoStateIsLoading } from "@/stores/taskTodoPage";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Moon, Pause, Play, Plus } from "lucide-react";
-import React, { useContext, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import TaskCardDrop from "../taskList/TaskCardDrop_TaskTodoPage";
 import { useNavigate } from "react-router";
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
@@ -21,7 +21,6 @@ const TodoList_TaskTodoPageOverlay = () => {
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const taskTodoPageCompactMode = useTaskTodoPageStore_taskTodoPageCompactMode()
     const userTaskTodoStateIsLoading = useTaskTodoPageStore_userTaskTodoStateIsLoading()
-    const taskTodoPageShowAvailableTasks = useGlobalsStore_taskTodoPageShowAvailableTasks()
 
     const {
         handleStartSession,
@@ -89,7 +88,8 @@ const TodoList_TaskTodoPageOverlay = () => {
                     className={cn(
                         `flex items-center justify-between gap-4`,
                         `px-4 mx-4`,
-                        `rounded-2xl border border-primary`
+                        `rounded-2xl border border-primary`,
+                        sessionActive && `shadow-2xl`
                     )}
                 >
                     <NumberFlowGroup>
@@ -147,8 +147,8 @@ const TodoList_TaskTodoPageOverlay = () => {
                 </div>
                 <div className="flex items-center gap-4 px-8" >
                     <Progress
-                        value={totalCurrentWorkTimeNumber}
-                        max={totalWorkTimeGoalNumber}
+                        value={(totalCurrentWorkTimeNumber / totalWorkTimeGoalNumber) * 100}
+                        // max={totalWorkTimeGoalNumber}
                     />
                     <NumberFlowGroup>
                         <div className="font-bold text-nowrap" >

@@ -303,7 +303,7 @@ export const logTaskTime = async (
         .returning([
             "time_spent",
             "created_at",
-            "task_time_log_id",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(task_time_log_id)`.as( "task_time_log_id" ),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(task_id)`.as( "task_id" ),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(user_id)`.as( "user_id" )
         ])

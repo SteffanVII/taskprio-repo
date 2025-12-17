@@ -11,9 +11,8 @@ import { useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/privat
 import { updateTaskboardDragStore } from "@/stores/taskboardDrag"
 
 import { TUserTaskTodoState } from "@repo/taskprio-types/src"
-import { CheckSquareIcon, Dot, EditIcon, TrashIcon } from "lucide-react"
+import { CheckSquareIcon, EditIcon, TrashIcon } from "lucide-react"
 import React, { useMemo, useState } from "react"
-import TagBadge from "../../shared/tag/TagBadge"
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage"
 import { Progress } from "@/components/ui/progress"
 
@@ -68,6 +67,10 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         }
     }
 
+    const handleCompleteOnClick = async () => {
+
+    }
+
     const handleRemoveOnClick = async () => {
         await removeTaskFromTodoTrigger({
             pathParameters : {
@@ -119,17 +122,14 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                 `origin-bottom`,
                 sessionActive && `
                     [&:first-child]:shadow-2xl [&:first-child]:shadow-primary/50 [&:first-child]:delay-300
-                    [&:not(:first-child)]:-translate-y-[1.2rem]
                     [&:not(:first-child)]:opacity-25
                     [&:not(:first-child)]:scale-90
                     [&:not(:first-child)]:delay-100
                     [&:not(:first-child)]:pointer-events-none
                     [&:not(:first-child)]:shadow
-                    [&:nth-child(2)]:-translate-y-[0.3rem]
                     [&:nth-child(2)]:scale-95
                     [&:nth-child(2)]:delay-0
                     [&:nth-child(2)]:opacity-75
-                    [&:nth-child(3)]:-translate-y-[1.1rem]
                     [&:nth-child(3)]:opacity-50
                 `,
                 sessionActive && currentWorkTime > workTimeGoal && `
@@ -196,6 +196,33 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                             `opacity-0 transition-opacity`,
                                             `group-hover:opacity-100`
                                         )}
+                                    ><CheckSquareIcon/></Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Complete Task</DialogTitle>
+                                        <DialogDescription>Completing this task will log the work time you spent on it.</DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                        <Button
+                                            onClick={handleCompleteOnClick}
+                                        >
+                                            Complete
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            <Dialog>
+                                <DialogTrigger asChild >
+                                    <Button
+                                        size={"icon-xs"}
+                                        variant={"ghost"}
+                                        className={cn(
+                                            `cursor-pointer`,
+                                            `rounded-lg`,
+                                            `opacity-0 transition-opacity`,
+                                            `group-hover:opacity-100`
+                                        )}
                                     ><TrashIcon className=" text-destructive " /></Button>
                                 </DialogTrigger>
                                 <DialogContent>
@@ -247,8 +274,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
             >
                 <div className="flex gap-4 items-center" >
                     <Progress
-                        value={totalWorkTime + (timerCount??0)}
-                        max={workTimeGoal}
+                        value={((totalWorkTime + (timerCount??0)) / workTimeGoal) * 100}
                     />
                     <div className=" flex gap-2 justify-end items-center text-nowrap text-muted-foreground " >
                         {/* <p className=" text-lg " >{ formatTaskTodoTimeSeconds(currentWorkTime + (timerCount ?? 0))} ⏱️</p>/ */}

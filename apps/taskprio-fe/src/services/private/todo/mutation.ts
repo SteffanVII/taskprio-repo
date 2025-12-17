@@ -1,10 +1,10 @@
 import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query"
-import { TFinishTaskTodoSessionPayload, TMoveTaskToTodoPayload, TRemoveTaskFromTodoPayload, TStartOrStopTaskTodoTimerPayload, TUpdateTaskTodoStatePayload } from "./types"
+import { TCompleteTaskTodoPayload, TFinishTaskTodoSessionPayload, TMoveTaskToTodoPayload, TRemoveTaskFromTodoPayload, TStartOrStopTaskTodoTimerPayload, TUpdateTaskTodoStatePayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 
-import { TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TCompleteTaskTodoRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
 import { produce } from "immer"
 import { AxiosError } from "axios"
 import { useTaskTodoPageStore_projectColumnsFilterState } from "@/stores/taskTodoPage"
@@ -221,6 +221,25 @@ export const useStartOrStopTaskTodoTimer = (options?: TUseStartOrStopTaskTodoTim
             //     queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id ]
             // })
             options?.onSuccess?.( data, variables, context )
+        },
+    })
+
+}
+
+type TUseCompleteTaskTodoOptions = UseMutationOptions<any, AxiosError, TCompleteTaskTodoPayload>
+
+export const useCompleteTaskTodo = ( options? : TUseCompleteTaskTodoOptions ) => {
+
+    return useMutation<any, AxiosError, TCompleteTaskTodoPayload>({
+        mutationFn : async ( payload ) => {
+            const response = await axiosInstance.post(
+                `/private/todo/complete/${payload.pathParameters.task_id}`
+            )
+            return response.data
+        },
+        ...options,
+        onSuccess(data, variables, context) {
+            options?.onSuccess?.(data, variables, context)
         },
     })
 

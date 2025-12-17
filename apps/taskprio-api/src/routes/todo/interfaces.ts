@@ -1,4 +1,4 @@
-import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams } from "@repo/taskprio-types";
+import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TCompleteTaskTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams } from "@repo/taskprio-types";
 import { IAuthenticatedRequest, IAuthenticatedWorkspaceMemberRequest } from "../../middlewares/interfaces.js";
 
 // Mutation
@@ -22,6 +22,10 @@ export interface IFinishTaskTodoSessionRequest extends IAuthenticatedWorkspaceMe
 
 export interface IStartOrStopTaskTodoTimerRequest extends IAuthenticatedWorkspaceMemberRequest {
     params : TStartOrStopTaskTodoTimerRequestPathParams
+}
+
+export interface ICompleteTaskTodoRequest extends IAuthenticatedWorkspaceMemberRequest {
+    params : TCompleteTaskTodoRequestPathParams 
 }
 
 // Query

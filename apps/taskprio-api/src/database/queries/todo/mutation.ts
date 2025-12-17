@@ -2,9 +2,10 @@ import { DB, TStartOrStopTaskTodoTimerResponseData, TTaskTodoTimer } from "@repo
 import { sql, Transaction } from "kysely";
 import { taskprioKysely } from "../../kysely/kysely.js";
 import { EDatabaseFunction } from "../../postgresql.js";
-import { logTaskTime, updateTaskTodoState } from "../task/mutation.js";
+import { logTaskTime } from "../task/mutation.js";
 import { jsonBuildObject } from "kysely/helpers/postgres";
 import dayjs from "dayjs";
+import { getActiveTaskTodoTimers } from "./query.js";
 
 
 export const finishTaskTodoSession = async (
@@ -56,16 +57,24 @@ export const finishTaskTodoSession = async (
             }, 0 )
 
             if ( totalWorkTime > 0 ) {
-                await logTaskTime(
+                const loggedTime = await logTaskTime(
                     todoState.task_id,
                     userId,
                     Math.floor(totalWorkTime / 60),
                     trx
                 )
-                await trx.deleteFrom( "taskboard.task_todo_timer" )
+                await trx.updateTable( "taskboard.task_todo_timer" )
                     .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})` )
                     .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                    .set({
+                        "task_time_log_id" : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${loggedTime.task_time_log_id})`
+                    })
                     .executeTakeFirstOrThrow()
+
+                // await trx.deleteFrom( "taskboard.task_todo_timer" )
+                //     .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})` )
+                //     .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                //     .executeTakeFirstOrThrow()
             }
         } ) )
 
@@ -123,6 +132,7 @@ export const startOrStopTaskTimer = async (
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_id)`.as("task_id"),
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.user_id)`.as("user_id"),
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.workspace_id)`.as("workspace_id"),
+                    sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_time_log_id)`.as("task_time_log_id"),
                     sql<string>`taskboard.task_todo_timer.start::text`.as("start"),
                     sql<string>`taskboard.task_todo_timer.stop::text`.as("stop"),
                     sql<string>`taskboard.task_todo_timer.last_seen::text`.as("last_seen")
@@ -131,6 +141,7 @@ export const startOrStopTaskTimer = async (
         } else {
             return await trx.updateTable( "taskboard.task_todo_timer" )
                 .where( "taskboard.task_todo_timer.stop", "is", null )
+                .where( "taskboard.task_todo_timer.task_time_log_id", "is", null )
                 .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
                 .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
                 .set({
@@ -141,6 +152,7 @@ export const startOrStopTaskTimer = async (
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_id)`.as("task_id"),
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.user_id)`.as("user_id"),
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.workspace_id)`.as("workspace_id"),
+                    sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_time_log_id)`.as("task_time_log_id"),
                     "taskboard.task_todo_timer.start",
                     "taskboard.task_todo_timer.stop",
                     "taskboard.task_todo_timer.last_seen",
@@ -156,10 +168,6 @@ export const startOrStopTaskTimer = async (
         return await taskprioKysely.transaction().execute( async trx => await query(trx) )
     }
 
-}
-
-export const stopTaskTimer = async () => {
-    
 }
 
 export const updateTaskTodoTimerLastSeen = async (
@@ -186,10 +194,67 @@ export const updateTaskTodoTimerLastSeen = async (
                 sql<string>`taskboard.task_todo_timer.last_seen::text`.as("last_seen"),
                 "taskboard.task_todo_timer.start",
                 "taskboard.task_todo_timer.stop",
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_time_log_id)`.as("task_time_log_id"),
                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_id)`.as("task_id"),
                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.user_id)`.as("user_id"),
                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.workspace_id)`.as("workspace_id"),
             ])
+            .executeTakeFirstOrThrow()
+    }
+
+    if ( trx ) {
+        return await query(trx)
+    } else {
+        return await taskprioKysely.transaction().execute( async trx => await query(trx) )
+    }
+
+}
+
+export const completeActiveTaskTodo = async (
+    taskId : string,
+    userId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+
+        const timers = await getActiveTaskTodoTimers(
+            taskId,
+            userId,
+            trx
+        )
+
+        const totalWorkTime = timers.reduce( (acc, curr) => {
+            const start = dayjs.utc( curr.start )
+            const stop = curr.stop === null ? dayjs.utc() : dayjs.utc(curr.stop)
+            const diff = stop.diff( start, "seconds" )
+            return acc + diff
+        }, 0 )
+
+        if ( totalWorkTime > 0 ) {
+            await logTaskTime(
+                taskId,
+                userId,
+                totalWorkTime,
+                trx
+            )
+        }
+
+        if ( timers.length > 0 ) {
+            await trx.deleteFrom( "taskboard.task_todo_timer" )
+                .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+                .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                .execute()
+        }
+
+        await trx.updateTable( "taskboard.task_todo_state" )
+            .set({
+                active : false
+            })
+            .where( "taskboard.task_todo_state.active", "=", true )
+            .where( "taskboard.task_todo_state.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+            .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+            .returningAll()
             .executeTakeFirstOrThrow()
     }
 

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_workspaceIsLoading, useGlobalsStore_workspaces } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_workspaces } from "@/stores/globals";
 import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
 import { TWorkspace } from "@repo/taskprio-types/src";
 import { FlipVerticalIcon, Home, Settings2 } from "lucide-react";

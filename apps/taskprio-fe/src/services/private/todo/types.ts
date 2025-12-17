@@ -1,4 +1,4 @@
-import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TCompleteTaskTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
 
 // Mutation
 
@@ -28,6 +28,13 @@ export type TFinishTaskTodoSessionPayload = {
 
 export type TStartOrStopTaskTodoTimerPayload = {
     pathParameters : TStartOrStopTaskTodoTimerRequestPathParams
+}
+
+export type TCompleteTaskTodoPayload = {
+    pathParameters : TCompleteTaskTodoRequestPathParams,
+    optimisticHelpers? : {
+        task : TUserTaskTodoState
+    }
 }
 
 // Query

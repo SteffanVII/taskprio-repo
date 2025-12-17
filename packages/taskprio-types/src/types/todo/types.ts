@@ -39,6 +39,10 @@ export type TStartOrStopTaskTodoTimerRequestPathParams = {
 
 export type TStartOrStopTaskTodoTimerResponseData = TTaskTodoTimer;
 
+export type TCompleteTaskTodoRequestPathParams = {
+    task_id : string
+}
+
 // Query
 export type TGetAvailableTasksByWorkspaceRequestPathParams = {
     workspace_id : string

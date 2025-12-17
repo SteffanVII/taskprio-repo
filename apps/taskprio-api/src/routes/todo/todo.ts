@@ -1,9 +1,9 @@
 import { Router, Response } from "express";
-import { IAddTaskToTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksByProjectRequest, IGetAvailableTasksByWorkspaceRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
+import { IAddTaskToTodoRequest, ICompleteTaskTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksByProjectRequest, IGetAvailableTasksByWorkspaceRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
 import { verifyProjectMemberMiddleware, verifyWorkspaceMemberMiddleware } from "../../middlewares/authentication.js";
 import { getTasksAssignedToUserByProjectId, getTasksAssignedToUserByWorkspaceId, getUserTaskTodoState } from "../../database/queries/task/query.js";
 import { addTaskToTodo, updateTaskTodoState } from "../../database/queries/task/mutation.js";
-import { finishTaskTodoSession, startOrStopTaskTimer } from "../../database/queries/todo/mutation.js";
+import { completeActiveTaskTodo, finishTaskTodoSession, startOrStopTaskTimer } from "../../database/queries/todo/mutation.js";
 import { taskTodoTimerHeartbeatTimeoutManager } from "../../initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 
 export function registerToDoRoutes( router : Router ) {
@@ -158,6 +158,30 @@ export function registerToDoRoutes( router : Router ) {
                     )
                     res.status(200).json(timer)
                 }
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    // Complete todo then remove
+    router.post(
+        "/complete/:task_id",
+        verifyWorkspaceMemberMiddleware,
+        async ( req : ICompleteTaskTodoRequest, res : Response ) => {
+
+            const { user_id } = req.user;
+            const { task_id } = req.params;
+
+            if ( !task_id ) {
+                res.status(401).json({ message : "Task ID is required" })
+            }
+
+            try {
+                await completeActiveTaskTodo( task_id, user_id );
+                res.status(200).json({ message : "Task todo completed" })
             } catch (error) {
                 console.log(error)
                 res.status(500).json({ message : "Internal server error" })
