@@ -42,6 +42,7 @@ export const getActiveTaskTodoTimers = async (
     return queryBuilder
         .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
         .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        .where( "taskboard.task_todo_timer.task_time_log_id", "is", null )
         .select([
             "taskboard.task_todo_timer.last_seen",
             "taskboard.task_todo_timer.start",

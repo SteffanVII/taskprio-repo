@@ -7,7 +7,7 @@ import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 import { formatTaskTodoTimeSeconds } from "@/lib/utils/durationFormatter"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
-import { useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
+import { useCompleteTaskTodo, useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
 import { updateTaskboardDragStore } from "@/stores/taskboardDrag"
 
 import { TUserTaskTodoState } from "@repo/taskprio-types/src"
@@ -37,6 +37,10 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     const {
         mutateAsync : removeTaskFromTodoTrigger
     } = useRemoveTaskFromTodo()
+
+    const {
+        mutateAsync : completeTaskTodoTrigger
+    } = useCompleteTaskTodo()
 
     const [ editMode, setEditMode ] = useState( false )
 
@@ -68,7 +72,14 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     }
 
     const handleCompleteOnClick = async () => {
-
+        await completeTaskTodoTrigger({
+            pathParameters : {
+                task_id : data.task_id
+            },
+            optimisticHelpers : {
+                task : data
+            }
+        })
     }
 
     const handleRemoveOnClick = async () => {

@@ -4,7 +4,7 @@ import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 
-import { TCompleteTaskTodoRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
 import { produce } from "immer"
 import { AxiosError } from "axios"
 import { useTaskTodoPageStore_projectColumnsFilterState } from "@/stores/taskTodoPage"
@@ -230,6 +230,9 @@ type TUseCompleteTaskTodoOptions = UseMutationOptions<any, AxiosError, TComplete
 
 export const useCompleteTaskTodo = ( options? : TUseCompleteTaskTodoOptions ) => {
 
+    const queryClient = useQueryClient()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+
     return useMutation<any, AxiosError, TCompleteTaskTodoPayload>({
         mutationFn : async ( payload ) => {
             const response = await axiosInstance.post(
@@ -238,8 +241,26 @@ export const useCompleteTaskTodo = ( options? : TUseCompleteTaskTodoOptions ) =>
             return response.data
         },
         ...options,
+        onMutate(variables) {
+            queryClient.setQueryData(
+                [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id],
+                (oldData: TGetUserTaskTodoStateResponseData) => produce(oldData, draft => {
+                    const index = draft.findIndex(task => task.task_id === variables.pathParameters.task_id)
+                    if (index !== -1) {
+                        draft.splice(index, 1)
+                    }
+                })
+            )
+        },
         onSuccess(data, variables, context) {
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+            })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_AVAILABLE_TASKS_BY_PROJECT.split, variables.optimisticHelpers?.task.project_id ]
+            })
             options?.onSuccess?.(data, variables, context)
+
         },
     })
 
