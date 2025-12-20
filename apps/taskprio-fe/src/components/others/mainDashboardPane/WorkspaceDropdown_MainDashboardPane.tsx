@@ -7,7 +7,7 @@ import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_
 
 import { CheckCircle2Icon, ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,6 +27,7 @@ type TTodoSessionActiveWarning = {
 const WorkspaceDropdown_MainDashboardPane = () => {
 
     const navigate = useNavigate()
+    const { pathname } = useLocation()
 
     const {
         pathChangeMethods
@@ -84,7 +85,14 @@ const WorkspaceDropdown_MainDashboardPane = () => {
             selectedProject : null,
             selectedTaskboard : null
         })
-        navigate(`/p/w/${workspace.workspace_id}`)
+        if ( pathname.includes("/tt") ) {
+            navigate(`/p/w/${workspace.workspace_id}/tt`)
+        }
+        else if ( pathname.includes("/workspace_settings") ) {
+            navigate(`/p/w/${workspace.workspace_id}/workspace_settings`)
+        } else {
+            navigate(`/p/w/${workspace.workspace_id}`)
+        }
         pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
     }
 

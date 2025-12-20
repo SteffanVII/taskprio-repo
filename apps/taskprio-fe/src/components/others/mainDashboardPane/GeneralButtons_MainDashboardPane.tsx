@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils"
 import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
-import { Settings2, Timer } from "lucide-react";
+import { ChartSpline, Notebook, Settings2 } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 const GeneralButtons = () => {
@@ -31,6 +31,16 @@ const GeneralButtons = () => {
             selectedTask : null
         })
     }
+    
+    const statisticsOnClick = () => {
+        navigate(`/p/w/${workspace_id}/statistics`)
+        updateGlobalsStore({
+            noProjects : false,
+            selectedProject : null,
+            selectedTaskboard : null,
+            selectedTask : null
+        })
+    }
 
     return (
         <div
@@ -38,6 +48,18 @@ const GeneralButtons = () => {
                 ` flex flex-col gap-1 px-2 `
             )}
         >
+            <Button
+                size={"sm"}
+                variant={ pathname.includes("/statistics") ? "default" : "ghost" }
+                className={cn(
+                    ` w-full justify-start gap-4 `,
+                )}
+                onClick={statisticsOnClick}
+                disabled={!selectedWorkpace}
+            >
+                <ChartSpline/>
+                Statistics
+            </Button>
             <Button
                 size={"sm"}
                 variant={ pathname.includes("/workspace_settings") ? "default" : "ghost" }
@@ -59,8 +81,8 @@ const GeneralButtons = () => {
                 onClick={taskTodoOnClick}
                 disabled={!selectedWorkpace}
             >
-                <Timer/>
-                My Tasks
+                <Notebook/>
+                Todo
             </Button>
         </div>
     )

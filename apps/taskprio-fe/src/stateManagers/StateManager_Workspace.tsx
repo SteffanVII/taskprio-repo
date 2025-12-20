@@ -50,11 +50,20 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
 
     // If no workspace_id is selected, navigate to the first workspace once the workspaces data are available
     useLayoutEffect(() => {
+        console.log(pathname);
+        console.log(workspace_id)
+        console.log(
+            pathname.includes("/workspace_settings") ||
+            pathname.includes("/tt") ||
+            pathname.includes("/profile") ||
+            pathname.includes("/task_todo_overlay")
+        );
         // If the user is on the workspace settings page or task todo apge, don't navigate to the first workspace
         if (
             pathname.includes("/workspace_settings") ||
             pathname.includes("/tt") ||
-            pathname.includes("/profile")
+            pathname.includes("/profile") ||
+            pathname.includes("/task_todo_overlay")
         ) return
 
         if ( !workspace_id ) {

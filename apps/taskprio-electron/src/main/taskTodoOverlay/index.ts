@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, IpcMainEvent, screen } from "electron"
+import { BrowserWindow, IpcMain, ipcMain, IpcMainEvent, screen } from "electron"
 import { EEvents } from "src/lib/enums"
 
 
@@ -22,6 +22,15 @@ export const taskTodoOverlayMain = () => {
             window.setResizable(true)
             window.setSize( width - 40, height - 40 )
             window.setPosition( 20, 20 )
+        }
+    } )
+
+    ipcMain.on( EEvents.MAKE_WINDOW_TO_TASK_TODO_FOCUS_MODE, ( event : IpcMainEvent ) => {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        if ( window ) {
+            window.setResizable(true)
+            window.setSize( 290, 110 )
+            window.setResizable(false)
         }
     } )
 

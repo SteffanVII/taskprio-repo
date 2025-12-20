@@ -2,11 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_workspaces } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces } from "@/stores/globals";
 import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
-import { TWorkspace } from "@repo/taskprio-types/src";
-import { FlipVerticalIcon, Home, Settings2 } from "lucide-react";
+import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";
+import { Home, Settings2 } from "lucide-react";
+import { useContext } from "react";
 import { useNavigate } from "react-router";
+import { WebSocketContext } from "../../websocket/WebsocketProvider";
 
 const Header_TaskTodoPageOverlay = () => {
 
@@ -14,12 +16,23 @@ const Header_TaskTodoPageOverlay = () => {
 
     const workspaces = useGlobalsStore_workspaces()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const user = useGlobalsStore_user()
+
+    const {
+        pathChangeMethods
+    } = useContext(WebSocketContext)
 
     const handleWorkspaceChange = ( workspace : TWorkspace ) => {
         if ( selectedWorkspace?.workspace_id === workspace.workspace_id ) return
+        const workspaceRole : EWorkspaceRole | null = workspace.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null
         updateGlobalsStore({
-            selectedWorkspace : workspace
+            selectedWorkspace : workspace,
+            workspaceRole,
+            selectedProject : null,
+            selectedTaskboard : null
         })
+        navigate(`/p/task_todo_overlay/${workspace.workspace_id}`)
+        pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
     }
 
     const handleBackHome = () => {
@@ -36,7 +49,7 @@ const Header_TaskTodoPageOverlay = () => {
         <div
             className={cn(
                 `flex justify-between `,
-                ` p-4 `
+                ` p-4 pb-0 `
             )}
         >
             <div
@@ -46,8 +59,14 @@ const Header_TaskTodoPageOverlay = () => {
             >
                 <Select
                     value={selectedWorkspace?.workspace_id}
+                    onValueChange={ value => {
+                        const foundValue = workspaces?.find( workspace => workspace.workspace_id === value )
+                        if ( foundValue ) {
+                            handleWorkspaceChange(foundValue)
+                        }
+                    } }
                 >
-                    <SelectTrigger className="!font-bold shadow-lg shadow-primary" >
+                    <SelectTrigger className="!font-bold rounded-full shadow-lg shadow-primary" >
                         <SelectValue placeholder="Workspace" />
                     </SelectTrigger>
                     <SelectContent>
@@ -56,7 +75,6 @@ const Header_TaskTodoPageOverlay = () => {
                                 <SelectItem
                                     key={workspace.workspace_id}
                                     value={workspace.workspace_id}
-                                    onClick={() => handleWorkspaceChange(workspace)}
                                 >{workspace.workspace_name}</SelectItem>
                             ) )
                         }
@@ -91,17 +109,17 @@ const Header_TaskTodoPageOverlay = () => {
                     </TooltipTrigger>
                     <TooltipContent>Home</TooltipContent>
                 </Tooltip>
-                <Tooltip>
+                {/* <Tooltip>
                     <TooltipTrigger asChild >
                         <Button
                             size={"icon-sm"}
                             variant={"ghost"}
                         >
-                            <FlipVerticalIcon/>
+                            <Eye/>
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>Focus Mode</TooltipContent>
-                </Tooltip>
+                </Tooltip> */}
             </div>
         </div>   
     )

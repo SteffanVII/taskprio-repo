@@ -10,7 +10,8 @@ declare global {
             onConsoleLog : ( callback : ( value : string ) => void ) => void,
 
             makeWindowToTaskTodoOverlayMode : () => void,
-            makeWindowToFullMode : () => void
+            makeWindowToFullMode : () => void,
+            makeWindowToFocusMode : () => void
         }
     }
 }

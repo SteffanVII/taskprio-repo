@@ -1,4 +1,4 @@
-import { TGetAvailableTasksByProjectRequestQuery, TUserTaskTodoState } from "@repo/taskprio-types/src";
+import { TGetAvailableTasksByProjectRequestQuery, TProjectWithUserAssignedTasks, TUserTaskTodoState } from "@repo/taskprio-types/src";
 import { Store, useStore } from "@tanstack/react-store";
 
 export enum ETaskTodoPageUIMode {
@@ -26,7 +26,9 @@ type TTaskTodoPageStore = {
 
     uIMode : ETaskTodoPageUIMode,
 
-    projectColumnsFilterState : Record<string, TGetAvailableTasksByProjectRequestQuery>
+    projectColumnsFilterState : Record<string, TGetAvailableTasksByProjectRequestQuery>,
+
+    selectedProjectList_availableTaskDrawer : TProjectWithUserAssignedTasks | null
 }
 
 const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
@@ -48,7 +50,10 @@ const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
 
     uIMode : ETaskTodoPageUIMode.FULL,
 
-    projectColumnsFilterState : {}
+    projectColumnsFilterState : {},
+
+    selectedProjectList_availableTaskDrawer : null
+    
 }
 
 const TaskTodoPageStore = new Store<TTaskTodoPageStore>(taskTodoPageStoreDefaultState)
@@ -80,5 +85,6 @@ export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore( Task
 export const useTaskTodoPageStore_projectColumnsFilterState = () => useStore( TaskTodoPageStore, store => store.projectColumnsFilterState)
 export const useTaskTodoPageStore_topTaskTodo = () => useStore( TaskTodoPageStore, store => store.topTaskTodo)
 export const useTaskTodoPageStore_uIMode = () => useStore( TaskTodoPageStore, store => store.uIMode)
+export const useTaskTodoPageStore_selectedProjectList_availableTaskDrawer = () => useStore( TaskTodoPageStore, store => store.selectedProjectList_availableTaskDrawer)
 
 export default useTaskTodoPageStore

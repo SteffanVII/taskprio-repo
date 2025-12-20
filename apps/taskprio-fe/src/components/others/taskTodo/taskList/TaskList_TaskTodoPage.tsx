@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_selectedWorkspace, useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
 
-import { Minimize2, PauseIcon, PlayIcon } from "lucide-react";
+import { Minimize2, Moon, PauseIcon, PlayIcon } from "lucide-react";
 import React, { useContext, useMemo, useState } from "react";
 import { 
     useTaskTodoPageStore_sessionActive,
@@ -198,7 +198,7 @@ const TaskList_TaskTodoPage = () => {
                                 variant={"secondary"}
                                 onClick={() => setFinishSessionDialogOpen(true)}
                                 disabled={userTaskTodoStateIsLoading || sessionActive || sortedUserTaskTodoState.length === 0}
-                            >Finish Session</Button>
+                            ><Moon/> Finish Session</Button>
                             <div className="flex items-center ml-auto" >
                                 <Tooltip>
                                     <TooltipTrigger asChild >
@@ -224,7 +224,7 @@ const TaskList_TaskTodoPage = () => {
                         className={cn(
                             `grow flex flex-col`,
                             `!size-full max-w-[30rem] mx-auto min-h-0 p-4`,
-                            sessionActive && `pt-[1.55rem] gap-[0.5rem] `
+                            sessionActive && `mt-4 gap-4`
                         )}
                     >
                         <React.Fragment>

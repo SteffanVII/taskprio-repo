@@ -45,7 +45,8 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
         // If the user is on the task todo page, don't navigate to the first project
         if (
             pathname.includes("/tt") ||
-            pathname.includes("/workspace_settings")
+            pathname.includes("/workspace_settings") ||
+            pathname.includes("/task_todo_overlay")
         ) return
         
         if ( !project_id ) {

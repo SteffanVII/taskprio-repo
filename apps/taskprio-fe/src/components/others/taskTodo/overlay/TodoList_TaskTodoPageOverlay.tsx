@@ -3,9 +3,9 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_selectedWorkspace, useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
-import { updateTaskTodoPageStore, useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_taskTodoPageCompactMode, useTaskTodoPageStore_timerCount, useTaskTodoPageStore_totalCurrentWorkTimeNumber, useTaskTodoPageStore_totalCurrentWorkTimeString, useTaskTodoPageStore_totalWorkTimeGoalNumber, useTaskTodoPageStore_userTaskTodoStateIsLoading } from "@/stores/taskTodoPage";
+import { ETaskTodoPageUIMode, updateTaskTodoPageStore, useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_taskTodoPageCompactMode, useTaskTodoPageStore_timerCount, useTaskTodoPageStore_totalCurrentWorkTimeNumber, useTaskTodoPageStore_totalCurrentWorkTimeString, useTaskTodoPageStore_totalWorkTimeGoalNumber, useTaskTodoPageStore_userTaskTodoStateIsLoading } from "@/stores/taskTodoPage";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
-import { Moon, Pause, Play, Plus } from "lucide-react";
+import { Eye, Moon, Pause, Play, Plus } from "lucide-react";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import TaskCardDrop from "../taskList/TaskCardDrop_TaskTodoPage";
 import { useNavigate } from "react-router";
@@ -13,6 +13,7 @@ import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_T
 import { Skeleton } from "@/components/ui/skeleton";
 import TaskTodoFinishSessionDialog from "../../dialogs/TaskTodoFinishSessionDialog";
 import TaskCard from "./TaskCard_TodoList_TaskTodoPageOverlay";
+import AvailableTasksDrawer_TaskTodoPageOverlay from "./AvailableTasksDrawer_TaskTodoPageOverlay";
 
 const TodoList_TaskTodoPageOverlay = () => {
 
@@ -35,6 +36,7 @@ const TodoList_TaskTodoPageOverlay = () => {
     const timerCount = useTaskTodoPageStore_timerCount()
 
     const [ finishSessionDialogOpen, setFinishSessionDialogOpen ] = useState(false)
+    const [ availableTasksDrawerOpen, setAvailableTasksDrawerOpen ] = useState<boolean>(false)
     const [ loading, setLoading ] = useState<boolean>(false)
 
     const taskListContainerRef = useRef<HTMLDivElement>(null)
@@ -46,6 +48,7 @@ const TodoList_TaskTodoPageOverlay = () => {
         })
         return returnValue
     }, [userTaskTodoState])
+
 
     const handleSessionButtonOnClick = async () => {
         setLoading(true)
@@ -63,32 +66,48 @@ const TodoList_TaskTodoPageOverlay = () => {
         }
     }
 
+    const handleFocusModeOnClick = () => {
+        if ( !!window.electronAPI ) {
+            updateTaskTodoPageStore({
+                uIMode : ETaskTodoPageUIMode.WIDGET
+            })
+            window.electronAPI.makeWindowToFocusMode()
+        }
+    }
+
     return (
         <div
             className={cn(
                 `grid`,
-                `min-h-full`,
-                `gap-4`
+                `min-h-full`
             )}
             style={{
-                gridTemplateRows : "min-content 1fr"
+                gridTemplateRows : "min-content 1fr min-content"
             }}
         >
             <TaskTodoFinishSessionDialog
                 open={finishSessionDialogOpen}
                 onOpenChange={setFinishSessionDialogOpen}
             />
+            <AvailableTasksDrawer_TaskTodoPageOverlay
+                open={availableTasksDrawerOpen}
+                setOpen={setAvailableTasksDrawerOpen}
+            />
             <div
                 className={cn(
-                    `flex flex-col gap-4`
+                    `flex flex-col`,
+                    `bg-gradient-to-t from-card to-card/0`,
+                    `border`,
+                    `mx-4 mt-4 rounded-3xl transition-colors duration-500`,
+                    sessionActive && `border-destructive/50 from-destructive/20`
                 )}
             >
                 {/* Timer */}
                 <div
                     className={cn(
                         `flex items-center justify-between gap-4`,
-                        `px-4 mx-4`,
-                        `rounded-2xl border border-primary`,
+                        `mx-4`,
+                        `rounded-2xl`,
                         sessionActive && `shadow-2xl`
                     )}
                 >
@@ -121,6 +140,12 @@ const TodoList_TaskTodoPageOverlay = () => {
                                 <Button
                                     size={"icon-lg"}
                                     variant={"outline"}
+                                    onClick={() => setFinishSessionDialogOpen(true)}
+                                    className={cn(
+                                        `transition-all duration-500`,
+                                        sessionActive && `!opacity-0 -translate-x-full`
+                                    )}
+                                    disabled={sessionActive || sortedUserTaskTodoState.length === 0}
                                 >
                                     <Moon/>
                                 </Button>
@@ -135,6 +160,7 @@ const TodoList_TaskTodoPageOverlay = () => {
                                 `hover:scale-125`
                             )}
                             onClick={handleSessionButtonOnClick}
+                            disabled={sortedUserTaskTodoState.length === 0}
                         >
                             {
                                 sessionActive ?
@@ -145,10 +171,10 @@ const TodoList_TaskTodoPageOverlay = () => {
                         </Button>
                     </div>
                 </div>
-                <div className="flex items-center gap-4 px-8" >
+                <div className="flex items-center gap-4 px-4 pb-2" >
                     <Progress
-                        value={(totalCurrentWorkTimeNumber / totalWorkTimeGoalNumber) * 100}
-                        // max={totalWorkTimeGoalNumber}
+                        value={totalCurrentWorkTimeNumber}
+                        max={totalWorkTimeGoalNumber}
                     />
                     <NumberFlowGroup>
                         <div className="font-bold text-nowrap" >
@@ -164,18 +190,13 @@ const TodoList_TaskTodoPageOverlay = () => {
                         </div>
                     </NumberFlowGroup>
                 </div>
-                <div className="flex items-center px-4" >
-                    <Button
-                        variant={"ghost"}
-                    ><Plus/> Add Task</Button>
-                </div>
             </div>
             <div
                 ref={taskListContainerRef}
                 className={cn(
                     `flex flex-col`,
                     `min-h-0 h-full max-h-full overflow-y-auto`,
-                    `mx-4`,
+                    `mx-4 mt-4`,
                     sessionActive && `overflow-y-hidden`
                 )}
             >
@@ -200,7 +221,6 @@ const TodoList_TaskTodoPageOverlay = () => {
                             <TaskCardDrop
                                 noTodoMessage
                                 displayOrder={0}
-                                fullSize
                             />
                         }
                         {
@@ -248,6 +268,45 @@ const TodoList_TaskTodoPageOverlay = () => {
                         }
                     </React.Fragment>
                 </div>
+            </div>
+            <div className="relative mx-4 h-[3.5rem] flex gap-2 items-center p-4 pt-0 mt-8" >
+                <Button
+                    variant={"outline"}
+                    size={"lg"}
+                    className={cn(
+                        `absolute left-0 top-0`,
+                        "w-[calc(50%-0.5rem)] rounded-full transition-all duration-500 delay-500",
+                        sessionActive && `translate-y-full opacity-0 delay-0`
+                    )}
+                    onClick={() => setAvailableTasksDrawerOpen(true)}
+                    ><Plus/> Add Task</Button>
+                <Button
+                    // variant={ sessionActive ? "outline" : "default"}
+                    variant={"outline"}
+                    size={"lg"}
+                    className={cn(
+                        `absolute top-0 right-0`,
+                        "w-[calc(50%-0.5rem)] rounded-full transition-all duration-500 delay-250",
+                        sessionActive && `w-full !border-green-300`
+                    )}
+                    onClick={handleFocusModeOnClick}
+                    >
+                        <div
+                            className={cn(
+                                `absolute top-0 left-0 size-full rounded-full`,
+                                `bg-gradient-to-t from-green-300/20 to-green-300/0`,
+                                `opacity-0 transition-opacity duration-500 delay-250`,
+                                sessionActive && `opacity-100`
+                            )}
+                        ></div>
+                        <Eye/> Focus Mode
+                    </Button>
+                {/* <Button
+                    variant={"outline"}
+                    size={"lg"}
+                    className="grow rounded-full"
+                    onClick={() => setAvailableTasksDrawerOpen(true)}
+                ><Moon/> End Session</Button> */}
             </div>
         </div>
     )

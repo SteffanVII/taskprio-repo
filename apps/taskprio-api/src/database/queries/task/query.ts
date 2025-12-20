@@ -430,6 +430,7 @@ export const getUserTaskTodoState = async (
                     ])
                     .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(taskboard.task.task_id::text)` )
                     .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                    .where( "taskboard.task_todo_timer.task_time_log_id", "is", null )
                     .orderBy( "taskboard.task_todo_timer.start", "desc" )
             ).as( "timers" ),
             "taskboard.task_todo_state.work_time_goal",

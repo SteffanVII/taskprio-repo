@@ -26,6 +26,7 @@ export const getAllActiveTaskTodoTimers = async (
 
     return await queryBuilder
         .where( "taskboard.task_todo_timer.stop", "is", null)
+        .where( "taskboard.task_todo_timer.task_time_log_id", "is", null )
         .selectAll()
         .execute()
 
@@ -47,9 +48,9 @@ export const getActiveTaskTodoTimers = async (
             "taskboard.task_todo_timer.last_seen",
             "taskboard.task_todo_timer.start",
             "taskboard.task_todo_timer.stop",
-            sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(taskboard.task_todo_timer.task_id)`.as("task_id"),
-            sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(taskboard.task_todo_timer.user_id)`.as("user_id"),
-            sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(taskboard.task_todo_timer.workspace_id)`.as("workspace_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_id)`.as("task_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.user_id)`.as("user_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.workspace_id)`.as("workspace_id"),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_todo_timer.task_time_log_id)`.as("task_time_log_id")
         ])
         .execute()

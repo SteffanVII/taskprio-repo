@@ -7,7 +7,7 @@ type TElectronStore = {
 
 const initialState : TElectronStore = {
     isElectron : false,
-    windowMaximize : true
+    windowMaximize : false
 }
 
 const ElectronStore = new Store<TElectronStore>(initialState)

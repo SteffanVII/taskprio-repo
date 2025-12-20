@@ -160,7 +160,7 @@ export const Taskboard = () => {
     return (
         <div
             className={cn(
-                `relative grow grid h-full min-w-0 min-h-0 max-h-full bg-accent/30 `
+                `relative grow grid h-full min-w-0 min-h-0 max-h-full`
             )}
             style={{
                 gridTemplateColumns : "1fr"
@@ -198,7 +198,7 @@ export const Taskboard = () => {
                 ref={scrollAreaRef}
                 className={cn(
                     ` relative`,
-                    ` size-full min-h-0 bg-background pt-6 overflow-x-auto `,
+                    ` size-full min-h-0 pt-6 overflow-x-auto `,
                     ` flex grow flex-nowrap rounded-tl-md `,
                     ` cursor-grab active:cursor-grabbing select-none `,
                     // ` border border-red-500 `

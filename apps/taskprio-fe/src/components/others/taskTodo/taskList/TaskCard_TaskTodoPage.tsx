@@ -7,7 +7,7 @@ import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 import { formatTaskTodoTimeSeconds } from "@/lib/utils/durationFormatter"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
-import { useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
+import { useCompleteTaskTodo, useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
 import { updateTaskboardDragStore } from "@/stores/taskboardDrag"
 
 import { TUserTaskTodoState } from "@repo/taskprio-types/src"
@@ -15,6 +15,7 @@ import { CheckSquareIcon, EditIcon, TrashIcon } from "lucide-react"
 import React, { useMemo, useState } from "react"
 import TagBadge from "../../shared/tag/TagBadge"
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage"
+import { Progress } from "@/components/ui/progress"
 
 type TTaskCardProps = {
     data : TUserTaskTodoState,
@@ -37,6 +38,10 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     const {
         mutateAsync : removeTaskFromTodoTrigger
     } = useRemoveTaskFromTodo()
+
+    const {
+        mutateAsync : completeTaskTodoTrigger
+    } = useCompleteTaskTodo()
 
     const [ editMode, setEditMode ] = useState( false )
 
@@ -78,6 +83,17 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         })
     }
 
+    const handleCompleteOnClick = async () => {
+        await completeTaskTodoTrigger({
+            pathParameters : {
+                task_id : data.task_id
+            },
+            optimisticHelpers : {
+                task : data
+            }
+        })
+    }
+
     const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
         e.stopPropagation()
         updateTaskboardDragStore({
@@ -109,7 +125,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     return (
         <div
             className={cn(
-                ` group `,
+                ` group relative `,
                 ` w-full max-w-[30rem] h-fit mx-auto `,
                 // ` bg-background border border-border rounded-2xl `,
                 ` bg-card border border-border shadow `,
@@ -146,59 +162,95 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                         backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
                     }}
                 >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
-                {
-                    !active &&
-                    <div className=" flex items-center gap-2 mt-2 mr-2 " >
-                        <Button
-                            size={"icon-sm"}
-                            variant={"outline"}
-                            className={cn(
-                                `cursor-pointer`,
-                                `opacity-0 transition-opacity`,
-                                `group-hover:opacity-100`,
-                                editMode && `opacity-100`
-                            )}
-                            onClick={handleEditModeOnClick}
-                        >
-                            {
-                                editMode ? <CheckSquareIcon className="size-[1.2rem] " /> : <EditIcon className=" size-[1.2rem] " />
-                            }
-                        </Button>
-                        {
-                            !editMode &&
-                            <>
-                                <Dialog>
-                                    <DialogTrigger asChild >
-                                        <Button
-                                            size={"icon-sm"}
-                                            variant={"outline"}
-                                            className={cn(
-                                                `cursor-pointer`,
-                                                `opacity-0 transition-opacity`,
-                                                `group-hover:opacity-100`
-                                            )}
-                                        ><TrashIcon className=" text-destructive size-[1.2rem] " /></Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Are you sure you want to remove this task?</DialogTitle>
-                                            <DialogDescription>Removing this task from your todo will discard the current work time you have tracked on it.</DialogDescription>
-                                        </DialogHeader>
-                                        <DialogFooter>
-                                            <Button
-                                                variant={"destructive"}
-                                                onClick={handleRemoveOnClick}
-                                            >
-                                                Yes, I'm sure.
-                                            </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-                            </>
-                        }
-                    </div>
-                }
             </div>
+            {
+                !active &&
+                <div
+                    className={cn(
+                        "absolute top-2 right-2 flex gap-1 items-center ",
+                        `p-1 px-3 rounded-full border bg-accent shadow-lg`,
+                        `opacity-0 transition-opacity`,
+                        `group-hover:opacity-100`,
+                    )}
+                >
+                    <Button
+                        size={"icon-xs"}
+                        variant={"ghost"}
+                        className={cn(
+                            `cursor-pointer`,
+                            `rounded-lg`,
+                            `opacity-0 transition-opacity`,
+                            `group-hover:opacity-100`,
+                            editMode && `opacity-100`
+                        )}
+                        onClick={handleEditModeOnClick}
+                    >
+                        {
+                            editMode ? <CheckSquareIcon/> : <EditIcon />
+                        }
+                    </Button>
+                    {
+                        !editMode &&
+                        <>
+                            <Dialog>
+                                <DialogTrigger asChild >
+                                    <Button
+                                        size={"icon-xs"}
+                                        variant={"ghost"}
+                                        className={cn(
+                                            `cursor-pointer`,
+                                            `rounded-lg`,
+                                            `opacity-0 transition-opacity`,
+                                            `group-hover:opacity-100`
+                                        )}
+                                    ><CheckSquareIcon/></Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Complete Task</DialogTitle>
+                                        <DialogDescription>Completing this task will log the work time you spent on it. Reminder: Manually completing tasks will exclude them from the session history</DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                        <Button
+                                            onClick={handleCompleteOnClick}
+                                        >
+                                            Complete
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            <Dialog>
+                                <DialogTrigger asChild >
+                                    <Button
+                                        size={"icon-xs"}
+                                        variant={"ghost"}
+                                        className={cn(
+                                            `cursor-pointer`,
+                                            `rounded-lg`,
+                                            `opacity-0 transition-opacity`,
+                                            `group-hover:opacity-100`
+                                        )}
+                                    ><TrashIcon className=" text-destructive " /></Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Are you sure you want to remove this task?</DialogTitle>
+                                        <DialogDescription>Removing this task from your todo will discard the current work time you have tracked on it.</DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                        <Button
+                                            variant={"destructive"}
+                                            onClick={handleRemoveOnClick}
+                                        >
+                                            Yes, I'm sure.
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        </>
+                    }
+                </div>
+            }
             <p
                 className={cn(
                     `text-sm font-medium p-3 `
@@ -206,64 +258,61 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
             >{data.task_title}</p>
             <div
                 className={cn(
-                    ` flex flex-col gap-4 `,
-                    ` px-4 `
+                    ` flex items-center gap-2 `,
+                    ` px-2 pr-4 pb-2 `
                 )}
             >
-                <div className=" flex gap-2 justify-end items-center " >
-                    {/* <p className=" text-lg " >{ formatTaskTodoTimeSeconds(currentWorkTime + (timerCount ?? 0))} ⏱️</p>/ */}
-                    <p className=" text-sm " >{ formatTaskTodoTimeSeconds(totalWorkTime + (timerCount ?? 0))}</p>/
-                    <p className=" text-sm " >{ formatTaskTodoTimeSeconds(workTimeGoal) }</p>
-                </div>
-                {/* {
-                    active &&
-                } */}
                 <div
                     className={cn(
+                        `w-full grow`,
                         `opacity-0 transition-opacity`,
                         active && `opacity-100`
                     )}
                 >
-                    <Slider
-                        value={[totalWorkTime + (timerCount??0)]}
-                        min={0}
+                    <Progress
+                        value={totalWorkTime + (timerCount??0)}
                         max={workTimeGoal}
-                        step={1}
-                        hideThumb
                     />
                 </div>
-                {
-                    editMode &&
-                    <>
-                        <div className={cn(
-                            `w-fit flex items-center gap-4`,
-                            `bg-primary/70 text-primary-foreground px-2 py-2 rounded-md`
-                        )} >
-                            <Switch
-                                id="deepWork"
-                                checked={deepWork}
-                                onCheckedChange={ () => {
-                                    if ( deepWork ) {
-                                        setWorkTimeGoal(900)
-                                        setDeepWork(false)
-                                    } else {
-                                        setWorkTimeGoal(3600)
-                                        setDeepWork(true)
-                                    }
-                                } }
-                            />
-                            <Label htmlFor="deepWork" className="!text-xs" >Deep Work</Label>
-                        </div>
-                        <Slider
-                            value={[workTimeGoal]}
-                            onValueChange={ value => setWorkTimeGoal(value[0]) }
-                            min={ deepWork ? 3600 : 900 }
-                            max={ deepWork ? 86400 : 3600 }
-                            step={ 300 }
-                        />
-                    </>
-                }
+                <div className=" flex gap-2 justify-end items-center text-nowrap " >
+                    {/* <p className=" text-lg " >{ formatTaskTodoTimeSeconds(currentWorkTime + (timerCount ?? 0))} ⏱️</p>/ */}
+                    <p className=" text-sm " >{ formatTaskTodoTimeSeconds(totalWorkTime + (timerCount ?? 0))}</p>/
+                    <p className=" text-sm " >{ formatTaskTodoTimeSeconds(workTimeGoal) }</p>
+                </div>
             </div>
+            {
+                editMode &&
+                <div
+                    className="flex flex-col gap-4 px-2 pb-2"
+                >
+                    <div className={cn(
+                        `w-fit flex items-center gap-4`,
+                        `bg-primary/70 text-primary-foreground px-2 py-2 rounded-md`
+                    )} >
+                        <Switch
+                            id="deepWork"
+                            checked={deepWork}
+                            onCheckedChange={ () => {
+                                if ( deepWork ) {
+                                    setWorkTimeGoal(900)
+                                    setDeepWork(false)
+                                } else {
+                                    setWorkTimeGoal(3600)
+                                    setDeepWork(true)
+                                }
+                            } }
+                        />
+                        <Label htmlFor="deepWork" className="!text-xs" >Deep Work</Label>
+                    </div>
+                    <Slider
+                        value={[workTimeGoal]}
+                        onValueChange={ value => setWorkTimeGoal(value[0]) }
+                        min={ deepWork ? 3600 : 900 }
+                        max={ deepWork ? 86400 : 3600 }
+                        step={ 300 }
+                    />
+                </div>
+            }
             {
                 data.tags.length > 0 && (
                     <div

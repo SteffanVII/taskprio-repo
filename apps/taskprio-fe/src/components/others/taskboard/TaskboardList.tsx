@@ -61,7 +61,7 @@ const TaskboardList = () => {
                 >
                     <TabsList
                         variant={"taskboardSelect"}
-                        className="bg-transparent pl-1"
+                        className="bg-transparent"
                     >
                         {
                             (showSkeleton && !taskboards) &&
@@ -171,6 +171,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
                         <Button
                             variant={"ghost"}
                             size={"icon-sm"}
+                            className="mr-[0.1rem]"
                         >
                             <EllipsisVertical/>
                         </Button>

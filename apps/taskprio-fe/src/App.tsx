@@ -20,6 +20,7 @@ import ElectronCustomTitlebar from './components/others/shared/ElectronCustomTit
 import { useElectronStore_isElectron } from './stores/electron'
 import TaskTodoPageOverlay from './routes/private/taskTodo/taskTodoPageOverlay'
 import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from './stores/taskTodoPage'
+import StatisticsPage from './routes/private/statistics/statisticsPage'
 
 const queryClient = new QueryClient()
 
@@ -67,11 +68,15 @@ const routeObjects : RouteObject[] = [
 							{
 								path : "workspace_settings",
 								element : <WorkspaceSettingsPage/>
+							},
+							{
+								path : "statistics",
+								element : <StatisticsPage/>
 							}
 						]
 					},
 					{
-						path : "task_todo_overlay/:workspace_id",
+						path : "task_todo_overlay/:workspace_id?",
 						element : <TaskTodoPageOverlay/>
 					},
 					{

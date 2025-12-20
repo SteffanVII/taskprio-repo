@@ -33,12 +33,11 @@ function TabsList({
   className,
   variant,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants> ) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
         tabsListVariants({ variant, className })
       )}
       {...props}
@@ -52,7 +51,7 @@ const tabsTriggerVariants = cva(
           variants : {
             variant : {
               default : "",
-              taskboardSelect : "!h-9 font-normal rounded-none px-4 border-0 border-x border-t !border-transparent !shadow-none hover:bg-accent/50 data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!border-border",
+              taskboardSelect : "!h-9 font-normal rounded-none px-3 border-0 border-x border-t !border-transparent !shadow-none hover:bg-accent/50 data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!border-border",
               button : "font-normal !text-foreground border-2 border-b-4 border-background rounded-md px-2 bg-accent !transition-all duration-100 hover:!bg-primary hover:!text-primary-foreground"
             }
           },
@@ -71,7 +70,6 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         tabsTriggerVariants({ variant, className })
       )}
       {...props}

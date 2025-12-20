@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils"
 import { useMoveTaskToTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
 import { useTaskboardDragStore_taskboardTaskTodoDrag } from "@/stores/taskboardDrag"
+import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from "@/stores/taskTodoPage"
 
 import { useState } from "react"
 
@@ -19,6 +20,8 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
     bottomTaskId,
     noTodoMessage,
 }) => {
+
+    const uIMode = useTaskTodoPageStore_uIMode()
 
     const { taskboardTaskTodo } = useTaskboardDragStore_taskboardTaskTodoDrag()
 
@@ -108,7 +111,11 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
         >
             {
                 noTodoMessage &&
-                <p className="absolute top-[4rem] w-full text-center font-semibold" >Drag and drop a task to start</p>
+                <p className="absolute top-[4rem] w-full text-center font-semibold" >
+                    {
+                        uIMode === ETaskTodoPageUIMode.OVERLAY ? "Add task to start" : "Drag and drop a task to start"
+                    }
+                </p>
             }
             <div
                 className={cn(

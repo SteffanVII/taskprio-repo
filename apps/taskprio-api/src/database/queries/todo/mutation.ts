@@ -7,7 +7,6 @@ import { jsonBuildObject } from "kysely/helpers/postgres";
 import dayjs from "dayjs";
 import { getActiveTaskTodoTimers } from "./query.js";
 
-
 export const finishTaskTodoSession = async (
     workspaceId : string,
     userId : string,
@@ -25,14 +24,22 @@ export const finishTaskTodoSession = async (
             .select( eb => [
                 "taskboard.task_todo_state.task_id",
                 "taskboard.task_todo_state.current_work_time",
+                "taskboard.task_todo_state.work_time_goal",
+                "taskboard.task.task_title",
+                "taskboard.task.task_depth",
+                "project.project.project_name",
+                "project.project.project_abbreviation",
+                "project.project.project_color",
+                sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
                 eb.fn.coalesce(
                     eb.fn.jsonAgg(
                         jsonBuildObject({
                           start : eb.ref( "taskboard.task_todo_timer.start" ),  
                           stop : eb.ref( "taskboard.task_todo_timer.stop" ),  
+                          last_seen : eb.ref( "taskboard.task_todo_timer.last_seen" ),  
                         })
                     ).orderBy( "taskboard.task_todo_timer.start", "desc" ),
-                    eb.val<Pick<TTaskTodoTimer, "start"| "stop">[]>([])
+                    eb.val<Pick<TTaskTodoTimer, "start" | "stop" | "last_seen">[]>([])
                 ).as( "timers" )
             ] )
             .where( "taskboard.task_todo_state.active", "=", true )
@@ -40,11 +47,30 @@ export const finishTaskTodoSession = async (
             .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
             .groupBy([
                 "taskboard.task_todo_state.task_id",
-                "taskboard.task_todo_state.current_work_time"
+                "taskboard.task_todo_state.current_work_time",
+                "taskboard.task_todo_state.work_time_goal",
+                "taskboard.task.task_title",
+                "taskboard.task.task_depth",
+                "project.project.project_id",
+                "project.project.project_name",
+                "project.project.project_abbreviation",
+                "project.project.project_color"
             ])
 
+        // Get active todo task state and related timers
         const taskTodoStates = await taskTodoStatesQuery.execute()
 
+        // Create session history
+        const createdSessionHistory = await trx.insertInto( "taskboard.task_todo_session_history" )
+            .values({
+                workspace_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`,
+                user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
+            })
+            .returningAll()
+            .executeTakeFirst()
+
+        
+        // Iterate to all the todo states
         await Promise.all( taskTodoStates.map( async (todoState) => {
 
             const timers = todoState.timers;
@@ -56,13 +82,55 @@ export const finishTaskTodoSession = async (
                 return acc + diff
             }, 0 )
 
+            // Create a snapshot of the todo task state
+            const createdTaskTodoStateSnapshot = await trx.insertInto( "taskboard.task_todo_state_snapshot" )
+                .values({
+                    task_todo_session_history_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdSessionHistory.task_todo_session_history_id})`,
+                    task_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})`,
+                    user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
+                    project_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.project_id})`,
+                    work_time_goal : todoState.work_time_goal,
+
+                    task_title : todoState.task_title,
+                    task_depth : todoState.task_depth,
+
+                    project_name : todoState.project_name,
+                    project_abbreviation : todoState.project_abbreviation,
+                    project_color : todoState.project_color
+                })
+                .returningAll()
+                .executeTakeFirst()
+
             if ( totalWorkTime > 0 ) {
+
+                // Create task time log
                 const loggedTime = await logTaskTime(
                     todoState.task_id,
                     userId,
                     Math.floor(totalWorkTime / 60),
                     trx
                 )
+                
+                // Create a copy of all the timers related to the todo state and then attach it to the todo state snapshot
+                await Promise.all( timers.map( async timer => {
+
+                    await trx.insertInto( "taskboard.task_todo_state_snapshot_timer" )
+                        .values({
+                            task_todo_state_snapshot_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdTaskTodoStateSnapshot.task_todo_state_snapshot_id})`,
+                            workspace_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`,
+                            user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
+                            task_time_log_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${loggedTime.task_time_log_id})`,
+                            last_seen : timer.last_seen,
+                            start : timer.start,
+                            stop : timer.stop
+                        })
+                        .execute()
+
+                } ) )
+
+
+                // Attach the task time log id to all timers related to the task todo state
+                // This will group the timers by the task time log
                 await trx.updateTable( "taskboard.task_todo_timer" )
                     .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})` )
                     .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
@@ -70,11 +138,6 @@ export const finishTaskTodoSession = async (
                         "task_time_log_id" : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${loggedTime.task_time_log_id})`
                     })
                     .executeTakeFirstOrThrow()
-
-                // await trx.deleteFrom( "taskboard.task_todo_timer" )
-                //     .where( "taskboard.task_todo_timer.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})` )
-                //     .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
-                //     .executeTakeFirstOrThrow()
             }
         } ) )
 
@@ -228,11 +291,13 @@ export const completeActiveTaskTodo = async (
             return acc + diff
         }, 0 )
 
+        console.log(totalWorkTime);
+
         if ( totalWorkTime > 0 ) {
             const loggedTime = await logTaskTime(
                 taskId,
                 userId,
-                totalWorkTime,
+                Math.floor(totalWorkTime / 60),
                 trx
             )
             await trx.updateTable( "taskboard.task_todo_timer" )

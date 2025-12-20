@@ -293,7 +293,6 @@ export const logTaskTime = async (
 
     const queryBuilder = trx ? trx : taskprioKysely;
 
-
     const createdTaskTimeLog = await queryBuilder.insertInto( "taskboard.task_time_log" )
         .values({
             task_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})`,

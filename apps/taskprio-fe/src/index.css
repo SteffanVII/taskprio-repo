@@ -251,6 +251,10 @@
   app-region: drag;
 }
 
+.electron-focus-mode-drag-area {
+  app-region: drag;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -18,6 +18,7 @@ import { Progress } from "@/components/ui/progress"
 
 type TTaskCardProps = {
     data : TUserTaskTodoState,
+    // active would be true if the session is active and this todo is the top todo
     active? : boolean,
     timerCount? : number,
 }
@@ -63,6 +64,15 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         }
         return 0
     }, [data])
+
+    const workTimeGoalExceeded = useMemo(() => {
+        return (totalWorkTime + ( active ? timerCount ?? 0 : 0 )) > workTimeGoal
+    }, [
+        totalWorkTime,
+        workTimeGoal,
+        timerCount,
+        active
+    ])
 
     const handleEditModeOnClick = () => {
         setEditMode(!editMode)
@@ -124,7 +134,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     return (
         <div
             className={cn(
-                ` group relative `,
+                ` group/taskcard relative `,
                 ` w-full max-w-[30rem] h-fit mx-auto `,
                 // ` bg-background border border-border rounded-2xl `,
                 ` bg-accent/70 border border-border`,
@@ -174,7 +184,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                         "absolute top-2 right-2 flex gap-1 items-center ",
                         `p-1 px-3 rounded-full border bg-accent shadow-lg`,
                         `opacity-0 transition-opacity`,
-                        `group-hover:opacity-100`,
+                        `group-hover/taskcard:opacity-100`,
                     )}
                 >
                     <Button
@@ -256,26 +266,6 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                 </div>
             }
 
-            {/* {
-                data.tags.length > 0 && (
-                    <div
-                        className={cn(
-                            ` flex flex-wrap gap-1 `,
-                            ` m-2 `
-                        )}
-                    >
-                        {
-                            data.tags.map( tag => (
-                                <TagBadge
-                                    tag={tag}
-                                    key={tag.tag_id}
-                                    size="xs"
-                                />
-                            ) )
-                        }
-                    </div>
-                )
-            } */}
             <div
                 className={cn(
                     ` flex flex-col gap-4 `,
@@ -285,7 +275,10 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
             >
                 <div className="flex gap-4 items-center" >
                     <Progress
-                        value={((totalWorkTime + (timerCount??0)) / workTimeGoal) * 100}
+                        key={workTimeGoalExceeded.toString()}
+                        destructive={workTimeGoalExceeded}
+                        value={totalWorkTime + (timerCount??0)}
+                        max={workTimeGoal}
                     />
                     <div className=" flex gap-2 justify-end items-center text-nowrap text-muted-foreground " >
                         {/* <p className=" text-lg " >{ formatTaskTodoTimeSeconds(currentWorkTime + (timerCount ?? 0))} ⏱️</p>/ */}

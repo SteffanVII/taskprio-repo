@@ -201,6 +201,13 @@ export interface TaskboardTaskTimeLogBase64 {
   user_id: string | null;
 }
 
+export interface TaskboardTaskTodoSessionHistory {
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
+  task_todo_session_history_id: Generated<string>;
+  user_id: string;
+  workspace_id: string;
+}
+
 export interface TaskboardTaskTodoState {
   active: Generated<boolean | null>;
   current_work_time: Generated<Int8>;
@@ -219,6 +226,30 @@ export interface TaskboardTaskTodoStateBase64 {
   task_id: string | null;
   user_id: string | null;
   work_time_goal: Int8 | null;
+}
+
+export interface TaskboardTaskTodoStateSnapshot {
+  project_abbreviation: string;
+  project_color: string;
+  project_id: string | null;
+  project_name: string;
+  task_depth: number;
+  task_id: string | null;
+  task_title: string;
+  task_todo_session_history_id: string;
+  task_todo_state_snapshot_id: Generated<string>;
+  user_id: string;
+  work_time_goal: Int8;
+}
+
+export interface TaskboardTaskTodoStateSnapshotTimer {
+  last_seen: Generated<ColumnType<string, string | string, Date | string> | null>;
+  start: ColumnType<string, string | string, Date | string>;
+  stop: ColumnType<string, string | string, Date | string>;
+  task_time_log_id: string | null;
+  task_todo_state_snapshot_id: string;
+  user_id: string;
+  workspace_id: string;
 }
 
 export interface TaskboardTaskTodoTimer {
@@ -346,8 +377,11 @@ export interface DB {
   "taskboard.task_tag_base64": TaskboardTaskTagBase64;
   "taskboard.task_time_log": TaskboardTaskTimeLog;
   "taskboard.task_time_log_base64": TaskboardTaskTimeLogBase64;
+  "taskboard.task_todo_session_history": TaskboardTaskTodoSessionHistory;
   "taskboard.task_todo_state": TaskboardTaskTodoState;
   "taskboard.task_todo_state_base64": TaskboardTaskTodoStateBase64;
+  "taskboard.task_todo_state_snapshot": TaskboardTaskTodoStateSnapshot;
+  "taskboard.task_todo_state_snapshot_timer": TaskboardTaskTodoStateSnapshotTimer;
   "taskboard.task_todo_timer": TaskboardTaskTodoTimer;
   "tp_user.user": TpUserUser;
   "tp_user.user_base64": TpUserUserBase64;

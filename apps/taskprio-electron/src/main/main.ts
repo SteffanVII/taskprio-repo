@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, ipcRenderer } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, ipcRenderer, screen } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { titlebarMain } from './titlebar';
@@ -23,15 +23,16 @@ if ( process.defaultApp ) {
 export let mainWindow : BrowserWindow;
 
 const createWindow = () => {
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    autoHideMenuBar : true,
-    titleBarStyle : "hidden",
-    webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-    }
+        autoHideMenuBar : true,
+        width : width - 40,
+        height : height - 40,
+        titleBarStyle : "hidden",
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+        }
     });
 
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -41,9 +42,10 @@ const createWindow = () => {
         path.join(__dirname, `../dist/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
         );
     }
+    
+    mainWindow.setPosition( 20, 20 )
 
     // mainWindow.webContents.openDevTools()
-    mainWindow.maximize()
 
     return mainWindow
 };
