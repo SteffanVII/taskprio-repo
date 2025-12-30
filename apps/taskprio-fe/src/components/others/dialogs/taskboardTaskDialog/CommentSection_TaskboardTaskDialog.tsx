@@ -11,6 +11,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import { useGlobalsStore_user } from "@/stores/globals";
 import dayjs from "dayjs";
 import { starterKitExtensions } from "@/lib/utils/shared";
+import Spinner from "../../Spinner";
 
 type TCommentSection_TaskboardTaskDialog = {
     taskId : string
@@ -103,9 +104,11 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
                 <Button
                     size={"icon"}
                     onClick={handleAddComment}
-                    isLoading={isAddingTaskComment}
+                    disabled={isAddingTaskComment}
                 >
-                    <SendHorizonalIcon/>
+                    {
+                        isAddingTaskComment ? <Spinner/> : <SendHorizonalIcon/>
+                    }
                 </Button>
             </div>
         </div>

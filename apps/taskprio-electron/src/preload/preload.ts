@@ -2,10 +2,10 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge } from "electron/renderer";
-import { titlebarAPI } from "./titlebar";
-import { authenticationAPI } from "./authentication";
-import { generalAPI } from "./general";
-import { taskTodoAPI } from "./taskTodoOverlay";
+import { generalAPI } from "./general/index.js";
+import { titlebarAPI } from "./titlebar/index.js";
+import { authenticationAPI } from "./authentication/index.js";
+import { taskTodoAPI } from "./taskTodoOverlay/index.js";
 
 contextBridge.exposeInMainWorld( "electronAPI", {
     ...generalAPI,

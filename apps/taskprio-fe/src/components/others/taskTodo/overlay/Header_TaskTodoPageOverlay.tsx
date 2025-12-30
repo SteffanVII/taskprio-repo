@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces } from "@/stores/globals";
-import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
 import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";
 import { Home, Settings2 } from "lucide-react";
 import { useContext } from "react";
 import { useNavigate } from "react-router";
 import { WebSocketContext } from "../../websocket/WebsocketProvider";
+import { StateManager_ElectronContext } from "@/stateManagers/StateManager_Electron";
+import { updateDialogsStore } from "@/stores/dialogs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Header_TaskTodoPageOverlay = () => {
 
@@ -21,6 +22,10 @@ const Header_TaskTodoPageOverlay = () => {
     const {
         pathChangeMethods
     } = useContext(WebSocketContext)
+
+    const {
+        switchToFullModeFromOverlayOrFocusMode
+    } = useContext(StateManager_ElectronContext)
 
     const handleWorkspaceChange = ( workspace : TWorkspace ) => {
         if ( selectedWorkspace?.workspace_id === workspace.workspace_id ) return
@@ -36,13 +41,15 @@ const Header_TaskTodoPageOverlay = () => {
     }
 
     const handleBackHome = () => {
-        updateTaskTodoPageStore({
-            uIMode : ETaskTodoPageUIMode.FULL
+        switchToFullModeFromOverlayOrFocusMode()
+    }
+
+    const handleOpenPreferencesDialog = () => {
+        updateDialogsStore({
+            overlayModePreferencesDialog : {
+                open : true
+            }
         })
-        window.electronAPI.makeWindowToFullMode()
-        setTimeout(() => {
-            navigate(-1)
-        }, 100)
     }
 
     return (
@@ -57,7 +64,11 @@ const Header_TaskTodoPageOverlay = () => {
                     `flex gap-4`
                 )}
             >
-                <Select
+                {/* <Select
+                    items={workspaces?.map( workspace => ({
+                        value : workspace.workspace_id,
+                        label : workspace.workspace_name
+                    }) )}
                     value={selectedWorkspace?.workspace_id}
                     onValueChange={ value => {
                         const foundValue = workspaces?.find( workspace => workspace.workspace_id === value )
@@ -66,20 +77,34 @@ const Header_TaskTodoPageOverlay = () => {
                         }
                     } }
                 >
-                    <SelectTrigger className="!font-bold rounded-full shadow-lg shadow-primary" >
-                        <SelectValue placeholder="Workspace" />
+                    <SelectTrigger className="!font-bold">
+                        <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
                         {
                             workspaces?.map( workspace => (
                                 <SelectItem
-                                    key={workspace.workspace_id}
+                                    key={workspace.workspace_name}
                                     value={workspace.workspace_id}
                                 >{workspace.workspace_name}</SelectItem>
                             ) )
                         }
                     </SelectContent>
-                </Select>
+                </Select> */}
+                <Tooltip>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                size={"icon-sm"}
+                                variant={"ghost"}
+                                onClick={handleOpenPreferencesDialog}
+                            >
+                                <Settings2/>
+                            </Button>
+                        }
+                    />
+                    <TooltipContent>Preferences</TooltipContent>
+                </Tooltip>
             </div>
             <div
                 className={cn(
@@ -87,39 +112,19 @@ const Header_TaskTodoPageOverlay = () => {
                 )}
             >
                 <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            size={"icon-sm"}
-                            variant={"ghost"}
-                        >
-                            <Settings2/>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Preferences</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            size={"icon-sm"}
-                            variant={"ghost"}
-                            onClick={handleBackHome}
-                        >
-                            <Home/>
-                        </Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                size={"icon-sm"}
+                                variant={"ghost"}
+                                onClick={handleBackHome}
+                            >
+                                <Home/>
+                            </Button>
+                        }
+                    />
                     <TooltipContent>Home</TooltipContent>
                 </Tooltip>
-                {/* <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            size={"icon-sm"}
-                            variant={"ghost"}
-                        >
-                            <Eye/>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Focus Mode</TooltipContent>
-                </Tooltip> */}
             </div>
         </div>   
     )

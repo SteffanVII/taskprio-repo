@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useReactivateTaskboard } from "@/services/private/taskboard/mutation";
 import { updateDialogsStore, useDialogsStore_reactivateTaskboardDialog } from "@/stores/dialogs";
+import Spinner from "../Spinner";
 
 const ReactivateTaskboardDialog = () => {
 
@@ -55,8 +56,10 @@ const ReactivateTaskboardDialog = () => {
                 <DialogFooter>
                     <Button
                         onClick={handleReactivateTaskboard}
-                        isLoading={reactivateTaskboardIsPending}
-                    >Yes, I'm sure</Button>
+                        disabled={reactivateTaskboardIsPending}
+                    >
+                        {reactivateTaskboardIsPending ? <Spinner/> : "Yes, I'm sure"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

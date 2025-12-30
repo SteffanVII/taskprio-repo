@@ -9,6 +9,7 @@ import { useGlobalsStore_selectedProject } from "@/stores/globals";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import Spinner from "../Spinner";
 
 const createTaskboardFormSchema = z.object({
     taskboard_name : z.string().min(1, "Taskboard name is required")
@@ -92,12 +93,13 @@ const CreateTaskboardDialog = () => {
                 </Form>
                 <DialogFooter>
                     <Button
-                        disabled={title.length < 1}
-                        isLoading={createTaskboardIsPending}
+                        disabled={title.length < 1 || createTaskboardIsPending}
                         onClick={() => {
                             form.handleSubmit(onSubmit)()
                         }}
-                    >Create</Button>
+                    >
+                        {createTaskboardIsPending ? <Spinner/> : "Create"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

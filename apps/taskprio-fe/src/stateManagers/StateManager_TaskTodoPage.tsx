@@ -73,7 +73,9 @@ const StateManager_TaskTodoPage : React.FC<TStateManager_TaskTodoPage> = ({
 
     const topTaskTodo = useMemo<TUserTaskTodoState | null>(() => {
         if ( userTaskTodoState && userTaskTodoState.length > 0 ) {
-            const returnValue = {...[...userTaskTodoState!].sort( ( a, b ) => b.display_order - a.display_order )[0]!}
+            const arr = [...userTaskTodoState!].filter( taskTodo => !taskTodo.completed ).sort( ( a, b ) => b.display_order - a.display_order )
+            if ( arr.length === 0 ) return null
+            const returnValue = {...arr[0]}
             if ( returnValue ) {
                 returnValue.current_work_time = ( Number(returnValue.current_work_time) + timerCount ).toString()
             }

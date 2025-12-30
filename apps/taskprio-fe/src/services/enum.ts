@@ -33,6 +33,7 @@ export enum EQueryKeys {
     GET_USER_WORKSPACES = "get_user_workspaces",
     GET_WORKSPACE_MEMBER = "get_user_workspace/get_member",
     GET_WORKSPACE_INACTIVE_PROJECTS = "get_user_workspace/get_inactive_projects",
+    GET_WORKSPACE_SESSION_HISTORIES = "get_user_workspace/get_workspace_session_histories",
 
     // Todo
     GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE = "get_tasks_assigned_to_user_by_workspace",

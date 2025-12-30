@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS taskboard."task_todo_state" (
 	current_work_time BIGINT NOT NULL DEFAULT 0, -- Depracated
 	display_order DOUBLE PRECISION NOT NULL,
 	active BOOLEAN DEFAULT true,
+	completed BOOLEAN DEFAULT false,
 	session_started_at TIMESTAMP DEFAULT NULL, -- Depracated
 
 	PRIMARY KEY (task_id, user_id)
@@ -64,6 +65,8 @@ CREATE TABLE IF NOT EXISTS taskboard."task_todo_state_snapshot" (
 	user_id UUID NOT NULL REFERENCES tp_user."user" ON DELETE CASCADE,
 	project_id UUID REFERENCES project."project",
 	work_time_goal BIGINT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	completed BOOLEAN DEFAULT false,
 
 	-- Task data
 	task_title VARCHAR(255) NOT NULL,
@@ -80,6 +83,7 @@ DROP TABLE IF EXISTS taskboard."task_todo_state_snapshot_timer" CASCADE;
 CREATE TABLE IF NOT EXISTS taskboard."task_todo_state_snapshot_timer" (
 	task_todo_state_snapshot_id UUID NOT NULL REFERENCES taskboard."task_todo_state_snapshot" ON DELETE CASCADE,
 	workspace_id UUID NOT NULL REFERENCES workspace."workspace",
+	task_id UUID REFERENCES taskboard."task",
     user_id UUID NOT NULL REFERENCES tp_user."user" ON DELETE CASCADE,
 	task_time_log_id UUID REFERENCES taskboard."task_time_log",
 	last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

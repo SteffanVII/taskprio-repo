@@ -32,19 +32,21 @@ export const TaskboardSectionMenu : React.FC<TTaskboardSectionMenuProps> = ({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className=" size-8 "
-                >
-                    <Ellipsis className=" size-4 " />
-                </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+                render={
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className=" size-8 "
+                    >
+                        <Ellipsis className=" size-4 " />
+                    </Button>
+                }
+            />
             <DropdownMenuContent>
                 <DropdownMenuItem
                     className=" flex items-center gap-2 "
-                    onSelect={openRenameModal}
+                    onClick={openRenameModal}
                 >
                     Rename
                     <Pencil className=" size-4 ml-auto " />

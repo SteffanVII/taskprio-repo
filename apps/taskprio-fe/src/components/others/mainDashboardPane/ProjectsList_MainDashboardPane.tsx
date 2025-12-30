@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { updateDialogsStore } from "@/stores/dialogs"
 import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_user, useGlobalsStore_workspaceIsLoading, useGlobalsStore_workspaceRole } from "@/stores/globals"
 
 import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
+import Cookies from "js-cookie"
 import { Plus } from "lucide-react"
 import { useMemo } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
@@ -50,6 +52,8 @@ const ProjectsList_MainDashboardPane = () => {
         } else {
             navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
         }
+        localStorage.setItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id )
+
     }
 
     return (

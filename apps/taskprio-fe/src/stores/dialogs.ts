@@ -52,6 +52,9 @@ export type TDialogStore = {
     },
     taskboardTaskTrashSheet : {
         open : boolean
+    },
+    overlayModePreferencesDialog : {
+        open : boolean
     }
 }
 
@@ -105,6 +108,9 @@ const initialState : TDialogStore = {
         task : null
     },
     taskboardTaskTrashSheet : {
+        open : false
+    },
+    overlayModePreferencesDialog : {
         open : false
     }
 }
@@ -181,5 +187,7 @@ export const useDialogsStore_taskAssignerDialog = () => {
 export const useDialogsStore_taskboardTaskTrashSheet = () => {
     return useStore( DialogsStore, store => store.taskboardTaskTrashSheet )
 }
+
+export const useDialogsStore_overlayModePreferencesDialog = () => useStore( DialogsStore, store => store.overlayModePreferencesDialog )
 
 export default DialogsStore;

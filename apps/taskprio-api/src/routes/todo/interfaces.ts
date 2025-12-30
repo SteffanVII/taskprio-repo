@@ -1,4 +1,4 @@
-import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TCompleteTaskTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams } from "@repo/taskprio-types";
+import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TCommitTaskTodoRequestPathParams, TCompleteTaskTodoRequestBody, TCompleteTaskTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TGetWorkspaceSessionHistoriesRequestQuery, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams } from "@repo/taskprio-types";
 import { IAuthenticatedRequest, IAuthenticatedWorkspaceMemberRequest } from "../../middlewares/interfaces.js";
 
 // Mutation
@@ -24,8 +24,13 @@ export interface IStartOrStopTaskTodoTimerRequest extends IAuthenticatedWorkspac
     params : TStartOrStopTaskTodoTimerRequestPathParams
 }
 
+export interface ICommitTaskTodoRequest extends IAuthenticatedWorkspaceMemberRequest {
+    params : TCommitTaskTodoRequestPathParams 
+}
+
 export interface ICompleteTaskTodoRequest extends IAuthenticatedWorkspaceMemberRequest {
-    params : TCompleteTaskTodoRequestPathParams 
+    params : TCompleteTaskTodoRequestPathParams,
+    body : TCompleteTaskTodoRequestBody
 }
 
 // Query
@@ -40,4 +45,8 @@ export interface IGetUserTaskTodoStateRequest extends IAuthenticatedRequest {
 export interface IGetAvailableTasksByProjectRequest extends IAuthenticatedRequest {
     params : TGetAvailableTasksByProjectRequestPathParams,
     query : TGetAvailableTasksByProjectRequestQuery
+}
+
+export interface IGetWorkspaceSessionHistoriesRequest extends IAuthenticatedWorkspaceMemberRequest {
+    query : TGetWorkspaceSessionHistoriesRequestQuery
 }

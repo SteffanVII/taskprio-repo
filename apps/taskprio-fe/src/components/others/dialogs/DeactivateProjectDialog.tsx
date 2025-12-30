@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { toast } from "sonner";
+import Spinner from "../Spinner";
 
 const DeactivateProjectDialog = () => {
 
@@ -108,8 +109,10 @@ const DeactivateProjectDialog = () => {
                         onClick={() => {
                             form.handleSubmit(onSubmit)()
                         }}
-                        isLoading={deactivateProjectIsPending}
-                    >Deactivate</Button>
+                        disabled={deactivateProjectIsPending}
+                    >
+                        {deactivateProjectIsPending ? <Spinner/> : "Deactivate"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

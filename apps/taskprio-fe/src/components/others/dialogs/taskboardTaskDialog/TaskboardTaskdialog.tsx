@@ -170,7 +170,7 @@ export const TaskboardTaskDialog = () => {
             } }
         >
             <DialogContent
-                noCloseButton={ true }
+                showCloseButton={ false }
                 className={cn(
                     ` !max-w-screen !max-h-[calc(100vh-4rem)] min-h-0 w-fit h-fit `,
                     ` shadow-none !border-none !bg-card !p-0 !outline-none `
@@ -231,14 +231,17 @@ export const TaskboardTaskDialog = () => {
                                         setMoveToTrashReady( open )
                                     }}
                                 >
-                                    <DialogTrigger asChild >
-                                        <Button
-                                            variant={"ghost"}
-                                            size={"icon"}
-                                            className="ml-auto text-destructive"
-                                        >
-                                            <Trash2/>
-                                        </Button>
+                                    <DialogTrigger
+                                        render={
+                                            <Button
+                                                variant={"ghost"}
+                                                size={"icon"}
+                                                className="ml-auto text-destructive"
+                                            >
+                                                <Trash2/>
+                                            </Button>
+                                        }
+                                    >
                                     </DialogTrigger>
                                     <DialogContent>
                                         <DialogHeader>
@@ -250,10 +253,10 @@ export const TaskboardTaskDialog = () => {
                                         <DialogFooter>
                                             <Button
                                                 variant={"destructive"}
-                                                isLoading={moveTaskToTrashIsPending}
+                                                disabled={moveTaskToTrashIsPending}
                                                 onClick={moveTaskToTrashHandler}
                                             >
-                                                Yes, move to trash
+                                                { moveTaskToTrashIsPending ? <Spinner/> : "Yes, move to trash" }
                                             </Button>
                                         </DialogFooter>
                                     </DialogContent>

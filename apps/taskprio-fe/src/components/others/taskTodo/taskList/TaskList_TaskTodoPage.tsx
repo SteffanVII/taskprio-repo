@@ -1,20 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_selectedWorkspace, useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
+import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
 
-import { Minimize2, Moon, PauseIcon, PlayIcon } from "lucide-react";
+import { Eye, Minimize2, Moon, PauseIcon, PlayIcon } from "lucide-react";
 import React, { useContext, useMemo, useState } from "react";
 import { 
     useTaskTodoPageStore_sessionActive,
-    useTaskTodoPageStore_totalCurrentWorkTimeString,
     useTaskTodoPageStore_timerCount, 
     useTaskTodoPageStore_userTaskTodoStateIsLoading,
     useTaskTodoPageStore_totalCurrentWorkTimeNumber,
     useTaskTodoPageStore_totalWorkTimeGoalNumber,
     useTaskTodoPageStore_taskTodoPageCompactMode,
     updateTaskTodoPageStore,
-    ETaskTodoPageUIMode
 } from "@/stores/taskTodoPage";
 import TaskTodoFinishSessionDialog from "../../dialogs/TaskTodoFinishSessionDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,13 +22,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Slider } from "@/components/ui/slider";
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
-import { useNavigate } from "react-router";
+import { StateManager_ElectronContext } from "@/stateManagers/StateManager_Electron";
+import Spinner from "../../Spinner";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 
 const TaskList_TaskTodoPage = () => {
 
-    const navigate = useNavigate()
-
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const taskTodoPageCompactMode = useTaskTodoPageStore_taskTodoPageCompactMode()
     const userTaskTodoStateIsLoading = useTaskTodoPageStore_userTaskTodoStateIsLoading()
     const taskTodoPageShowAvailableTasks = useGlobalsStore_taskTodoPageShowAvailableTasks()
@@ -41,8 +39,13 @@ const TaskList_TaskTodoPage = () => {
         userTaskTodoState
     } = useContext(StateManager_TaskTodoPageContext)
 
+    const {
+        switchToOverlayModeFromFullMode,
+        switchToFocusModeFromFullMode
+    } = useContext(StateManager_ElectronContext)
+
     const sessionActive = useTaskTodoPageStore_sessionActive()
-    const totalCurrentWorkTimeString = useTaskTodoPageStore_totalCurrentWorkTimeString()
+    // const totalCurrentWorkTimeString = useTaskTodoPageStore_totalCurrentWorkTimeString()
     const totalCurrentWorkTimeNumber = useTaskTodoPageStore_totalCurrentWorkTimeNumber()
     const totalWorkTimeGoalNumber = useTaskTodoPageStore_totalWorkTimeGoalNumber()
     const timerCount = useTaskTodoPageStore_timerCount()
@@ -51,11 +54,15 @@ const TaskList_TaskTodoPage = () => {
     const [ loading, setLoading ] = useState<boolean>(false)
 
     const sortedUserTaskTodoState = useMemo(() => {
-        const returnValue = [...(userTaskTodoState || [])!].sort( ( a, b ) => b.display_order - a.display_order )
+        const returnValue = [...(userTaskTodoState || [])!].filter( todo => !todo.completed ).sort( ( a, b ) => b.display_order - a.display_order )
         updateTaskTodoPageStore({
             topTaskTodo : returnValue[0] ?? null
         })
         return returnValue
+    }, [userTaskTodoState])
+
+    const completedUseTaskTodoState = useMemo(() => {
+        return [...(userTaskTodoState || [])!].filter( todo => todo.completed )
     }, [userTaskTodoState])
 
     const handleSessionButtonOnClick = async () => {
@@ -68,14 +75,6 @@ const TaskList_TaskTodoPage = () => {
         setLoading(false)
     }
 
-    const handleOverlayModeOnClick = () => {
-        navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
-        updateTaskTodoPageStore({
-            uIMode : ETaskTodoPageUIMode.OVERLAY
-        })
-        window.electronAPI.makeWindowToTaskTodoOverlayMode()
-    }
-
     return (
         <div
             className={cn(
@@ -85,6 +84,13 @@ const TaskList_TaskTodoPage = () => {
                 (taskTodoPageShowAvailableTasks && taskTodoPageCompactMode) && `-translate-x-full`
             )}
         >
+            <div
+                className={cn(
+                    "absolute z-[1] w-[20rem] h-[5rem] scale-50 top-[18rem] left-1/2 translate-x-[-50%] shadow-[0_3rem_14rem_0.7rem] shadow-primary bg-transparent",
+                    `opacity-0 transition-all duration-[3000ms]`,
+                    sessionActive && `opacity-100 scale-100`
+                )}
+            ></div>
             <TaskTodoFinishSessionDialog
                 open={finishSessionDialogOpen}
                 onOpenChange={setFinishSessionDialogOpen}
@@ -102,7 +108,7 @@ const TaskList_TaskTodoPage = () => {
                 <div
                     className={cn(
                         ` flex flex-col justify-between `,
-                        ` w-full max-w-[30rem] h-fit min-h-0 m-4 mx-auto p-4 pt-[4rem] `,
+                        ` w-full max-w-[30rem] h-fit min-h-0 m-4 mx-auto p-4 pt-[4rem] z-[2] `,
                     )}
                 >
                     <div
@@ -115,48 +121,50 @@ const TaskList_TaskTodoPage = () => {
                         className=" flex items-center gap-4 "
                     >
                         <Tooltip>
-                            <TooltipTrigger asChild >
-                                <NumberFlowGroup>
-                                    <div className="text-5xl font-bold" >
-                                        <NumberFlow
-                                            value={ Math.floor( totalCurrentWorkTimeNumber / 3600 ) }
-                                        />
-                                        <NumberFlow
-                                            prefix=":"
-                                            value={Math.floor((totalCurrentWorkTimeNumber % 3600) / 60)}
-                                            digits={{ 1: { max: 5 } }}
-                                            format={{ minimumIntegerDigits: 2 }}
+                            <TooltipTrigger
+                                render={
+                                    <NumberFlowGroup>
+                                        <div className="text-5xl font-bold" >
+                                            <NumberFlow
+                                                value={ Math.floor( totalCurrentWorkTimeNumber / 3600 ) }
                                             />
-                                        <NumberFlow
-                                            prefix=":"
-                                            value={totalCurrentWorkTimeNumber % 60}
-                                            digits={{ 1: { max: 5 } }}
-                                            format={{ minimumIntegerDigits: 2 }}
-                                        />
-                                    </div>
-                                </NumberFlowGroup>
-                                {/* <p className=" flex gap-4 text-3xl font-bold " ><span>{ totalCurrentWorkTimeString }</span></p> */}
-                            </TooltipTrigger>
+                                            <NumberFlow
+                                                prefix=":"
+                                                value={Math.floor((totalCurrentWorkTimeNumber % 3600) / 60)}
+                                                digits={{ 1: { max: 5 } }}
+                                                format={{ minimumIntegerDigits: 2 }}
+                                                />
+                                            <NumberFlow
+                                                prefix=":"
+                                                value={totalCurrentWorkTimeNumber % 60}
+                                                digits={{ 1: { max: 5 } }}
+                                                format={{ minimumIntegerDigits: 2 }}
+                                            />
+                                        </div>
+                                    </NumberFlowGroup>
+                                }
+                            />
                             <TooltipContent>Current work time</TooltipContent>
                         </Tooltip>
                         <span className="text-5xl font-bold" >/</span>
                         <Tooltip>
-                            <TooltipTrigger asChild >
-                                <NumberFlowGroup>
-                                    <div className="text-5xl font-bold" >
-                                        <NumberFlow
-                                            value={ Math.floor( totalWorkTimeGoalNumber / 3600 ) }
-                                        />
-                                        <NumberFlow
-                                            prefix=":"
-                                            value={Math.floor((totalWorkTimeGoalNumber % 3600) / 60)}
-                                            digits={{ 1: { max: 5 } }}
-                                            format={{ minimumIntegerDigits: 2 }}
+                            <TooltipTrigger
+                                render={
+                                    <NumberFlowGroup>
+                                        <div className="text-5xl font-bold" >
+                                            <NumberFlow
+                                                value={ Math.floor( totalWorkTimeGoalNumber / 3600 ) }
                                             />
-                                    </div>
-                                </NumberFlowGroup>
-                                {/* <p className=" flex gap-4 text-3xl " ><span>{ totalWorkTimeGoalString }</span></p> */}
-                            </TooltipTrigger>
+                                            <NumberFlow
+                                                prefix=":"
+                                                value={Math.floor((totalWorkTimeGoalNumber % 3600) / 60)}
+                                                digits={{ 1: { max: 5 } }}
+                                                format={{ minimumIntegerDigits: 2 }}
+                                                />
+                                        </div>
+                                    </NumberFlowGroup>
+                                }
+                            />
                             <TooltipContent>Work time goal</TooltipContent>
                         </Tooltip>
                     </div>
@@ -170,14 +178,12 @@ const TaskList_TaskTodoPage = () => {
                             hideThumb
                         />
                         <div
-                            className=" flex gap-4 h-fit pt-4 "
+                            className=" flex gap-2 h-fit pt-4 "
                         >
                             <Button
                                 size={"icon"}
                                 variant={sessionActive ? "destructive" : "default"}
-                                isLoading={loading}
-                                disabled={userTaskTodoStateIsLoading || sortedUserTaskTodoState.length === 0}
-                                spinnerSize="xl"
+                                disabled={userTaskTodoStateIsLoading || sortedUserTaskTodoState.length === 0 || loading}
                                 className={cn(
                                     ` relative `,
                                     ` cursor-pointer `,
@@ -189,27 +195,43 @@ const TaskList_TaskTodoPage = () => {
                                 onClick={handleSessionButtonOnClick}
                             >
                                 {
-                                    sessionActive &&
+                                    (!loading && sessionActive) &&
                                     <div className="absolute top-0 left-0 size-full rounded-full bg-destructive/50 animate-ping" ></div>
                                 }
-                                { sessionActive ? <PauseIcon className=" size-[50%] " /> : <PlayIcon className=" size-[50%] " /> }   
+                                { loading ? <Spinner/> : sessionActive ? <PauseIcon className=" size-[50%] " /> : <PlayIcon className=" size-[50%] " /> }   
                             </Button>
                             <Button
                                 variant={"secondary"}
                                 onClick={() => setFinishSessionDialogOpen(true)}
-                                disabled={userTaskTodoStateIsLoading || sessionActive || sortedUserTaskTodoState.length === 0}
+                                disabled={userTaskTodoStateIsLoading || sessionActive || (sortedUserTaskTodoState.length === 0 && userTaskTodoState?.length === 0)}
                             ><Moon/> Finish Session</Button>
-                            <div className="flex items-center ml-auto" >
+                            <div className="flex items-center ml-auto gap-2" >
                                 <Tooltip>
-                                    <TooltipTrigger asChild >
-                                        <Button
-                                            size={"icon"}
-                                            variant={"outline"}
-                                            onClick={handleOverlayModeOnClick}
-                                        >
-                                            <Minimize2/>
-                                        </Button>
-                                    </TooltipTrigger>
+                                    <TooltipTrigger
+                                        render={
+                                            <Button
+                                                size={"icon"}
+                                                variant={"outline"}
+                                                onClick={switchToFocusModeFromFullMode}
+                                            >
+                                                <Eye/>
+                                            </Button>
+                                        }
+                                    />
+                                    <TooltipContent>Focus Mode</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger
+                                        render={
+                                            <Button
+                                                size={"icon"}
+                                                variant={"outline"}
+                                                onClick={switchToOverlayModeFromFullMode}
+                                            >
+                                                <Minimize2/>
+                                            </Button>
+                                        }
+                                    />
                                     <TooltipContent>Overlay Mode</TooltipContent>
                                 </Tooltip>
                             </div>
@@ -218,7 +240,7 @@ const TaskList_TaskTodoPage = () => {
 
                 </div>
                 <ScrollArea
-                    className="relative grow flex-col w-full h-full min-h-0 "
+                    className="relative grow flex-col w-full h-full min-h-0 z-[2] "
                 >
                     <div
                         className={cn(
@@ -247,46 +269,72 @@ const TaskList_TaskTodoPage = () => {
                             }
                             {
                                 userTaskTodoState &&
-                                sortedUserTaskTodoState.map( ( task, taskIndex ) => {
+                                <>
+                                    {
+                                        sortedUserTaskTodoState.map( ( task, taskIndex ) => {
 
-                                    const singleTask = sortedUserTaskTodoState.length === 1;
-                                    const firstTask = taskIndex === 0;
-                                    const lastTask = taskIndex === sortedUserTaskTodoState.length - 1;
+                                            const singleTask = sortedUserTaskTodoState.length === 1;
+                                            const firstTask = taskIndex === 0;
+                                            const lastTask = taskIndex === sortedUserTaskTodoState.length - 1;
 
-                                    const adjacentTop = firstTask && !singleTask ? null : sortedUserTaskTodoState[ taskIndex - 1 ]
-                                    const adjacentBottom = lastTask && !singleTask ? null : sortedUserTaskTodoState[ taskIndex + 1 ]
+                                            const adjacentTop = firstTask && !singleTask ? null : sortedUserTaskTodoState[ taskIndex - 1 ]
+                                            const adjacentBottom = lastTask && !singleTask ? null : sortedUserTaskTodoState[ taskIndex + 1 ]
 
-                                    const displayOrderTop = firstTask ? task.display_order + 100 : ( adjacentTop!.display_order + task.display_order ) / 2
-                                    const displayOrderBottom = lastTask ? task.display_order - 100 : ( adjacentBottom!.display_order + task.display_order ) / 2
+                                            const displayOrderTop = firstTask ? task.display_order + 100 : ( adjacentTop!.display_order + task.display_order ) / 2
+                                            const displayOrderBottom = lastTask ? task.display_order - 100 : ( adjacentBottom!.display_order + task.display_order ) / 2
 
-                                    return (
-                                        <React.Fragment key={task.task_id}>
+                                            return (
+                                                <React.Fragment key={task.task_id}>
+                                                    {
+                                                        firstTask && !sessionActive &&
+                                                        <TaskCardDrop
+                                                            displayOrder={displayOrderTop}
+                                                            bottomTaskId={task?.task_id}
+                                                        />
+                                                    }
+                                                    <TaskCard
+                                                        // key={ taskIndex === 0 ? totalCurrentWorkTimeString + task.current_work_time : task.task_id + task.current_work_time}
+                                                        key={ task.task_id }
+                                                        data={task}
+                                                        timerCount={ taskIndex === 0 ? timerCount : undefined }
+                                                        active={taskIndex === 0 && sessionActive}
+                                                    />
+                                                    {
+                                                        !sessionActive &&
+                                                        <TaskCardDrop
+                                                            displayOrder={displayOrderBottom}
+                                                            topTaskId={task?.task_id}
+                                                            bottomTaskId={adjacentBottom?.task_id}
+                                                            fullSize={ completedUseTaskTodoState.length < 0 && lastTask}
+                                                        />
+                                                    }
+                                                </React.Fragment>
+                                            )
+
+                                        } )
+                                    }
+                                    {
+                                        (completedUseTaskTodoState.length > 0) &&
+                                        <div
+                                            className={cn(
+                                                `flex flex-col gap-4 duration-500 opacity-0`,
+                                                `transition-opacity duration-500 pointer-events-none`,
+                                                !sessionActive && "opacity-100 pointer-events-auto"
+                                            )}
+                                        >
+                                            <Separator/>
+                                            <Label>Completed</Label>
                                             {
-                                                firstTask && !sessionActive &&
-                                                <TaskCardDrop
-                                                    displayOrder={displayOrderTop}
-                                                    bottomTaskId={task?.task_id}
-                                                />
+                                                completedUseTaskTodoState.map( task => (
+                                                    <TaskCard
+                                                        key={task.task_id}
+                                                        data={task}
+                                                    />
+                                                ) )
                                             }
-                                            <TaskCard
-                                                key={ taskIndex === 0 ? totalCurrentWorkTimeString + task.current_work_time : task.task_id + task.current_work_time}
-                                                data={task}
-                                                timerCount={ taskIndex === 0 ? timerCount : undefined }
-                                                active={taskIndex === 0 && sessionActive}
-                                            />
-                                            {
-                                                !sessionActive &&
-                                                <TaskCardDrop
-                                                    displayOrder={displayOrderBottom}
-                                                    topTaskId={task?.task_id}
-                                                    bottomTaskId={adjacentBottom?.task_id}
-                                                    fullSize={lastTask}
-                                                />
-                                            }
-                                        </React.Fragment>
-                                    )
-
-                                } )
+                                        </div>
+                                    }
+                                </>
                             }
                         </React.Fragment>
                     </div>

@@ -4,6 +4,7 @@ import { useReactivateProject } from "@/services/private/project/mutation";
 import { updateDialogsStore, useDialogsStore_reactivateProjectDialog } from "@/stores/dialogs";
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { toast } from "sonner";
+import Spinner from "../Spinner";
 
 const ReactivateProjectDialog = () => {
 
@@ -60,9 +61,9 @@ const ReactivateProjectDialog = () => {
                 <DialogFooter>
                     <Button
                         onClick={handleReactivateProject}
-                        isLoading={reactivateProjectIsPending}
+                        disabled={reactivateProjectIsPending}
                     >
-                        Yes, I'm sure
+                        {reactivateProjectIsPending ? <Spinner/> : "Yes, I'm sure"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

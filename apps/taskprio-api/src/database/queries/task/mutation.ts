@@ -342,7 +342,8 @@ export const addTaskToTodo = async (
                 .set({
                     active : true,
                     display_order : displayOrderToUse,
-                    work_time_goal : 900
+                    work_time_goal : 900,
+                    completed : false
                 })
                 .where( "task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
                 .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )

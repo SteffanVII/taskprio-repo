@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { z } from "zod";
+import Spinner from "../Spinner";
 
 const projectCustomizationSchema = z.object({
     project_name : z.string().min(1, { message : "Project name is required." }),
@@ -165,8 +166,12 @@ const Customization_ProjectSettingsPage = () => {
                         onClick={ () => {
                             projectCustomizationForm.handleSubmit(handleSubmit)()
                         } }
-                        isLoading={updateProjectCustomizationPending}
-                    ><SaveIcon/> Save</Button>
+                        disabled={updateProjectCustomizationPending}
+                    >
+                        {
+                            updateProjectCustomizationPending ? <Spinner/> : <><SaveIcon/> Save</>
+                        }
+                    </Button>
                 </div>
             </div>
         </>

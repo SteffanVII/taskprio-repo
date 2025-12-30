@@ -4,10 +4,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
+import { StateManager_ElectronContext } from "@/stateManagers/StateManager_Electron"
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage"
-import { ETaskTodoPageUIMode, updateTaskTodoPageStore, useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_timerCount } from "@/stores/taskTodoPage"
+import { useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_timerCount } from "@/stores/taskTodoPage"
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react"
-import { TUserTaskTodoState } from "@repo/taskprio-types/src"
 import { Maximize2, PauseIcon, PlayIcon } from "lucide-react"
 import { useContext, useMemo } from "react"
 
@@ -18,10 +18,13 @@ const FocusMode_TaskTodoPageOverlay = () => {
 
     const {
         topTaskTodo,
-        userTaskTodoState,
         handleStartSession,
         handlePauseSession
     } = useContext(StateManager_TaskTodoPageContext)
+
+    const {
+        switchToOverlayModeFromFocusMode
+    } = useContext(StateManager_ElectronContext)
 
     const totalWorkTime = useMemo(() => {
         if ( topTaskTodo )
@@ -49,12 +52,7 @@ const FocusMode_TaskTodoPageOverlay = () => {
     }
 
     const handleMaximizeOnClick = () => {
-        if ( !!window.electronAPI ) {
-            window.electronAPI.makeWindowToTaskTodoOverlayMode()
-            updateTaskTodoPageStore({
-                uIMode : ETaskTodoPageUIMode.OVERLAY
-            })
-        }
+        switchToOverlayModeFromFocusMode()
     }
 
     return (
@@ -69,29 +67,33 @@ const FocusMode_TaskTodoPageOverlay = () => {
                 )}
             >
                 <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            variant={"ghost"}
-                            size={"icon-xs"}
-                            onClick={handleMaximizeOnClick}
-                        >
-                            <Maximize2 className="size-[0.8rem]" />
-                        </Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                variant={"ghost"}
+                                size={"icon-xs"}
+                                onClick={handleMaximizeOnClick}
+                            >
+                                <Maximize2 className="size-[0.8rem]" />
+                            </Button>
+                        }
+                    />
                     <TooltipContent>Maximize</TooltipContent>
                 </Tooltip>
                 <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            variant={ sessionActive ? "destructive" : "ghost"}
-                            size={"icon-xs"}
-                            onClick={handleSessionButtonOnClick}
-                        >
-                            {
-                                sessionActive ? <PauseIcon className="size-[0.9rem]" /> : <PlayIcon className="size-[0.9rem]" />
-                            }
-                        </Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                variant={ sessionActive ? "destructive" : "ghost"}
+                                size={"icon-xs"}
+                                onClick={handleSessionButtonOnClick}
+                            >
+                                {
+                                    sessionActive ? <PauseIcon className="size-[0.9rem]" /> : <PlayIcon className="size-[0.9rem]" />
+                                }
+                            </Button>
+                        }
+                    />
                     <TooltipContent>
                         {
                             sessionActive ? "Pause" : "Start"
@@ -109,7 +111,7 @@ const FocusMode_TaskTodoPageOverlay = () => {
                     className={cn(
                         `absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`,
                         `w-[80%] h-[30%]`,
-                        `bg-accent rounded-full`,
+                        `bg-muted rounded-full`,
                     )}
                 ></div>
             </div>

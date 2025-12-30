@@ -43,43 +43,49 @@ const ElectronCustomTitlebar = () => {
                 <p className="text-xs font-bold" >Taskprio</p>
             </div>
             <div className="flex flex-start" >
-                <Tooltip delayDuration={1000} >
-                    <TooltipTrigger asChild >
-                        <Button
-                            variant={"ghost"}
-                            size={"icon-sm"}
-                            className={cn(
-                                `!size-[2.3rem] !w-[3rem] !p-0 !rounded-none`
-                            )}
-                            onClick={handleMinimizeWindow}
-                        ><Slash className="rotate-45 size-[0.6rem]" /></Button>
-                    </TooltipTrigger>
+                <Tooltip>
+                    <TooltipTrigger
+                        delay={1000}
+                        render={
+                            <Button
+                                variant={"ghost"}
+                                size={"icon-sm"}
+                                className={cn(
+                                    `!size-[2.3rem] !w-[3rem] !p-0 !rounded-none`
+                                )}
+                                onClick={handleMinimizeWindow}
+                            ><Slash className="rotate-45 size-[0.6rem]" /></Button>
+                        }
+                    />
                     <TooltipContent>Minimize</TooltipContent>
                 </Tooltip>
-                <Tooltip delayDuration={1000} >
-                    <TooltipTrigger asChild >
-                        <Button
-                            variant={"ghost"}
-                            size={"icon-sm"}
-                            className={cn(
-                                `!size-[2.3rem] !w-[3rem] !p-0 !rounded-none`
-                            )}
-                            onClick={() => {
-                                if ( windowMaximized ) {
-                                    handleUnmaximizeWindow()
-                                } else {
-                                    handleMaximizeWindow()
+                <Tooltip  >
+                    <TooltipTrigger
+                        delay={1000}
+                        render={
+                            <Button
+                                variant={"ghost"}
+                                size={"icon-sm"}
+                                className={cn(
+                                    `!size-[2.3rem] !w-[3rem] !p-0 !rounded-none`
+                                )}
+                                onClick={() => {
+                                    if ( windowMaximized ) {
+                                        handleUnmaximizeWindow()
+                                    } else {
+                                        handleMaximizeWindow()
+                                    }
+                                }}
+                            >
+                                {
+                                    windowMaximized ?
+                                    <Minimize className="size-[0.9rem]" />
+                                    :
+                                    <SquareIcon className="size-[0.9rem]" />
                                 }
-                            }}
-                        >
-                            {
-                                windowMaximized ?
-                                <Minimize className="size-[0.9rem]" />
-                                :
-                                <SquareIcon className="size-[0.9rem]" />
-                            }
-                        </Button>
-                    </TooltipTrigger>
+                            </Button>
+                        }
+                    />
                     <TooltipContent>
                         {
                             windowMaximized ?
@@ -89,18 +95,21 @@ const ElectronCustomTitlebar = () => {
                         }
                     </TooltipContent>
                 </Tooltip>
-                <Tooltip delayDuration={1000} >
-                    <TooltipTrigger asChild >
-                        <Button
-                            variant={"ghost_destructive_hover"}
-                            size={"icon-sm"}
-                            className={cn(
-                                `!size-[2.3rem] !w-[3rem] !p-0 !rounded-none`,
-                                `!hover:bg-destructive !hover:text-destructive-foreground`
-                            )}
-                            onClick={handleCloseWindow}
-                        ><X className="size-[1rem]" /></Button>
-                    </TooltipTrigger>
+                <Tooltip>
+                    <TooltipTrigger
+                        delay={1000}
+                        render={
+                            <Button
+                                variant={"destructive"}
+                                size={"icon-sm"}
+                                className={cn(
+                                    `!size-[2.3rem] !w-[3rem] !p-0 !rounded-none`,
+                                    `!hover:bg-destructive !hover:text-destructive-foreground`
+                                )}
+                                onClick={handleCloseWindow}
+                            ><X className="size-[1rem]" /></Button>
+                        }
+                    />
                     <TooltipContent>Close</TooltipContent>
                 </Tooltip>
             </div>

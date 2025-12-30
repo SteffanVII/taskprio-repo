@@ -24,6 +24,7 @@ import { WebSocketContext } from "@/components/others/websocket/WebsocketProvide
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
 import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
+import OverlaySettingsDialog from "@/components/others/dialogs/taskboardTaskDialog/overlaySettingsDialog/OverlaySettingsDialog";
 
 const MainPage = () => {
     

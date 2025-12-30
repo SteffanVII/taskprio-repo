@@ -58,7 +58,7 @@ const GeneralButtons = () => {
                 disabled={!selectedWorkpace}
             >
                 <ChartSpline/>
-                Statistics
+                Dashboard
             </Button>
             <Button
                 size={"sm"}

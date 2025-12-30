@@ -14,10 +14,15 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, `./.vite/dist/renderer/main_window`),
     emptyOutDir: true,
+    rollupOptions: {
+      external: [
+        // Add any other dependencies that should be externalized
+      ]
+    }
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '../../apps/taskprio-fe/src'),
-    },
+    }
   }
 });

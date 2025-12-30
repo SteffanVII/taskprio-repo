@@ -1,10 +1,11 @@
 import { Router, Response } from "express";
-import { IAddTaskToTodoRequest, ICompleteTaskTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksByProjectRequest, IGetAvailableTasksByWorkspaceRequest, IGetUserTaskTodoStateRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
+import { IAddTaskToTodoRequest, ICommitTaskTodoRequest, ICompleteTaskTodoRequest, IFinishTaskTodoSessionRequest, IGetAvailableTasksByProjectRequest, IGetAvailableTasksByWorkspaceRequest, IGetUserTaskTodoStateRequest, IGetWorkspaceSessionHistoriesRequest, IRemoveTaskFromTodoRequest, IStartOrStopTaskTodoTimerRequest, IUpdateTaskTodoStateRequest } from "./interfaces.js";
 import { verifyProjectMemberMiddleware, verifyWorkspaceMemberMiddleware } from "../../middlewares/authentication.js";
 import { getTasksAssignedToUserByProjectId, getTasksAssignedToUserByWorkspaceId, getUserTaskTodoState } from "../../database/queries/task/query.js";
 import { addTaskToTodo, updateTaskTodoState } from "../../database/queries/task/mutation.js";
-import { completeActiveTaskTodo, finishTaskTodoSession, startOrStopTaskTimer } from "../../database/queries/todo/mutation.js";
+import { commitActiveTaskTodo, finishTaskTodoSession, markActiveTodoAsComplete, startOrStopTaskTimer } from "../../database/queries/todo/mutation.js";
 import { taskTodoTimerHeartbeatTimeoutManager } from "../../initializers/taskTodoTimerHeartbeatTimeoutManager.js";
+import { getWorkspaceSessionHistories } from "../../database/queries/todo/query.js";
 
 export function registerToDoRoutes( router : Router ) {
 
@@ -81,6 +82,28 @@ export function registerToDoRoutes( router : Router ) {
 
         }
     )
+
+    // Get all session history
+    router.get(
+        "/session-histories",
+        verifyWorkspaceMemberMiddleware,
+        async ( req : IGetWorkspaceSessionHistoriesRequest, res : Response ) => {
+            const { workspace_id, user_ids, date_range } = req.query
+
+            const parsedUserIds = !!user_ids ? JSON.parse((user_ids as unknown as string)) : undefined;
+            const parsedDateRange = !!date_range ? JSON.parse(date_range as unknown as string) : undefined;
+            
+            try {
+                const sessionHistories = await getWorkspaceSessionHistories( workspace_id, parsedUserIds, parsedDateRange )
+                res.status(200).json(sessionHistories)
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+        }
+    )
+
+    // POST
 
     // Move task to todo
     router.post(
@@ -166,11 +189,11 @@ export function registerToDoRoutes( router : Router ) {
         }
     )
 
-    // Complete todo then remove
+    // Commit todo then remove
     router.post(
-        "/complete/:task_id",
+        "/commit/:task_id",
         verifyWorkspaceMemberMiddleware,
-        async ( req : ICompleteTaskTodoRequest, res : Response ) => {
+        async ( req : ICommitTaskTodoRequest, res : Response ) => {
 
             const { user_id } = req.user;
             const { task_id } = req.params;
@@ -180,10 +203,30 @@ export function registerToDoRoutes( router : Router ) {
             }
 
             try {
-                await completeActiveTaskTodo( task_id, user_id );
+                await commitActiveTaskTodo( task_id, user_id );
                 res.status(200).json({ message : "Task todo completed" })
             } catch (error) {
                 console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    // Mark todo as complete
+    router.post(
+        "/complete/:task_id",
+        verifyWorkspaceMemberMiddleware,
+        async ( req : ICompleteTaskTodoRequest, res : Response ) => {
+            const { task_id } = req.params
+            const { user_id } = req.user
+            const { completed } = req.body
+
+            try {
+                await markActiveTodoAsComplete( task_id, user_id, completed )
+                res.status(200).json({ message : "Task todo completed state updated" })
+            } catch (error) {
+                console.log(error);
                 res.status(500).json({ message : "Internal server error" })
             }
 

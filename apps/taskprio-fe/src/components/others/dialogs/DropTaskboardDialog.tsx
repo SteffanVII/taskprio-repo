@@ -9,6 +9,7 @@ import { useGlobalsStore_selectedProject } from "@/stores/globals";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import Spinner from "../Spinner";
 
 const DropTaskboardDialog = () => {
 
@@ -103,8 +104,10 @@ const DropTaskboardDialog = () => {
                     <Button
                         variant={"destructive"}
                         onClick={form.handleSubmit( onSubmit )}
-                        isLoading={dropTaskboardIsPending}
-                    >Drop</Button>
+                        disabled={dropTaskboardIsPending}
+                    >
+                        {dropTaskboardIsPending ? <Spinner/> : "Drop"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

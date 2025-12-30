@@ -7,7 +7,7 @@ import { updateGlobalsStore, useGlobalsStore_noTaskboards, useGlobalsStore_proje
 
 import { TTaskboard } from "@repo/taskprio-types/src";
 import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import TaskboardListSkeleton from "./TaskboardListSkeleton";
 import { cn } from "@/lib/utils";
@@ -33,9 +33,13 @@ const TaskboardList = () => {
         })
     }
 
+        useEffect(() => {
+        console.log(selectedTaskboard);
+    }, [ selectedTaskboard ])
+
     return (
         <div
-            className="pl-1 grid w-full max-w-full min-w-0 gap-1 bg-accent/50"
+            className="pl-1 grid w-full max-w-full min-w-0 gap-1 bg-muted"
             style={{
                 gridTemplateColumns : "min-content 1fr"
             }}
@@ -43,24 +47,26 @@ const TaskboardList = () => {
             {
                 !noTaskboards &&
                 <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            variant={"ghost"}
-                            size={"icon-sm"}
-                            onClick={handleOpenCreateTaskboardDialog}
-                        >
-                            <Plus/>
-                        </Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                variant={"ghost"}
+                                size={"icon-sm"}
+                                onClick={handleOpenCreateTaskboardDialog}
+                            >
+                                <Plus/>
+                            </Button>
+                        }
+                    />
                     <TooltipContent>Create Taskboard</TooltipContent>
                 </Tooltip>
             }
-            <ScrollArea className="min-w-0" >
+            <ScrollArea className="min-w-0 h-[2.3rem]" >
                 <Tabs
                     value={selectedTaskboard?.task_board_id}
                 >
                     <TabsList
-                        variant={"taskboardSelect"}
+                        variant={"line"}
                         className="bg-transparent"
                     >
                         {
@@ -155,7 +161,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
 
     return (
         <TabsTrigger
-            variant={"taskboardSelect"}
+            // variant={""}
             className={cn(
                 "relative rounded-t-md",
                 selectedTaskboard?.task_board_id === taskboard.task_board_id && "pr-0"
@@ -167,15 +173,17 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
             {
                 selectedTaskboard?.task_board_id === taskboard.task_board_id &&
                 <DropdownMenu modal={false} >
-                    <DropdownMenuTrigger asChild >
-                        <Button
-                            variant={"ghost"}
-                            size={"icon-sm"}
-                            className="mr-[0.1rem]"
-                        >
-                            <EllipsisVertical/>
-                        </Button>
-                    </DropdownMenuTrigger>
+                    <DropdownMenuTrigger
+                        render={
+                            <Button
+                                variant={"ghost"}
+                                size={"icon-sm"}
+                                className="mr-[0.1rem]"
+                            >
+                                <EllipsisVertical/>
+                            </Button>
+                        }
+                    />
                     <DropdownMenuContent className="w-[14rem]" >
                         <DropdownMenuItem
                             onClick={handleOpenRenameTaskboardDialog}

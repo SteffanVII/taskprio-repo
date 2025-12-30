@@ -209,10 +209,10 @@ const AddProjectMemberDialog : React.FC<TAddProjectMemberDialogProps> = ({
     return (
         <Dialog>
             <DialogTrigger
-                asChild
-            >
-                <Button className="w-fit" ><PlusIcon/>Add Member</Button>
-            </DialogTrigger>
+                render={
+                    <Button className="w-fit" ><PlusIcon/>Add Member</Button>
+                }
+            />
             <DialogContent
                 className={cn(
                     `!max-w-[46rem]`
@@ -250,12 +250,15 @@ const AddProjectMemberDialog : React.FC<TAddProjectMemberDialogProps> = ({
                 </ScrollArea>
                 <DialogFooter>
                     <Button
-                        disabled={selectedMembers.length === 0}
-                        isLoading={addMembersToProjectIsPending}
+                        disabled={selectedMembers.length === 0 || addMembersToProjectIsPending}
                         onClick={() => {
                             addMembersHandler()
                         }}
-                    >Add</Button>
+                    >
+                        {
+                            addMembersToProjectIsPending ? <Spinner/> : "Add"
+                        }
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -446,9 +449,12 @@ const MemberDialog = () => {
                         showSaveButton &&
                         <Button
                             onClick={handleSaveOnClick}
-                            disabled={role === projectMember?.project_role}
-                            isLoading={updateProjectMemberRoleIsPending}
-                        ><SaveIcon/>Save</Button>
+                            disabled={role === projectMember?.project_role || updateProjectMemberRoleIsPending}
+                        >
+                            {
+                                updateProjectMemberRoleIsPending ? <Spinner/> : <><SaveIcon/>Save</>
+                            }
+                        </Button>
                     }
                 </DialogFooter>
             </DialogContent>

@@ -28,7 +28,7 @@ const MainDashboardHeader = () => {
             <div
                 className={cn(
                     ` relative w-full p-3 `,
-                    ` flex items-center gap-4 bg-accent/50 `
+                    ` flex items-center gap-4 bg-muted `
                 )}
             >
                 {
@@ -59,11 +59,11 @@ const MainDashboardHeader = () => {
                             }}
                         >
                             <Tooltip>
-                                <TooltipTrigger asChild >
+                                <TooltipTrigger render={
                                     <div>
                                         <Settings2/>
                                     </div>
-                                </TooltipTrigger>
+                                }/>
                                 <TooltipContent
                                     side="bottom"
                                 >

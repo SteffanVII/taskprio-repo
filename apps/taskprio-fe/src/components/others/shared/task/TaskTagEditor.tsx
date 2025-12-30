@@ -63,14 +63,16 @@ const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
             className=" flex flex-col justify-end gap-2 "
         >
             <Popover modal >
-                <PopoverTrigger asChild>
-                    <button
-                        className={cn(
-                            ` flex items-center gap-2 text-sm text-primary cursor-pointer ml-auto `,
-                            ` hover:text-primary `
-                        )}
-                    ><Pencil className=" size-4 " /> Edit Tags</button>
-                </PopoverTrigger>
+                <PopoverTrigger
+                    render={
+                        <button
+                            className={cn(
+                                ` flex items-center gap-2 text-sm text-primary cursor-pointer ml-auto `,
+                                ` hover:text-primary hover:underline `
+                            )}
+                        ><Pencil className=" size-4 " /> Edit Tags</button>
+                    }
+                />
                 <PopoverContent
                     className=" p-2 "
                 >

@@ -6,11 +6,12 @@ import { useDeleteProjectTag } from "@/services/private/tag/mutation"
 import { TDeleteProjectTagResponse, TTag } from "@repo/taskprio-types/src"
 import { Trash } from "lucide-react"
 import { useState } from "react"
+import Spinner from "../Spinner"
 
 type TTagDeleteDialogProps = {
     tag : TTag,
     onSuccess? : ( data : TDeleteProjectTagResponse ) => void,
-    trigger? : React.ReactNode
+    trigger? : React.ReactElement
 }
 
 const TagDeleteDialog : React.FC<TTagDeleteDialogProps> = ({
@@ -45,10 +46,9 @@ const TagDeleteDialog : React.FC<TTagDeleteDialogProps> = ({
             open={open}
             onOpenChange={setOpen}
         >
-            <DialogTrigger asChild >
-                {
-                    trigger ?
-                    trigger :
+            <DialogTrigger
+                render={
+                    trigger ||
                     <Button
                         size={"icon"}
                         variant={"destructive"}
@@ -56,7 +56,7 @@ const TagDeleteDialog : React.FC<TTagDeleteDialogProps> = ({
                         <Trash/>
                     </Button>
                 }
-            </DialogTrigger>
+            />
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Are you sure you want to delete <Badge style={{ backgroundColor : tag.tag_color, color : getHexLuminance(tag.tag_color) > 0.5 ? "black" : "white" }} >{ tag.tag_name }</Badge> tag?</DialogTitle>
@@ -66,8 +66,12 @@ const TagDeleteDialog : React.FC<TTagDeleteDialogProps> = ({
                     <Button
                         variant={"destructive"}
                         onClick={onDelete}
-                        isLoading={deleteProjectTagTriggerIsPending}
-                    >Delete</Button>
+                        disabled={deleteProjectTagTriggerIsPending}
+                    >
+                        {
+                            deleteProjectTagTriggerIsPending ? <Spinner/> : "Delete"
+                        }
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

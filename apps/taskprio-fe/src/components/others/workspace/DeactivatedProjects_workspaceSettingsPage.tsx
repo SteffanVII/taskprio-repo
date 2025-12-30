@@ -123,15 +123,19 @@ const DeactivateProjectRow : React.FC<TDeactivateProjectRowProps> = ({ data }) =
             <TableCell>{data.members}</TableCell>
             <TableCell align="right" className="space-x-2"  >
                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateProjectDialog}><RefreshCcw/></Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateProjectDialog}><RefreshCcw/></Button>
+                        }
+                    />
                     <TooltipContent>Restore Project</TooltipContent>
                 </Tooltip>
                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button size={"icon-sm"} variant={"destructive"} onClick={handleDropProjectDialog}><Delete/></Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button size={"icon-sm"} variant={"destructive"} onClick={handleDropProjectDialog}><Delete/></Button>
+                        }
+                    />
                     <TooltipContent>Drop Project</TooltipContent>
                 </Tooltip>
             </TableCell>

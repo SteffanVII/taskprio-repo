@@ -35,17 +35,19 @@ const TaskboardSidebar = () => {
                 )}
             >
                 <Tooltip>
-                    <TooltipTrigger asChild >
-                        <Button
-                            size={"icon"}
-                            variant={"ghost"}
-                            onClick={() => {
-                                setOpenTrashSheet(true)
-                            }}
-                        >
-                            <Trash/>
-                        </Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                size={"icon"}
+                                variant={"ghost"}
+                                onClick={() => {
+                                    setOpenTrashSheet(true)
+                                }}
+                            >
+                                <Trash/>
+                            </Button>
+                        }
+                    />
                     <TooltipContent
                         side="left"
                     >

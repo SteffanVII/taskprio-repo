@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { useNavigate } from "react-router"
+import Spinner from "../Spinner"
 
 const createTaskboardFormSchema = z.object({
     taskboard_name : z.string().min(1, "Taskboard name is required")
@@ -91,13 +92,14 @@ const NoTaskboardsStage = () => {
                 >
                     <Button
                         variant="outline"
-                        disabled={createTaskboardIsPending}
-                        isLoading={createTaskboardIsPending}
+                        disabled={createTaskboardIsPending || createTaskboardIsPending}
                         onClick={ () => {
                             form.handleSubmit(onSubmitCreateTaskboard)()
                         } }
                     >
-                        Create project
+                        {
+                            createTaskboardIsPending ? <Spinner/> : "Create project"
+                        }
                     </Button>
                 </CardFooter>
             </Card>

@@ -25,6 +25,7 @@ export const finishTaskTodoSession = async (
                 "taskboard.task_todo_state.task_id",
                 "taskboard.task_todo_state.current_work_time",
                 "taskboard.task_todo_state.work_time_goal",
+                "taskboard.task_todo_state.completed",
                 "taskboard.task.task_title",
                 "taskboard.task.task_depth",
                 "project.project.project_name",
@@ -38,8 +39,11 @@ export const finishTaskTodoSession = async (
                           stop : eb.ref( "taskboard.task_todo_timer.stop" ),  
                           last_seen : eb.ref( "taskboard.task_todo_timer.last_seen" ),  
                         })
-                    ).orderBy( "taskboard.task_todo_timer.start", "desc" ),
-                    eb.val<Pick<TTaskTodoTimer, "start" | "stop" | "last_seen">[]>([])
+                    )
+                    .filterWhere( "taskboard.task_todo_timer.task_time_log_id", "is", null )
+                    .orderBy( "taskboard.task_todo_timer.start", "desc" ),
+                    sql<Pick<TTaskTodoTimer, "start" | "stop" | "last_seen">[]>`'[]'`
+                    // eb.val<Pick<TTaskTodoTimer, "start" | "stop" | "last_seen">[]>([])
                 ).as( "timers" )
             ] )
             .where( "taskboard.task_todo_state.active", "=", true )
@@ -49,6 +53,7 @@ export const finishTaskTodoSession = async (
                 "taskboard.task_todo_state.task_id",
                 "taskboard.task_todo_state.current_work_time",
                 "taskboard.task_todo_state.work_time_goal",
+                "taskboard.task_todo_state.completed",
                 "taskboard.task.task_title",
                 "taskboard.task.task_depth",
                 "project.project.project_id",
@@ -90,6 +95,7 @@ export const finishTaskTodoSession = async (
                     user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
                     project_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.project_id})`,
                     work_time_goal : todoState.work_time_goal,
+                    completed : todoState.completed,
 
                     task_title : todoState.task_title,
                     task_depth : todoState.task_depth,
@@ -101,6 +107,18 @@ export const finishTaskTodoSession = async (
                 .returningAll()
                 .executeTakeFirst()
 
+            if ( todoState.completed ) {
+                await trx.updateTable( "taskboard.task_todo_state" )
+                    .set({
+                        completed : false,
+                        active : false
+                    })
+                    .where( "taskboard.task_todo_state.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})` )
+                    .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                    .where( "taskboard.task_todo_state.active", "=", true )
+                    .executeTakeFirst()
+            }
+
             if ( totalWorkTime > 0 ) {
 
                 // Create task time log
@@ -110,6 +128,8 @@ export const finishTaskTodoSession = async (
                     Math.floor(totalWorkTime / 60),
                     trx
                 )
+
+                console.log(timers.length);
                 
                 // Create a copy of all the timers related to the todo state and then attach it to the todo state snapshot
                 await Promise.all( timers.map( async timer => {
@@ -119,6 +139,7 @@ export const finishTaskTodoSession = async (
                             task_todo_state_snapshot_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${createdTaskTodoStateSnapshot.task_todo_state_snapshot_id})`,
                             workspace_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`,
                             user_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`,
+                            task_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${todoState.task_id})`,
                             task_time_log_id : sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${loggedTime.task_time_log_id})`,
                             last_seen : timer.last_seen,
                             start : timer.start,
@@ -127,7 +148,6 @@ export const finishTaskTodoSession = async (
                         .execute()
 
                 } ) )
-
 
                 // Attach the task time log id to all timers related to the task todo state
                 // This will group the timers by the task time log
@@ -270,7 +290,7 @@ export const updateTaskTodoTimerLastSeen = async (
 
 }
 
-export const completeActiveTaskTodo = async (
+export const commitActiveTaskTodo = async (
     taskId : string,
     userId : string,
     trx? : Transaction<DB>
@@ -325,6 +345,32 @@ export const completeActiveTaskTodo = async (
         return await query(trx)
     } else {
         return await taskprioKysely.transaction().execute( async trx => await query(trx) )
+    }
+
+}
+
+export const markActiveTodoAsComplete = async (
+    taskId : string,
+    userId : string,
+    completed : boolean,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+        await trx.updateTable( "taskboard.task_todo_state" )
+            .where( "taskboard.task_todo_state.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+            .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+            .where( "taskboard.task_todo_state.active", "=", true )
+            .set({
+                completed
+            })
+            .executeTakeFirst()
+    }
+
+    if ( trx ) {
+        return await query( trx )
+    } else {
+        return await taskprioKysely.transaction().execute( async trx => query( trx ) )
     }
 
 }

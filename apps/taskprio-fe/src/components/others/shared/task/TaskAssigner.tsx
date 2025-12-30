@@ -63,36 +63,21 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
     }
 
     return (
-        <Popover
-            modal={false}
-        >
+        <Popover>
             <PopoverTrigger
-                asChild
                 onClick={ e => {
                     e.stopPropagation()
                 } }
-            >
-                {
-                    assignees.length < 1 ?
-                    <button
-                        className={cn(
-                            ` h-[1.6rem] `,
-                            ` flex items-center gap-2 text-sm text-primary cursor-pointer `,
-                            ` hover:text-primary hover:underline `
-                        )}
-                        onClick={ e => {
-                            e.stopPropagation()
-                        } }
-                    ><Plus className=" size-4 " /> Assign</button>
-                    :
+                render={
                     <div
                         className={cn(
-                            ` flex flex-wrap justify-end gap-2 `
+                            ` flex flex-wrap justify-end items-center gap-2 cursor-pointer hover:text-primary hover:underline `
                         )}
                     >
-                        <button>
-                            <Plus className={` size-[1rem] text-primary cursor-pointer `} />
-                        </button>
+                        <Plus className={` size-[1rem] text-primary cursor-pointer `} />
+                        {
+                            assignees.length < 1 && <span className="text-primary" >Assign</span>
+                        }
                         {
                             assignees.map( ( assignee ) => (
                                 <UserAvatar
@@ -105,9 +90,8 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                         }
                     </div>
                 }
-            </PopoverTrigger>
+            />
             <PopoverContent
-                noPortal
                 className={cn(
                     ` p-0 `
                 )}

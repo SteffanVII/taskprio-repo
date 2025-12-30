@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useGetProjectTags } from "@/services/private/tag/query";
 import { updateDialogsStore } from "@/stores/dialogs";
 import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { Plus } from "lucide-react";
 
 const TagsSection_ProjectSettingsPage = () => {
 
@@ -51,10 +52,7 @@ const TagsSection_ProjectSettingsPage = () => {
                                         }
                                     })
                                 } }
-                                className={cn(
-                                    ` size-fit `
-                                )}
-                            >Create Tag</Button>
+                            ><Plus/> Create Tag</Button>
                         </div>
                     }
                 <div

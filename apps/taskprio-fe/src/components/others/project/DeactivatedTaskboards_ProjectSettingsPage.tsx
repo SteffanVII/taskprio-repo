@@ -123,15 +123,19 @@ const DeactivateTaskboardRow : React.FC<TDeactivateTaskboardRowProps> = ({ data 
             <TableCell>{data.tasks}</TableCell>
             <TableCell align="right" className="space-x-2" >
                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateTaskboardDialog}><RefreshCcw/></Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateTaskboardDialog}><RefreshCcw/></Button>
+                        }
+                    />
                     <TooltipContent>Restore Taskboard</TooltipContent>
                 </Tooltip>
                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button size={"icon-sm"} variant={"destructive"} onClick={handleShowDropTaskboardDialog}><Delete/></Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button size={"icon-sm"} variant={"destructive"} onClick={handleShowDropTaskboardDialog}><Delete/></Button>
+                        }
+                    />
                     <TooltipContent>Drop Taskboard</TooltipContent>
                 </Tooltip>
             </TableCell>

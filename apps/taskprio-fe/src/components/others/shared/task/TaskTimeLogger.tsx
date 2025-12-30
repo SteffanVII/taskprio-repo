@@ -64,19 +64,15 @@ const TaskTimeLogger : React.FC<TTaskTimerLoggerProps> = ({
                 ` flex justify-end `
             )}
         >
-            <Popover
-                modal={false}
-            >
+            <Popover>
                 <PopoverTrigger
-                    asChild
-                >
-                    {
+                    render={
                         timeLogs.length < 1 ? (
                             <div
                                 role="button"
                                 className={cn(
                                     ` flex items-center gap-2 text-sm text-primary cursor-pointer `,
-                                    ` hover:text-primary `
+                                    ` hover:text-primary hover:underline `
                                 )}
                             >
                                 <Timer className={` size-[1rem] `} /> Log Time
@@ -102,10 +98,9 @@ const TaskTimeLogger : React.FC<TTaskTimerLoggerProps> = ({
                             </div>
                         )
                     }
-                </PopoverTrigger>
-                <PopoverContent
-                    noPortal
                 >
+                </PopoverTrigger>
+                <PopoverContent>
                     <div
                         className=" flex flex-col gap-2 "
                     >

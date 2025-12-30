@@ -396,9 +396,10 @@ export const getUserTaskTodoState = async (
     trx? : Transaction<DB>
 ) : Promise<TUserTaskTodoState[]> => {
 
-    const queryBuilder = trx ? trx.selectFrom( "project.project" ) : taskprioKysely.selectFrom( "project.project" )
+    const queryBuilder = trx ?? taskprioKysely;
 
     return await queryBuilder
+        .selectFrom( "project.project" )
         .innerJoin( "workspace.workspace_members", "workspace.workspace_members.workspace_id", "project.project.workspace_id" )
         .innerJoin( "tp_user.user", "tp_user.user.user_id", "workspace.workspace_members.user_id" )
         .innerJoin( "project.project_members", "project.project_members.project_id", "project.project.project_id" )
@@ -437,6 +438,7 @@ export const getUserTaskTodoState = async (
             "taskboard.task_todo_state.current_work_time",
             "taskboard.task_todo_state.display_order",
             "taskboard.task_todo_state.active",
+            "taskboard.task_todo_state.completed",
             "project.project.project_abbreviation",
             "project.project.project_color",
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" )
@@ -456,6 +458,7 @@ export const getUserTaskTodoState = async (
             "taskboard.task_todo_state.current_work_time",
             "taskboard.task_todo_state.display_order",
             "taskboard.task_todo_state.active",
+            "taskboard.task_todo_state.completed",
             "project.project.project_abbreviation",
             "project.project.project_color",
             "project.project.project_id"
@@ -481,6 +484,7 @@ export const getTasksTodoLastDisplayOrder = async (
         .where( "taskboard.task.task_id", "is not", null )
         .where( "taskboard.task.in_trash", "is", false )
         .where( "taskboard.task_todo_state.active", "=", true )
+        .where( "taskboard.task_todo_state.completed", "=", false )
         .where( "taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
         .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
         .executeTakeFirstOrThrow()).last_display_order       

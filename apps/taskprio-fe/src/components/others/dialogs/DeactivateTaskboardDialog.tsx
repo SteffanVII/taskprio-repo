@@ -9,6 +9,7 @@ import { useGlobalsStore_selectedProject } from "@/stores/globals";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import Spinner from "../Spinner";
 
 const DeactivateTaskboardDialog = () => {
 
@@ -105,8 +106,10 @@ const DeactivateTaskboardDialog = () => {
                         onClick={() => {
                             form.handleSubmit(onSubmit)()
                         }}
-                        isLoading={deactiveTaskboardIsPending}
-                    >Deactivate</Button>
+                        disabled={deactiveTaskboardIsPending}
+                    >
+                        {deactiveTaskboardIsPending ? <Spinner/> : "Deactivate"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

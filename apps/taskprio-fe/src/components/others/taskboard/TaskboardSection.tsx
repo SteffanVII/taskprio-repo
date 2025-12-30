@@ -167,6 +167,7 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                     ` w-full p-1 pl-2 `,
                     ` flex justify-between items-center gap-2 `,
                     ` bg-background rounded-md z-10 `,
+                    rename && `pl-1`
                 )}
                 style={ taskSection.task_section_color ? {
                     color : getHexLuminance( taskSection.task_section_color ) > 0.4 ? "black" : "white",
@@ -194,12 +195,12 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                                 e.currentTarget.blur()
                             }
                         }}
-                        className=" !border-background "
+                        className=" !border-background !bg-input !h-[2rem] "
                         autoFocus
                     />
                     :
                     <div className=" flex items-center gap-2 " >
-                        <Badge variant={"secondary"} >
+                        <Badge variant={"secondary"} className="rounded-md h-fit" >
                             <NumberFlow
                                 value={taskSection.tasks.length > 99 ? 99 : taskSection.tasks.length}
                             />

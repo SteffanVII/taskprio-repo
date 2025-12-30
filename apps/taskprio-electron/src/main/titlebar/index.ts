@@ -1,7 +1,7 @@
 import { BrowserWindow, ipcMain, shell } from "electron";
 import { IpcMainEvent } from "electron/main";
-import { mainWindow } from "../main";
-import { EEvents } from "src/lib/enums";
+import { mainWindow } from "../main.js";
+import { EEventListeners, EEvents } from "src/lib/enums.js";
 
 export const titlebarMain = () => {
 
@@ -30,11 +30,11 @@ export const titlebarMain = () => {
     } )
 
     mainWindow.on( "maximize", () => {
-        mainWindow.webContents.send( EEvents.WINDOW_MAXIMIZE_STATE_CHANGED, true )
+        mainWindow.webContents.send( EEventListeners.WINDOW_MAXIMIZE_STATE_CHANGED, true )
     } )
     
     mainWindow.on( "unmaximize", () => {
-        mainWindow.webContents.send( EEvents.WINDOW_MAXIMIZE_STATE_CHANGED, false )
+        mainWindow.webContents.send( EEventListeners.WINDOW_MAXIMIZE_STATE_CHANGED, false )
     } )
 
     mainWindow.webContents.on( "will-navigate", ( event, url ) => {

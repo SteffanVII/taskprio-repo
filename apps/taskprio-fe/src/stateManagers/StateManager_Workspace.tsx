@@ -4,6 +4,8 @@ import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { EWorkspaceRole } from "@repo/taskprio-types/src";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
+import Cookies from "js-cookie";
+import dayjs from "dayjs";
 
 type TStateManager_Workspace = {
     children : React.ReactNode
@@ -50,24 +52,27 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
 
     // If no workspace_id is selected, navigate to the first workspace once the workspaces data are available
     useLayoutEffect(() => {
-        console.log(pathname);
-        console.log(workspace_id)
-        console.log(
-            pathname.includes("/workspace_settings") ||
-            pathname.includes("/tt") ||
-            pathname.includes("/profile") ||
-            pathname.includes("/task_todo_overlay")
-        );
         // If the user is on the workspace settings page or task todo apge, don't navigate to the first workspace
         if (
             pathname.includes("/workspace_settings") ||
             pathname.includes("/tt") ||
             pathname.includes("/profile") ||
-            pathname.includes("/task_todo_overlay")
+            pathname.includes("/task_todo_overlay") ||
+            pathname.includes("/statistics")
         ) return
 
         if ( !workspace_id ) {
             if ( workspaces && workspaces.length > 0 ) {
+                const lastVisitedWorkspaceId = localStorage.getItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME )
+                if ( lastVisitedWorkspaceId ) {
+                    const foundWorkspace = workspaces.find( workspace => workspace.workspace_id === lastVisitedWorkspaceId )
+                    if ( foundWorkspace ) {
+                        localStorage.setItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, foundWorkspace.workspace_id )
+                        navigate(`/p/w/${foundWorkspace.workspace_id}`)
+                        return
+                    }
+                }
+                localStorage.setItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspaces[0].workspace_id )
                 navigate(`/p/w/${workspaces[0].workspace_id}`)
             }
         }

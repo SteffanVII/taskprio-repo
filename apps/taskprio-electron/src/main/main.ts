@@ -1,10 +1,14 @@
-import { app, BrowserWindow, dialog, ipcMain, ipcRenderer, screen } from 'electron';
+import { app, BrowserWindow, screen } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { titlebarMain } from './titlebar';
-import { EEvents } from 'src/lib/enums';
+import { EEventListeners, EEvents } from 'src/lib/enums.js';
 import { URL } from 'node:url';
-import { taskTodoOverlayMain } from './taskTodoOverlay';
+import { titlebarMain } from './titlebar/index.js';
+import { generalMain } from './general/index.js';
+import { taskTodoOverlayMain } from './taskTodoOverlay/index.js';
+
+declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
+declare const MAIN_WINDOW_VITE_NAME: string;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -42,7 +46,7 @@ const createWindow = () => {
         path.join(__dirname, `../dist/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
         );
     }
-    
+
     mainWindow.setPosition( 20, 20 )
 
     // mainWindow.webContents.openDevTools()
@@ -60,14 +64,14 @@ if ( !gotTheLock ) {
         if ( mainWindow.isMinimized() ) mainWindow.restore()
         mainWindow.focus()
         const urlString = commandLine.pop()
-        mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString )
-        mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
+        mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString )
+        mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
         if ( urlString.includes("taskprio-app://googlelogin") ) {
             const url = new URL(urlString)
             const searchParams = url.searchParams
             const credential = searchParams.get("credential")
             const clientId = searchParams.get("clientId")
-            mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, credential, clientId )
+            mainWindow.webContents.send( EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId )
         }
         }
     } )
@@ -78,14 +82,14 @@ app.on( "open-url", (_, url) => {
     if ( mainWindow.isMinimized() ) mainWindow.restore()
     mainWindow.focus()
     const urlString = url
-    mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString )
-    mainWindow.webContents.send( EEvents.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
+    mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString )
+    mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
     if ( urlString.includes("taskprio-app://googlelogin") ) {
         const url = new URL(urlString)
         const searchParams = url.searchParams
         const credential = searchParams.get("credential")
         const clientId = searchParams.get("clientId")
-        mainWindow.webContents.send( EEvents.GOOGLE_LOGIN_SUCCESS, credential, clientId )
+        mainWindow.webContents.send( EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId )
     }
 } )
 
@@ -95,6 +99,7 @@ app.on( "open-url", (_, url) => {
 app.on('ready', () => {
     mainWindow = createWindow()
     titlebarMain()
+    generalMain()
     taskTodoOverlayMain()
 });
 
@@ -113,6 +118,7 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         mainWindow = createWindow();
         titlebarMain()
+        generalMain()
         taskTodoOverlayMain()
     }
 });

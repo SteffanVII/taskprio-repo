@@ -5,6 +5,7 @@ import { useCreateProject } from "@/services/private/project/mutation";
 import { updateDialogsStore, useDialogsStore_createProjectDialog } from "@/stores/dialogs";
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { useState } from "react";
+import Spinner from "../Spinner";
 
 const CreateProjectDialog = () => {
 
@@ -62,8 +63,10 @@ const CreateProjectDialog = () => {
                     <Button
                         variant={"outline"}
                         onClick={onSubmit}
-                        isLoading={isCreatingProject}
-                    >Create</Button>
+                        disabled={isCreatingProject}
+                    >
+                        {isCreatingProject ? <Spinner/> : "Create"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

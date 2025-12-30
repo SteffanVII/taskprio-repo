@@ -2,11 +2,11 @@ import {
     useTaskTodoPageStore_sessionActive, 
     useTaskTodoPageStore_timerCount 
 } from "@/stores/taskTodoPage";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useLayoutEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { Eye, Minimize2, PauseIcon, PlayIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import TagBadge from "../shared/tag/TagBadge";
 import { Slider } from "@/components/ui/slider";
@@ -15,6 +15,9 @@ import { TUserTaskTodoState } from "@repo/taskprio-types/src";
 import dayjs from "@/lib/dayjs";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { StateManager_ElectronContext } from "@/stateManagers/StateManager_Electron";
+import Spinner from "../Spinner";
 
 
 const TodoCard_MainDashboardPane = () => {
@@ -31,11 +34,16 @@ const TodoCard_MainDashboardPane = () => {
         handlePauseSession
     } = useContext(StateManager_TaskTodoPageContext)
 
+    const {
+        switchToOverlayModeFromFullMode,
+        switchToFocusModeFromFullMode
+    } = useContext(StateManager_ElectronContext)
+
     const [ loading, setLoading ] = useState<boolean>(false)
     
     const currentWorkTime = ( value : TUserTaskTodoState | null ) => {
         if ( value ) {
-            return value.timers.reduce( ( acc, curr ) => {
+            return (value.timers || []).reduce( ( acc, curr ) => {
                 if ( curr.start && curr.stop ) {
                     const start = dayjs(curr.start)
                     const stop = dayjs(curr.stop)
@@ -62,7 +70,11 @@ const TodoCard_MainDashboardPane = () => {
         setLoading(false)
     }
     
-    if ( !userTaskTodoState || userTaskTodoState.length === 0 || pathname.includes("/tt") ) return null
+    useLayoutEffect(() => {
+        console.log("topTaskTodo", topTaskTodo)
+    }, [topTaskTodo])
+
+    if ( !userTaskTodoState || userTaskTodoState.length === 0 || topTaskTodo === null || pathname.includes("/tt") ) return null
 
     return (
         <div
@@ -77,6 +89,42 @@ const TodoCard_MainDashboardPane = () => {
             >
             <div
                 className={cn(
+                    `absolute bottom-full left-0 w-full`,
+                    `flex justify-between items-end py-4`,
+                    `opacity-0 transition-opacity duration-200 group-hover:opacity-100`
+                )}
+            >
+                <Badge variant={"outline"} className="rounded-md" >Todo</Badge>
+
+                <div className="flex gap-2" >
+                    <Tooltip>
+                        <TooltipTrigger
+                            render={
+                                <Button
+                                    variant={"outline"}
+                                    size={"icon-sm"}
+                                    onClick={switchToFocusModeFromFullMode}
+                                ><Eye/></Button>
+                            }
+                        />
+                        <TooltipContent>Focus Mode</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger
+                            render={
+                                <Button
+                                    variant={"outline"}
+                                    size={"icon-sm"}
+                                    onClick={switchToOverlayModeFromFullMode}
+                                ><Minimize2/></Button>
+                            }
+                        />
+                        <TooltipContent>Overlay Mode</TooltipContent>
+                    </Tooltip>
+                </div>
+            </div>
+            <div
+                className={cn(
                     `absolute top-0 left-0 size-full rounded-lg duration-[1500ms]`,
                     sessionActive && `shadow-[0_3rem_14rem_0.7rem]  shadow-primary/40`
                 )}
@@ -84,7 +132,6 @@ const TodoCard_MainDashboardPane = () => {
             <div className="flex justify-between" >
                 <div className="flex flex-col gap-2" >
                     <div className="flex gap-2" >
-                        <Badge >Todo</Badge>
                         <Badge
                             className={cn(
                                 getHexLuminance(topTaskTodo?.project_color || "#ffffff") > 0.4 ? `text-black` : `text-white`
@@ -106,15 +153,18 @@ const TodoCard_MainDashboardPane = () => {
                     size="icon"
                     variant={sessionActive ? "destructive" : "default"}
                     onClick={handleSessionButtonOnClick}
-                    isLoading={loading}
+                    disabled={loading}
                 >
                     {
-                        sessionActive &&
+                        (!loading && sessionActive) &&
                         <div
                             className="absolute top-0 left-0 size-full rounded-full bg-destructive/50 animate-ping"
                         ></div>
                     }
                     {
+                        loading ?
+                        <Spinner/>
+                        :
                         sessionActive ?
                         <PauseIcon/>
                         :

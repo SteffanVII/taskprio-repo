@@ -10,6 +10,7 @@ import { ImageIcon } from "lucide-react";
 import { useUpdateProfilePhotoCrop, useUpdateUserProfilePhoto } from "@/services/private/profile/mutation";
 import { TProfilePhoto } from "@repo/taskprio-types/src";
 import { ProfilePhotoUrl } from "@/lib/globals";
+import Spinner from "../Spinner";
 
 type TProfilePhotoPickerProps = {
     profilePhoto? : TProfilePhoto
@@ -276,8 +277,12 @@ const ProfilePhotoPicker : React.FC<TProfilePhotoPickerProps> = ({ profilePhoto 
                                                 onClick={ () => {
                                                     handleApply()
                                                 } }
-                                                isLoading={isUpdatingUserProfilePhoto || updateProfilePhotoIsPending}
-                                            >Apply</Button>
+                                                disabled={isUpdatingUserProfilePhoto || updateProfilePhotoIsPending}
+                                            >
+                                                {
+                                                    isUpdatingUserProfilePhoto || updateProfilePhotoIsPending ? <Spinner/> : "Apply"
+                                                }
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>

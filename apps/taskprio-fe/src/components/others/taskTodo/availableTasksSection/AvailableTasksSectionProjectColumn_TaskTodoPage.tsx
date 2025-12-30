@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
@@ -173,25 +172,40 @@ const ProjectColumnFilterPopover : React.FC<TProjectColumnFilterPopoverProps> = 
 
     return (
         <Popover>
-            <PopoverTrigger asChild >
-                <Button
-                    size={"icon"}
-                    variant={"outline"}
-                >
-                    <Filter/>
-                </Button>
-            </PopoverTrigger>
+            <PopoverTrigger
+                onClick={ e => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                } }
+                render={
+                    <Button
+                        size={"icon"}
+                        variant={"outline"}
+                    >
+                        <Filter/>
+                    </Button>
+                }
+            />
             <PopoverContent
+                portal={false}
                 align="end"
                 side="bottom"
                 className={cn(
                     `w-[25rem] h-fit`
                 )}
+                onClick={ e => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                } }
             >
                 <div
                     className={cn(
                         `flex flex-col gap-4 `,
                     )}
+                    onClick={ e => {
+                        e.stopPropagation()
+                        e.preventDefault()
+                    } }
                 >
                     <Label>Taskboards</Label>
                     <div className="flex flex-wrap gap-2" >
@@ -203,7 +217,9 @@ const ProjectColumnFilterPopover : React.FC<TProjectColumnFilterPopoverProps> = 
                                         `transition-transform active:-translate-y-[0.1rem] ease-linear duration-100`
                                     )}
                                     variant={ taskboardsFilter.includes( taskboard.task_board_id ) ? "default" : "outline"}
-                                    onClick={() => handleTaskboardBadgeOnClick(taskboard.task_board_id)}
+                                    onClick={() => {
+                                        handleTaskboardBadgeOnClick(taskboard.task_board_id)
+                                    }}
                                 >{taskboard.task_board_name}</Badge>
                             ) )
                         }

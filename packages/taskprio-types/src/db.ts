@@ -210,6 +210,7 @@ export interface TaskboardTaskTodoSessionHistory {
 
 export interface TaskboardTaskTodoState {
   active: Generated<boolean | null>;
+  completed: Generated<boolean | null>;
   current_work_time: Generated<Int8>;
   display_order: number;
   session_started_at: ColumnType<string, string | string, Date | string> | null;
@@ -229,6 +230,8 @@ export interface TaskboardTaskTodoStateBase64 {
 }
 
 export interface TaskboardTaskTodoStateSnapshot {
+  completed: Generated<boolean | null>;
+  created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   project_abbreviation: string;
   project_color: string;
   project_id: string | null;
@@ -246,6 +249,7 @@ export interface TaskboardTaskTodoStateSnapshotTimer {
   last_seen: Generated<ColumnType<string, string | string, Date | string> | null>;
   start: ColumnType<string, string | string, Date | string>;
   stop: ColumnType<string, string | string, Date | string>;
+  task_id: string | null;
   task_time_log_id: string | null;
   task_todo_state_snapshot_id: string;
   user_id: string;

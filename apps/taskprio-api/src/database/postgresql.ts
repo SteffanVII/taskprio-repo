@@ -1,9 +1,15 @@
-import { Pool, PoolClient } from "pg";
+import { Pool, PoolClient, types } from "pg";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-let pool : Pool | undefined; 
+let pool : Pool | undefined;
+
+// OID 1114 is 'TIMESTAMP' (without time zone)
+types.setTypeParser(1114, (stringValue) => {
+  // Appending 'Z' tells JS this string is already in UTC
+  return new Date(stringValue + 'Z');
+});
 
 export const createPostgrePool = () => {
     pool = new Pool({

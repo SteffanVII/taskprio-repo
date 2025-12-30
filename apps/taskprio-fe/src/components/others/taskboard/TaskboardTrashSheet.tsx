@@ -129,8 +129,12 @@ const TaskboardTrashSheet = () => {
                         >Cancel</Button>
                         <Button
                             onClick={handleRestoreTask}
-                            isLoading={restoreTaskFromTrashIsPending}
-                        >I'm sure</Button>
+                            disabled={restoreTaskFromTrashIsPending}
+                        >
+                            {
+                                restoreTaskFromTrashIsPending ? <Spinner/> : "I'm sure"
+                            }
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -176,16 +180,18 @@ const TrashTaskCard : React.FC<TTrashTaskCardProps> = ({
                     }}
                 >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
                 <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant={"ghost"}
-                            size={"icon"}
-                            className=" mx-2 mt-2 "
-                            onClick={() => setTrashToRestore(data)}
-                        >
-                            <ArchiveRestore className="size-4" />
-                        </Button>
-                    </TooltipTrigger>
+                    <TooltipTrigger
+                        render={
+                            <Button
+                                variant={"ghost"}
+                                size={"icon"}
+                                className=" mx-2 mt-2 "
+                                onClick={() => setTrashToRestore(data)}
+                            >
+                                <ArchiveRestore className="size-4" />
+                            </Button>
+                        }
+                    />
                     <TooltipContent>Restore</TooltipContent>
                 </Tooltip>
             </div>

@@ -4,6 +4,7 @@ import { useFinishTaskTodoSession } from "@/services/private/todo/mutation";
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 
 import React from "react";
+import Spinner from "../Spinner";
 
 type TTaskTodoFinishSessionDialogProps = {
     open : boolean,
@@ -56,8 +57,10 @@ const TaskTodoFinishSessionDialog : React.FC<TTaskTodoFinishSessionDialogProps> 
                     >Cancel</Button>
                     <Button
                         onClick={handleFinishSessionConfirmation}
-                        isLoading={finishTaskTodoSessionPending}
-                    >Yes, I'm sure.</Button>
+                        disabled={finishTaskTodoSessionPending}
+                    >
+                        {finishTaskTodoSessionPending ? <Spinner/> : "Yes, I'm sure."}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

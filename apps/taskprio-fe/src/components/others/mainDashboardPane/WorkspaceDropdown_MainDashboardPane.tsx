@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
 import { WebSocketContext } from "../websocket/WebsocketProvider";
+import Cookies from "js-cookie";
+import dayjs from "@/lib/dayjs";
 
 const ignoreTodoSessionIsActiveLocalStorageName = import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME;
 
@@ -93,6 +95,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
         } else {
             navigate(`/p/w/${workspace.workspace_id}`)
         }
+        localStorage.setItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspace.workspace_id )
         pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
     }
 
@@ -104,33 +107,36 @@ const WorkspaceDropdown_MainDashboardPane = () => {
     return (
         <>
             <Popover>
-                <PopoverTrigger asChild >
-                    <div
-                        className={cn(
-                            `border bg-background text-foreground rounded-md px-3 py-2`,
-                            ` cursor-pointer flex items-center justify-between `
-                        )}
-                    >
-                        {
-                            (workspacesIsLoading) ?
-                            <Skeleton className="bg-primary/20 w-[16rem] h-[1.8rem]" />
-                            :
-                            <>
-                                {
-                                    (workspaces && workspaces?.length === 0) &&
-                                    <p className="text-center font-bold" >No Workspaces Found</p>
-                                }
-                                <p
-                                    className={cn(
-                                        " max-w-[16rem] truncate ",
-                                        " text-xl font-bold "
-                                    )}
-                                    title={selectedWorkspace?.workspace_name}
-                                >{selectedWorkspace?.workspace_name}</p>
-                            </>
-                        }
-                        <ChevronDown className=" size-4 " />
-                    </div>
+                <PopoverTrigger
+                    render={
+                        <div
+                            className={cn(
+                                `border bg-background text-foreground rounded-md px-3 py-2`,
+                                ` cursor-pointer flex items-center justify-between `
+                            )}
+                        >
+                            {
+                                (workspacesIsLoading) ?
+                                <Skeleton className="bg-primary/20 w-[16rem] h-[1.8rem]" />
+                                :
+                                <>
+                                    {
+                                        (workspaces && workspaces?.length === 0) &&
+                                        <p className="text-center font-bold" >No Workspaces Found</p>
+                                    }
+                                    <p
+                                        className={cn(
+                                            " max-w-[16rem] truncate ",
+                                            " text-xl font-bold "
+                                        )}
+                                        title={selectedWorkspace?.workspace_name}
+                                    >{selectedWorkspace?.workspace_name}</p>
+                                </>
+                            }
+                            <ChevronDown className=" size-4 " />
+                        </div>
+                    }
+                >
                 </PopoverTrigger>
                 <PopoverContent
                     className="p-0"

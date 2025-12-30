@@ -1,5 +1,5 @@
 import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query"
-import { TCompleteTaskTodoPayload, TFinishTaskTodoSessionPayload, TMoveTaskToTodoPayload, TRemoveTaskFromTodoPayload, TStartOrStopTaskTodoTimerPayload, TUpdateTaskTodoStatePayload } from "./types"
+import { TCommitTaskTodoPayload, TCompleteTaskTodoPayload, TFinishTaskTodoSessionPayload, TMoveTaskToTodoPayload, TRemoveTaskFromTodoPayload, TStartOrStopTaskTodoTimerPayload, TUpdateTaskTodoStatePayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
@@ -170,11 +170,12 @@ export const useFinishTaskTodoSession = (options?: TUseFinishTaskTodoSessionOpti
         onSuccess: (_, data, ctx) => {
             queryClient.setQueryData(
                 [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id],
-                (oldData: TGetUserTaskTodoStateResponseData) => produce(oldData, draft => {
-                    draft.forEach(task => {
+                ( oldData: TGetUserTaskTodoStateResponseData ) => {
+                    return oldData.filter( task => !task.completed).map(task => {
                         task.timers = []
+                        return {...task}
                     })
-                })
+                }
             )
             options?.onSuccess?.(_, data, ctx)
         }
@@ -226,17 +227,17 @@ export const useStartOrStopTaskTodoTimer = (options?: TUseStartOrStopTaskTodoTim
 
 }
 
-type TUseCompleteTaskTodoOptions = UseMutationOptions<any, AxiosError, TCompleteTaskTodoPayload>
+type TUseCommitTaskTodoOptions = UseMutationOptions<any, AxiosError, TCommitTaskTodoPayload>
 
-export const useCompleteTaskTodo = ( options? : TUseCompleteTaskTodoOptions ) => {
+export const useCommitTaskTodo = ( options? : TUseCommitTaskTodoOptions ) => {
 
     const queryClient = useQueryClient()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
-    return useMutation<any, AxiosError, TCompleteTaskTodoPayload>({
+    return useMutation<any, AxiosError, TCommitTaskTodoPayload>({
         mutationFn : async ( payload ) => {
             const response = await axiosInstance.post(
-                `/private/todo/complete/${payload.pathParameters.task_id}`
+                `/private/todo/commit/${payload.pathParameters.task_id}`
             )
             return response.data
         },
@@ -261,6 +262,37 @@ export const useCompleteTaskTodo = ( options? : TUseCompleteTaskTodoOptions ) =>
             })
             options?.onSuccess?.(data, variables, context)
 
+        },
+    })
+
+}
+
+type TUseCompleteTaskTodoOptions = UseMutationOptions<any, AxiosError, TCompleteTaskTodoPayload>
+
+export const useCompleteTaskTodo = ( options? : TUseCompleteTaskTodoOptions ) => {
+
+    const queryClient = useQueryClient()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+
+    return useMutation<any, AxiosError, TCompleteTaskTodoPayload>({
+        mutationFn : async ( payload ) => {
+            const response = await axiosInstance.post(
+                `/private/todo/complete/${payload.pathParameters.task_id}`,
+                payload.body
+            )
+            return response.data
+        },
+        ...options,
+        onMutate( variables ) {
+            queryClient.setQueryData(
+                [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id ],
+                (oldData : TGetUserTaskTodoStateResponseData) => produce(oldData, draft => {
+                    const index = draft.findIndex(task => task.task_id === variables.pathParameters.task_id)
+                    if ( index !== -1 ) {
+                        draft[index].completed = variables.body.completed
+                    }
+                })
+            )
         },
     })
 

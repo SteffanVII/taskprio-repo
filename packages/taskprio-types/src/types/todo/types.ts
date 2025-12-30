@@ -1,6 +1,6 @@
 import { Selectable } from "kysely"
 import { TTask } from "../task/types"
-import { ProjectProject, TaskboardTaskTodoState, TaskboardTaskTodoTimer } from "../../db"
+import { ProjectProject, TaskboardTaskTodoSessionHistory, TaskboardTaskTodoState, TaskboardTaskTodoStateSnapshot, TaskboardTaskTodoStateSnapshotTimer, TaskboardTaskTodoTimer } from "../../db"
 import { TTaskTag } from "../tag/types"
 import { TTaskboard } from "../taskboard/types"
 import { TProject } from "../project/types"
@@ -39,8 +39,16 @@ export type TStartOrStopTaskTodoTimerRequestPathParams = {
 
 export type TStartOrStopTaskTodoTimerResponseData = TTaskTodoTimer;
 
+export type TCommitTaskTodoRequestPathParams = {
+    task_id : string
+}
+
 export type TCompleteTaskTodoRequestPathParams = {
     task_id : string
+}
+
+export type TCompleteTaskTodoRequestBody = {
+    completed : boolean
 }
 
 // Query
@@ -66,6 +74,14 @@ export type TGetAvailableTasksByProjectRequestQuery = {
 }
 
 export type TGetAvailableTasksByProjectResponseData = TUserAvailableTaskTodoByProject;
+
+export type TGetWorkspaceSessionHistoriesRequestQuery = {
+    workspace_id : string,
+    user_ids? : string[],
+    date_range? : string[]
+}
+
+export type TGetWorkspaceSessionHistoriesResponseData = TSessionHistoryWithTaskTodoStateSnapshots[]
 
 // Task Todo
 
@@ -101,7 +117,22 @@ export type TUserTaskTodoState = TUserAvailableTaskTodo & Pick<
     "work_time_goal" |
     "current_work_time" |
     "display_order" |
-    "active"
+    "active" |
+    "completed"
 > & {
     timers : TTaskTodoTimer[]
 }
+
+export type TSessionHistory = Selectable<TaskboardTaskTodoSessionHistory>
+
+export type TSessionHistoryWithTaskTodoStateSnapshots = TSessionHistory & {
+    snapshots : TTaskTodoStateSnapshotWithTimers[]
+}
+
+export type TTaskTodoStateSnapshot = Selectable<TaskboardTaskTodoStateSnapshot>
+
+export type TTaskTodoStateSnapshotWithTimers = TTaskTodoStateSnapshot & {
+    timers : TTaskTodoStateSnapshotTimer[]
+}
+
+export type TTaskTodoStateSnapshotTimer = Selectable<TaskboardTaskTodoStateSnapshotTimer>

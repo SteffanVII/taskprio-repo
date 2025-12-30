@@ -1,4 +1,4 @@
-import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TCompleteTaskTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TAddTaskToTodoRequestBody, TAddTaskToTodoRequestPathParams, TCommitTaskTodoRequestPathParams, TCompleteTaskTodoRequestBody, TCompleteTaskTodoRequestPathParams, TFinishTaskTodoSessionRequestPathParams, TGetAvailableTasksByWorkspaceRequestPathParams, TGetUserTaskTodoStateRequestPathParams, TGetWorkspaceSessionHistoriesRequestQuery, TRemoveTaskFromTodoRequestPathParams, TStartOrStopTaskTodoTimerRequestPathParams, TUpdateTaskTodoStateRequestBody, TUpdateTaskTodoStateRequestPathParams, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
 
 // Mutation
 
@@ -30,11 +30,16 @@ export type TStartOrStopTaskTodoTimerPayload = {
     pathParameters : TStartOrStopTaskTodoTimerRequestPathParams
 }
 
-export type TCompleteTaskTodoPayload = {
-    pathParameters : TCompleteTaskTodoRequestPathParams,
+export type TCommitTaskTodoPayload = {
+    pathParameters : TCommitTaskTodoRequestPathParams,
     optimisticHelpers? : {
         task : TUserTaskTodoState
     }
+}
+
+export type TCompleteTaskTodoPayload = {
+    pathParameters : TCompleteTaskTodoRequestPathParams,
+    body : TCompleteTaskTodoRequestBody
 }
 
 // Query
@@ -45,4 +50,8 @@ export type TGetTasksAssignedToUserByWorkspacePayload = {
 
 export type TGetUserTaskTodoStatePayload = {
     pathParameter : Partial<TGetUserTaskTodoStateRequestPathParams>
+}
+
+export type TGetWorkspaceSessionHistoriesPayload = {
+    query : Partial<TGetWorkspaceSessionHistoriesRequestQuery>
 }

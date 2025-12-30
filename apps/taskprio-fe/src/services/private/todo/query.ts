@@ -1,6 +1,6 @@
-import { TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetAvailableTasksByWorkspaceResponseData, TGetUserTaskTodoStateResponseData } from "@repo/taskprio-types/src"
+import { TGetAvailableTasksByProjectRequestPathParams, TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetAvailableTasksByWorkspaceResponseData, TGetUserTaskTodoStateResponseData, TGetWorkspaceSessionHistoriesResponseData } from "@repo/taskprio-types/src"
 import { keepPreviousData, useQuery, UseQueryOptions } from "@tanstack/react-query"
-import { TGetTasksAssignedToUserByWorkspacePayload, TGetUserTaskTodoStatePayload } from "./types"
+import { TGetTasksAssignedToUserByWorkspacePayload, TGetUserTaskTodoStatePayload, TGetWorkspaceSessionHistoriesPayload } from "./types"
 import { QueryKeys } from "@/services/enum"
 import { axiosInstance } from "@/services/axios"
 import { useGlobalsStore_authenticated } from "@/stores/globals"
@@ -66,4 +66,32 @@ export const useGetUserTaskTodoState = ( payload : TGetUserTaskTodoStatePayload,
         refetchOnWindowFocus : config?.refetchOnWindowFocus,
         enabled : !!payload.pathParameter.workspace_id && authenticated && (config?.enabled ?? true)
     })
+}
+
+export const useGetWorkspaceSessionHistories = (
+    payload : TGetWorkspaceSessionHistoriesPayload,
+    options? : Partial<UseQueryOptions<TGetWorkspaceSessionHistoriesResponseData, AxiosError>>
+) => {
+
+    const authenticated = useGlobalsStore_authenticated()
+
+    return useQuery<TGetWorkspaceSessionHistoriesResponseData, AxiosError>({
+        queryKey : [ ...QueryKeys.GET_WORKSPACE_SESSION_HISTORIES.split, payload.query.workspace_id, JSON.stringify(payload.query) ],
+        queryFn : async () => {
+            const response = await axiosInstance.get(
+                `/private/todo/session-histories`,
+                {
+                    params : {
+                        ...payload.query,
+                        user_ids : payload.query.user_ids ? JSON.stringify(payload.query.user_ids) : undefined,
+                        date_range : payload.query.date_range ? JSON.stringify(payload.query.date_range) : undefined
+                    }
+                }
+            )
+            return response.data;
+        },
+        ...options,
+        enabled : authenticated && (options?.enabled ?? true)
+    })
+
 }

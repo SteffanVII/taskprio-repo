@@ -280,9 +280,10 @@ const MemberDialog = () => {
                     <DialogFooter>
                         <Button
                             onClick={handleSaveOnClick}
-                            disabled={role === workspaceMember?.workspace_role}
-                            isLoading={updateWorkspaceMemberRoleIsPending}
-                        >Save</Button>
+                            disabled={role === workspaceMember?.workspace_role || updateWorkspaceMemberRoleIsPending}
+                        >
+                            { updateWorkspaceMemberRoleIsPending ? <Spinner/> : "Save" }
+                        </Button>
                     </DialogFooter>
                 }
             </DialogContent>

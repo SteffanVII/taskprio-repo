@@ -1,13 +1,14 @@
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useGetProjectListWithUserAssignedTasks } from "@/services/private/project/query";
 import { updateTaskTodoPageStore, useTaskTodoPageStore_selectedProjectList_availableTaskDrawer } from "@/stores/taskTodoPage";
 import React, { useLayoutEffect } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import ProjectColumn from "../availableTasksSection/AvailableTasksSectionProjectColumn_TaskTodoPage";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 
 type TAvailableTasksDrawer_TaskTodoPageOverlayProps = {
     open : boolean,
@@ -46,22 +47,25 @@ const AvailableTasksDrawer_TaskTodoPageOverlay : React.FC<TAvailableTasksDrawer_
     ])
 
     return (
-        <Drawer
+        <Dialog
             open={open}
             onOpenChange={ open => {
                 setOpen(open)
             } }
         >
-            <DrawerContent
+            <DialogContent
                 className={cn(
+                    `flex flex-col`,
                     `h-[60%] min-h-0 `,
+                    `!top-full !-translate-y-full rounded-b-none max-w-full`,
                     `overflow-hidden`
                 )}
             >
+                <DialogHeader>Add Task</DialogHeader>
                 <div
                     className={cn(
                         `relative grid`,
-                        `size-full p-8 pb-0 min-h-0`,
+                        `size-full pb-0 min-h-0`,
                         `overflow-hidden`
                     )}
                     style={{
@@ -73,6 +77,10 @@ const AvailableTasksDrawer_TaskTodoPageOverlay : React.FC<TAvailableTasksDrawer_
                         <Skeleton className="w-full h-[2rem]" />
                         :
                         <Select
+                            items={projectListWithAssignedTasks?.map( projectList => ({
+                                value : projectList.project_id,
+                                label : projectList.project_name
+                            }) )}
                             defaultValue={selectedProjectList?.project_id}
                             onValueChange={ value => {
                                 const foundProjectList = projectListWithAssignedTasks?.find( projectList => projectList.project_id === value )
@@ -93,7 +101,7 @@ const AvailableTasksDrawer_TaskTodoPageOverlay : React.FC<TAvailableTasksDrawer_
                                     backgroundColor : selectedProjectList ? selectedProjectList.project_color : undefined
                                 }}
                             >
-                                <SelectValue placeholder="Select Project" />
+                                <SelectValue/>
                             </SelectTrigger>
                             <SelectContent>
                                 {
@@ -122,8 +130,8 @@ const AvailableTasksDrawer_TaskTodoPageOverlay : React.FC<TAvailableTasksDrawer_
                         }
                     </div>
                 </div>
-            </DrawerContent>           
-        </Drawer>
+            </DialogContent>           
+        </Dialog>
     )
 
 }

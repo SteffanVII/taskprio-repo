@@ -14,6 +14,7 @@ import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { useLayoutEffect } from "react";
 import { useGlobalsStore_selectedProject } from "@/stores/globals";
 import TagDeleteDialog from "./TagDeleteDialog";
+import Spinner from "../Spinner";
 
 const tagSchema = z.object({
     name : z.string().min(1, { message : "Name is required." }),
@@ -190,7 +191,7 @@ const TagDialog = () => {
                                         backgroundColor : color,
                                         color : getHexLuminance(color) > 0.5 ? "black" : "white"
                                     }}
-                                >{ name }</span>
+                                >{ !!name ? name : "Tag Name" }</span>
                             </div>
                         </div>
                     </form>
@@ -210,12 +211,12 @@ const TagDialog = () => {
                         onClick={() => {
                             form.handleSubmit(onSubmit)()
                         }}
-                        isLoading={
+                        disabled={
                             createProjectTagTriggerIsPending || updateProjectTagTriggerIsPending
                         }
                     >
                         {
-                            tag ? "Update" : "Create"
+                            createProjectTagTriggerIsPending || updateProjectTagTriggerIsPending ? <Spinner/> : tag ? "Update" : "Create"
                         }
                     </Button>
                 </DialogFooter>

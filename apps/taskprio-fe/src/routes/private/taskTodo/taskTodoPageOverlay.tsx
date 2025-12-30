@@ -1,3 +1,4 @@
+import OverlaySettingsDialog from "@/components/others/dialogs/taskboardTaskDialog/overlaySettingsDialog/OverlaySettingsDialog";
 import FocusMode_TaskTodoPageOverlay from "@/components/others/taskTodo/overlay/FocusMode_TaskTodoPageOverlay";
 import Header_TaskTodoPageOverlay from "@/components/others/taskTodo/overlay/Header_TaskTodoPageOverlay";
 import TodoList_TaskTodoPageOverlay from "@/components/others/taskTodo/overlay/TodoList_TaskTodoPageOverlay";
@@ -30,6 +31,7 @@ const TaskTodoPageOverlay = () => {
                 uIMode === ETaskTodoPageUIMode.WIDGET &&
                 <FocusMode_TaskTodoPageOverlay/>
             }
+            <OverlaySettingsDialog/>
         </div>
     )
 
