@@ -56,20 +56,17 @@ export const registerInvitationPrivateRoutes = (router: Router) => {
                 const {
                     error
                 } = await resend.batch.send(
-                    emailsWithToken.map(emailWithToken => {
-                        const redirectUrl = new URL('taskprio-app://accept_invitation');
-                        redirectUrl.searchParams.set("invite_token", emailWithToken.token);
-                        return ({
-                            from: "Taskprio Team <app@app.000184.xyz>",
-                            to: emailWithToken.email,
-                            subject: "You've been invited to a workspace",
-                            html: `
+                    emailsWithToken.map(emailWithToken => ({
+                        from: "Taskprio Team <app@app.000184.xyz>",
+                        to: emailWithToken.email,
+                        subject: "You've been invited to a workspace",
+                        html: `
                                 <h1>You've been invited to a workspace</h1>
                                 <p>You've been invited to a workspace by ${user_email}.</p>
-                                <p>Click <a href="${redirectUrl.toString()}">here</a> redirect to the app and accept invitation.</p>
+                                <p>Click <a href="taskprio-app://accept_invitation?invite_token=${emailWithToken.token}">here</a> redirect to the app and accept invitation.</p>
                             `
-                        })
                     })
+                    )
                 )
 
                 // If the batch fails, return the error

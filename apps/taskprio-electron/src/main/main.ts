@@ -6,6 +6,7 @@ import { URL } from 'node:url';
 import { titlebarMain } from './titlebar/index.js';
 import { generalMain } from './general/index.js';
 import { taskTodoOverlayMain } from './taskTodoOverlay/index.js';
+import "./protocolHandler.js"
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
