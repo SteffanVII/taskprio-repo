@@ -13,10 +13,10 @@ import { configDotenv } from "dotenv";
 configDotenv();
 
 function reigsterAuthenticationRoutes() {
-    
+
     APP.post(
         `/redirect-to-electron-app`,
-        async ( req : Request, res : Response ) => {
+        async (req: Request, res: Response) => {
             const { credential, client_id } = req.body;
             const redirectUrl = new URL('taskprio-app://googlelogin');
             if (credential) redirectUrl.searchParams.append('credential', credential);
@@ -27,41 +27,41 @@ function reigsterAuthenticationRoutes() {
 
     APP.post(
         "/login",
-        async ( req : ILoginRequest, res : Response ) => {
+        async (req: ILoginRequest, res: Response) => {
             const { email, password, for_invitation_purpose } = req.body;
 
-            if ( !email || !password ) {
+            if (!email || !password) {
                 res.status(400).json({ message: "Email and password are required" });
             }
-    
+
             try {
 
                 const user = await getUserByEmail(email, false)
-    
-                if ( !user ) {
+
+                if (!user) {
                     res.status(401).json({ message: "Email is not registered to any account" });
                 } else {
 
                     const isPasswordValid = await verifyPassword(password, user.password_hashed);
 
-                    if ( !isPasswordValid ) {
+                    if (!isPasswordValid) {
                         res.status(401).json({ message: "Invalid password" });
                     } else {
-                        const accessToken = jwt.sign({ email : email, user_id : user.user_id }, process.env.JSONWEBTOKEN_SECRET);
+                        const accessToken = jwt.sign({ email: email, user_id: user.user_id }, process.env.JSONWEBTOKEN_SECRET);
                         res.cookie(
                             for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                             accessToken,
                             {
-                                httpOnly : true,
-                                secure : true,
-                                sameSite : 'none',
-                                maxAge : 1000 * 60 * 60 * 24 * 365 * 10
+                                httpOnly: true,
+                                secure: true,
+                                sameSite: 'none',
+                                maxAge: 1000 * 60 * 60 * 24 * 365 * 10
                             }
                         )
-                        res.status(200).json({ message: "Login successful", access_token : accessToken, user });
+                        res.status(200).json({ message: "Login successful", access_token: accessToken, user });
                     }
                 }
-            } catch (error) {   
+            } catch (error) {
                 res.status(500).json({ message: "Internal server error" });
             }
         }
@@ -72,82 +72,82 @@ function reigsterAuthenticationRoutes() {
         // This middleware is used to verify the google credential.
         // It is used to add the user object to the request object
         verifyGoogleCredentialdMiddleware,
-        async ( req : IGoogleLoginRequest, res : Response ) => {
+        async (req: IGoogleLoginRequest, res: Response) => {
             const { user, body } = req;
 
-            if ( !user ) {
-                res.status(400).json({ message : "Access token is required" });
+            if (!user) {
+                res.status(400).json({ message: "Access token is required" });
                 return
             }
 
             try {
 
-                const existingUser = await getUserByGoogleUserIdKysely( user.google_user_id )
+                const existingUser = await getUserByGoogleUserIdKysely(user.google_user_id)
 
-                if ( existingUser ) {
+                if (existingUser) {
                     const accessToken = jwt.sign({
-                        email : existingUser.email,
-                        user_id : existingUser.user_id
+                        email: existingUser.email,
+                        user_id: existingUser.user_id
                     }, process.env.JSONWEBTOKEN_SECRET);
                     res.cookie(
                         body.for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                         accessToken,
                         {
-                            httpOnly : true,
-                            sameSite : "none",
-                            secure : true,
-                            maxAge : 1000 * 60 * 60 * 24 * 365 * 10
+                            httpOnly: true,
+                            sameSite: "none",
+                            secure: true,
+                            maxAge: 1000 * 60 * 60 * 24 * 365 * 10
                         }
                     )
 
-                    res.status(200).json({ message : "Login successful", access_token : accessToken, user : existingUser });
+                    res.status(200).json({ message: "Login successful", access_token: accessToken, user: existingUser });
 
                 } else {
 
                     const createdUser = await createUser({
-                        email : user.email,
-                        firstname : user.given_name,
-                        lastname : user.family_name,
-                        google_user_id : user.google_user_id,
-                        password_hashed : null
+                        email: user.email,
+                        firstname: user.given_name,
+                        lastname: user.family_name,
+                        google_user_id: user.google_user_id,
+                        password_hashed: null
                     })
 
                     const accessToken = jwt.sign({
-                        email : createdUser.email,
-                        user_id : createdUser.user_id
+                        email: createdUser.email,
+                        user_id: createdUser.user_id
                     }, process.env.JSONWEBTOKEN_SECRET);
 
                     res.cookie(
                         body.for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                         accessToken,
                         {
-                            httpOnly : true,
-                            sameSite : "none",
-                            secure : true,
-                            maxAge : 1000 * 60 * 60 * 24 * 365 * 10
+                            httpOnly: true,
+                            sameSite: "none",
+                            secure: true,
+                            maxAge: 1000 * 60 * 60 * 24 * 365 * 10
                         }
                     )
 
                     const userObject = await getUserByEmail(createdUser.email)
 
-                    res.status(201).json({ message : "Login successful", access_token : accessToken, user : userObject });
+                    res.status(201).json({ message: "Login successful", access_token: accessToken, user: userObject });
                 }
 
             } catch (error) {
                 console.error(error);
-                res.status(500).json({ message : "Internal server error" });
+                res.status(500).json({ message: "Internal server error" });
             }
-            
+
         }
     )
 
     APP.post(
         "/register",
-        async ( req : IRegisterRequest, res : Response ) => {
+        async (req: IRegisterRequest, res: Response) => {
 
             const { email, password, firstname, lastname, for_invitation_purpose } = req.body || {};
 
-            if ( !email || !password || !firstname || !lastname ) {
+            if (!email || !password || !firstname || !lastname) {
                 res.status(400).json({ message: "Email, password, firstname and lastname are required" });
                 return
             }
@@ -163,7 +163,7 @@ function reigsterAuthenticationRoutes() {
 
                 const existingUser = await getUserByEmail(email, true)
 
-                if ( existingUser ) {
+                if (existingUser) {
                     res.status(400).json({ message: "This email is already in use" });
                     client.release();
                     return;
@@ -172,25 +172,25 @@ function reigsterAuthenticationRoutes() {
                 const hashedPassword = await hashPassword(password);
 
                 const createUserResult = await client.query({
-                    text : ` INSERT INTO public."user" (email, password_hashed, firstname, lastname) VALUES ($1, $2, $3, $4) RETURNING user_id, email, firstname, lastname `,
-                    values : [email, hashedPassword, firstname, lastname]
+                    text: ` INSERT INTO public."user" (email, password_hashed, firstname, lastname) VALUES ($1, $2, $3, $4) RETURNING user_id, email, firstname, lastname `,
+                    values: [email, hashedPassword, firstname, lastname]
                 })
-                
-                if ( createUserResult.rowCount === 1 ) {
-                    const accessToken = jwt.sign({ email : email, user_id : createUserResult.rows[0].user_id }, process.env.JSONWEBTOKEN_SECRET);
+
+                if (createUserResult.rowCount === 1) {
+                    const accessToken = jwt.sign({ email: email, user_id: createUserResult.rows[0].user_id }, process.env.JSONWEBTOKEN_SECRET);
                     const userObject = await getUserByEmail(email)
                     res.status(201)
                         .cookie(
                             for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
                             accessToken,
                             {
-                                httpOnly : true,
-                                sameSite : "none",
-                                secure : true,
-                                maxAge : 1000 * 60 * 60 * 24 * 365 * 10
+                                httpOnly: true,
+                                sameSite: "none",
+                                secure: true,
+                                maxAge: 1000 * 60 * 60 * 24 * 365 * 10
                             }
                         )
-                        .json({ message: "User created successfully", access_token : accessToken, user : userObject });
+                        .json({ message: "User created successfully", access_token: accessToken, user: userObject });
                 } else {
                     res.status(500).json({ message: "Failed to create user" });
                 }
@@ -210,12 +210,12 @@ function reigsterAuthenticationRoutes() {
 
     APP.post(
         `/auth`,
-        async ( req : Request, res : Response ) => {
+        async (req: Request, res: Response) => {
 
             const accessToken = req.cookies[process.env.ACCESS_TOKEN_COOKIE_NAME];
 
-            if ( !accessToken ) {
-                res.status(401).json({ message : "Unauthorized" });
+            if (!accessToken) {
+                res.status(401).json({ message: "Unauthorized" });
                 return;
             }
 
@@ -225,23 +225,23 @@ function reigsterAuthenticationRoutes() {
 
                 const user = await getUserByEmail(decodedToken.email);
 
-                if ( !user ) {
-                    res.status(401).json({ message : "Unauthorized" });
+                if (!user) {
+                    res.status(401).json({ message: "Unauthorized" });
                     return;
                 }
 
-                res.status(200).json({ message : "Authenticated", user });
+                res.status(200).json({ message: "Authenticated", user });
 
             } catch (error) {
-                res.status(401).json({ message : "Unauthorized" });
+                res.status(401).json({ message: "Unauthorized" });
             }
         }
     )
 
     APP.post(
         `/logout`,
-        async ( _req : Request, res : Response ) => {
-            res.clearCookie(process.env.ACCESS_TOKEN_COOKIE_NAME, { httpOnly : true, sameSite : "none", secure : true }).status(200).json({ message : "Logged out" });
+        async (_req: Request, res: Response) => {
+            res.clearCookie(process.env.ACCESS_TOKEN_COOKIE_NAME, { httpOnly: true, sameSite: "none", secure: true }).status(200).json({ message: "Logged out" });
         }
     )
 

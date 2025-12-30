@@ -12,35 +12,35 @@ import { acceptInvitation, createInvitationBatch } from "../../database/queries/
 import { addMemberToProjects, addProjectMember } from "../../database/queries/project/mutation.js";
 import { getWorkspaceMember } from "../../database/queries/workspace/query.js";
 
-export const registerInvitationPrivateRoutes = ( router : Router ) => {
+export const registerInvitationPrivateRoutes = (router: Router) => {
 
     router.post(
         "/workspace/:workspace_id",
-        async ( req : IInviteToWorkspaceRequest, res : Response ) => {
+        async (req: IInviteToWorkspaceRequest, res: Response) => {
 
             const { workspace_id } = req.params;
             const { projects, emails } = req.body;
-            const { user_id, email : user_email } = req.user;
+            const { user_id, email: user_email } = req.user;
 
-            if ( !workspace_id || !projects || !emails ) {
-                res.status(400).json({ message : "Invalid request" });
+            if (!workspace_id || !projects || !emails) {
+                res.status(400).json({ message: "Invalid request" });
                 return;
             }
 
             try {
 
                 // Convert emails string array to a array of objects with email and token
-                const emailsWithToken = emails.map( email => {
+                const emailsWithToken = emails.map(email => {
                     const token = jwt.sign(
                         {
-                            sender_id : user_id,
+                            sender_id: user_id,
                             email,
                             workspace_id,
                             projects
                         },
                         process.env.JSONWEBTOKEN_SECRET,
                         {
-                            expiresIn : "7d"
+                            expiresIn: "7d"
                         }
                     )
 
@@ -49,69 +49,73 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                         token
                     }
 
-                } )
+                })
 
                 // Send emails using resend batch
                 // When one of the emails fails, the whole batch fails
                 const {
                     error
                 } = await resend.batch.send(
-                    emailsWithToken.map( emailWithToken => ({
-                        from : "Taskprio Team <app@app.000184.xyz>",
-                        to : emailWithToken.email,
-                        subject : "You've been invited to a workspace",
-                        html : `
-                            <h1>You've been invited to a workspace</h1>
-                            <p>You've been invited to a workspace by ${user_email}.</p>
-                            <p>Click <a href="http://localhost:5001/accept?invite_token=${emailWithToken.token}">here</a> to accept the invitation.</p>
-                        `
-                    }) )
+                    emailsWithToken.map(emailWithToken => {
+                        const redirectUrl = new URL('taskprio-app://accept_invitation');
+                        redirectUrl.searchParams.set("invite_token", emailWithToken.token);
+                        return ({
+                            from: "Taskprio Team <app@app.000184.xyz>",
+                            to: emailWithToken.email,
+                            subject: "You've been invited to a workspace",
+                            html: `
+                                <h1>You've been invited to a workspace</h1>
+                                <p>You've been invited to a workspace by ${user_email}.</p>
+                                <p>Click <a href="${redirectUrl.toString()}">here</a> redirect to the app and accept invitation.</p>
+                            `
+                        })
+                    })
                 )
 
                 // If the batch fails, return the error
-                if ( error ) {
+                if (error) {
                     console.error(error);
-                    res.status(500).json({ message : "There was an error sending the invitations" });
+                    res.status(500).json({ message: "There was an error sending the invitations" });
                     return;
                 }
 
                 // Insert the invitations into the database
-                await createInvitationBatch( emailsWithToken.map( email => ({
-                    workspaceId : workspace_id,
-                    senderId : user_id,
-                    email : email.email,
-                    tokenString : email.token
-                }) ) ) 
+                await createInvitationBatch(emailsWithToken.map(email => ({
+                    workspaceId: workspace_id,
+                    senderId: user_id,
+                    email: email.email,
+                    tokenString: email.token
+                })))
 
-                res.status(200).json({ message : "Invitation sent" });
+                res.status(200).json({ message: "Invitation sent" });
 
             } catch (error) {
                 console.error(error);
-                res.status(500).json({ message : "There was an error sending the invitations" });
+                res.status(500).json({ message: "There was an error sending the invitations" });
             }
         }
     )
 
     router.post(
         "/workspace/accept/:invitation",
-        async ( req : IAcceptInvitationRequest, res : Response ) => {
+        async (req: IAcceptInvitationRequest, res: Response) => {
 
             const { email } = req.user
-            const { invitation : invitationToken } = req.params
+            const { invitation: invitationToken } = req.params
 
             try {
 
                 // Decode the token
                 const decodedToken = jwt.verify(invitationToken, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenDecoded;
 
-                if ( decodedToken.email !== email ) {
-                    res.status(400).json({ message : "You are not the recipient of this invitation" });
+                if (decodedToken.email !== email) {
+                    res.status(400).json({ message: "You are not the recipient of this invitation" });
                     return
                 }
 
                 // If the token has expired, return an error
-                if ( decodedToken.exp && decodedToken.exp < Date.now() / 1000 ) {
-                    res.status(400).json({ message : "Invitation expired" });
+                if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
+                    res.status(400).json({ message: "Invitation expired" });
                     return;
                 }
 
@@ -119,8 +123,8 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                 const user = await getUserByEmail(decodedToken.email)
 
                 // If the user does not exist, return an error
-                if ( !user ) {
-                    res.status(400).json({ message : "User not found" });
+                if (!user) {
+                    res.status(400).json({ message: "User not found" });
                     return;
                 }
 
@@ -131,12 +135,12 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                     decodedToken.email
                 )
 
-                if ( !invitation ) {
-                    res.status(404).json({ message : "Invitation not found" });
+                if (!invitation) {
+                    res.status(404).json({ message: "Invitation not found" });
                 }
 
-                if ( invitation.accepted ) {
-                    res.status(400).json({ message : "Invitation already accepted" });
+                if (invitation.accepted) {
+                    res.status(400).json({ message: "Invitation already accepted" });
                     return;
                 }
 
@@ -149,11 +153,11 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
                     decodedToken.projects
                 )
 
-                res.status(200).clearCookie( process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME ).json({ message : "Invitation accepted" })
+                res.status(200).clearCookie(process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME).json({ message: "Invitation accepted" })
 
             } catch (error) {
                 console.error(error);
-                res.status(500).clearCookie( process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME ).json({ message : "Internal server error" });
+                res.status(500).clearCookie(process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME).json({ message: "Internal server error" });
             }
 
         }
@@ -161,11 +165,11 @@ export const registerInvitationPrivateRoutes = ( router : Router ) => {
 
 }
 
-export const registerInvitationPublicRoutes = ( router : Router ) => {
+export const registerInvitationPublicRoutes = (router: Router) => {
 
     router.get(
         "/workspace/info/:token",
-        async ( req : IGetInvitationInfoRequest, res : Response ) => {
+        async (req: IGetInvitationInfoRequest, res: Response) => {
 
             const { token } = req.params;
 
@@ -183,23 +187,23 @@ export const registerInvitationPublicRoutes = ( router : Router ) => {
                     decodedToken.email
                 )
 
-                const returnData : IGetInvitationInfoResponseData = {
-                    sender_id : decodedToken.sender_id,
-                    email : decodedToken.email,
-                    is_invitation_exists : true,
-                    is_user_exists : true,
-                    accepted : false
+                const returnData: IGetInvitationInfoResponseData = {
+                    sender_id: decodedToken.sender_id,
+                    email: decodedToken.email,
+                    is_invitation_exists: true,
+                    is_user_exists: true,
+                    accepted: false
                 }
 
-                if ( !user ) {
+                if (!user) {
                     returnData.is_user_exists = false
                 }
 
-                if ( !invitation ) {
+                if (!invitation) {
                     returnData.is_invitation_exists = false
                 }
 
-                if ( invitation && invitation.accepted ) {
+                if (invitation && invitation.accepted) {
                     returnData.accepted = true
                 }
 
@@ -207,7 +211,7 @@ export const registerInvitationPublicRoutes = ( router : Router ) => {
 
             } catch (error) {
                 console.log(error);
-                res.status(500).json({ message : "Invalid token or expired" });
+                res.status(500).json({ message: "Invalid token or expired" });
             }
 
         }

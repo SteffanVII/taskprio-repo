@@ -8,7 +8,7 @@ import { updateSessionHistoryTabStore, useSessionHistoryTabStore_dateRange, useS
 import dayjs from "dayjs";
 import MemberSelector_SessionHistoryTab from "./MemberSelector_SessionHistoryTab";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import DateRangePicker_SessionHistoryTab from "./DateRangePicker_SessionHIstoryTab";
+import DateRangePicker_SessionHistoryTab from "./DateRangePicker_SessionHistoryTab";
 
 const SessionHistoryTab = () => {
 
@@ -18,27 +18,29 @@ const SessionHistoryTab = () => {
     const selectedMembers = useSessionHistoryTabStore_selectedMembers()
 
     const {
-        data : sessionHistories,
+        data: sessionHistories,
     } = useGetWorkspaceSessionHistories(
         {
-            query : {
-                workspace_id : selectedworkspace?.workspace_id,
-                user_ids : selectedMembers,
-                date_range : dateRange
+            query: {
+                workspace_id: selectedworkspace?.workspace_id,
+                user_ids: selectedMembers,
+                date_range: dateRange
             }
         },
         {
-            enabled : !!selectedworkspace?.workspace_id
+            enabled: !!selectedworkspace?.workspace_id
         }
     )
 
-    const handleFixedRangeButtonOnClick = ( days : number ) => {
-        if ( days === 0 ) {
-            updateSessionHistoryTabStore({ dateRangeState : days, dateRange : [] })
-        } else if ( days === 1 ) {
-            updateSessionHistoryTabStore({ dateRangeState : days, dateRange : [ dayjs().endOf("day").toISOString(), dayjs().startOf("day").toISOString() ] })
+    const handleFixedRangeButtonOnClick = (days: number) => {
+        if (days === 0) {
+            updateSessionHistoryTabStore({ dateRangeState: days, dateRange: [] })
+        } else if (days === 1) {
+            updateSessionHistoryTabStore({ dateRangeState: days, dateRange: [dayjs().endOf("day").toISOString(), dayjs().startOf("day").toISOString()] })
+        } else if (days === -1) {
+            updateSessionHistoryTabStore({ dateRangeState: days })
         } else {
-            updateSessionHistoryTabStore({ dateRangeState : days, dateRange : [ dayjs().endOf("day").toISOString(), dayjs().subtract(days, "day").startOf("day").toISOString() ] })
+            updateSessionHistoryTabStore({ dateRangeState: days, dateRange: [dayjs().endOf("day").toISOString(), dayjs().subtract(days, "day").startOf("day").toISOString()] })
         }
     }
 
@@ -50,7 +52,7 @@ const SessionHistoryTab = () => {
                 `size-full min-h-0`
             )}
             style={{
-                gridTemplateRows : "min-content 1fr"
+                gridTemplateRows: "min-content 1fr"
             }}
         >
             <div
@@ -62,9 +64,9 @@ const SessionHistoryTab = () => {
                 <ToggleGroup
                     variant={"outline"}
                     value={[dateRangeState.toString()]}
-                    onValueChange={ value => {
+                    onValueChange={value => {
                         handleFixedRangeButtonOnClick(Number(value[0]))
-                    } }
+                    }}
                 >
                     <ToggleGroupItem value={"1"} >Today</ToggleGroupItem>
                     <ToggleGroupItem value={"7"} >Last 7 days</ToggleGroupItem>
@@ -72,9 +74,10 @@ const SessionHistoryTab = () => {
                     <ToggleGroupItem value={"63"} >6M</ToggleGroupItem>
                     <ToggleGroupItem value={"365"} >1Y</ToggleGroupItem>
                     <ToggleGroupItem value={"0"} >All time</ToggleGroupItem>
+                    <ToggleGroupItem value={"-1"} >Custom</ToggleGroupItem>
                 </ToggleGroup>
-                <DateRangePicker_SessionHistoryTab/>
-                <MemberSelector_SessionHistoryTab/>
+                <DateRangePicker_SessionHistoryTab />
+                <MemberSelector_SessionHistoryTab />
             </div>
 
             {
@@ -93,7 +96,7 @@ const SessionHistoryTab = () => {
                     )}
                 >
                     {
-                        sessionHistories && sessionHistories.map( sessionHistory => <SessionHistoryCard_SessionHistoryTab data={sessionHistory} /> )
+                        sessionHistories && sessionHistories.map(sessionHistory => <SessionHistoryCard_SessionHistoryTab data={sessionHistory} />)
                     }
                 </Accordion>
             }

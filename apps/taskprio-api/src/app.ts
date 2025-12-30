@@ -25,6 +25,7 @@ import multer from "multer";
 import { registerToDoRoutes } from "./routes/todo/todo.js";
 import { initializeTaskTodoTimerHeartbeatTimeouts } from "./initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 import { IAuthenticatedRequest } from "./middlewares/interfaces.js";
+import registerRedirectRoutes from "./routes/redirect/redirect.js";
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ const resendApiKey = process.env.RESEND_API_KEY
 const PORT = process.env.PORT || 5000;
 
 export const APP = express();
-export const resend = new Resend( resendApiKey )
+export const resend = new Resend(resendApiKey)
 
 // Google auth client
 export const googleAuthClient = new OAuth2Client(
@@ -41,20 +42,20 @@ export const googleAuthClient = new OAuth2Client(
 
 // Middleware for cors
 APP.use(cors({
-    origin : [ "http://localhost:5001", "https://taskprio-webapp.onrender.com", "*" ],
+    origin: ["http://localhost:5001", "https://taskprio-webapp.onrender.com", "*"],
     credentials: true,
 }));
 // Middleware to parse cookies
 APP.use(cookieParser());
 // Middleware to parse JSON bodies
 APP.use(express.json());
-APP.use(express.urlencoded({ extended : true }));
+APP.use(express.urlencoded({ extended: true }));
 
 // Websocket server
 export const SERVER = http.createServer(APP)
-const wss = new WebSocketServer({ server : SERVER })
+const wss = new WebSocketServer({ server: SERVER })
 // export const wsConnectionsManager = new WebSocketConnectionsManager( wss );
-export const wsConnectionsManagerSimple = new WebSocketConnectionsManagerSimple( wss )
+export const wsConnectionsManagerSimple = new WebSocketConnectionsManagerSimple(wss)
 
 // Create the pool for postgre clients
 createPostgrePool()
@@ -73,21 +74,25 @@ registerWebSocketLogic(wss, wsConnectionsManagerSimple)
 
 // Initialize multer
 export const multerInstance = multer({
-    storage : multer.memoryStorage()
+    storage: multer.memoryStorage()
 })
 
 // Initializations
 await initializeTaskTodoTimerHeartbeatTimeouts()
 
 // Routes registration
-APP.get( "/", ( req : Request, res : Response ) => {
-    res.send( "Hello World" );
+APP.get("/", (req: Request, res: Response) => {
+    res.send("Hello World");
 })
 reigsterAuthenticationRoutes()
 
 // Private routes
 const privateRoutes = express.Router()
 privateRoutes.use(authenticateRequestMiddleware)
+
+// Redirect routes
+const redirectRoutes = express.Router()
+registerRedirectRoutes(redirectRoutes)
 
 // Workspace routes
 const workspaceRoutes = express.Router()
@@ -130,9 +135,10 @@ const toDoRoutes = express.Router()
 registerToDoRoutes(toDoRoutes)
 
 // Mount the private routes
-privateRoutes.post("/ping", async ( _req : IAuthenticatedRequest, res : Response ) => {
-    res.status(200).json({ message : "Pong" })
+privateRoutes.post("/ping", async (_req: IAuthenticatedRequest, res: Response) => {
+    res.status(200).json({ message: "Pong" })
 })
+privateRoutes.use("/redirect", redirectRoutes)
 privateRoutes.use("/workspace", workspaceRoutes)
 privateRoutes.use("/project", projectRoutes)
 privateRoutes.use("/taskboard", taskBoardRoutes)
@@ -154,26 +160,26 @@ process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
 async function gracefulShutdown() {
-    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+    console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
 
     // Close websocket connections
-    wss.clients.forEach( client => {
+    wss.clients.forEach(client => {
         client.close()
-    } )
+    })
     wss.close()
 
     // Close postgre pool
     await getPostgrePool()?.end()
 
-    SERVER.close( () => {   
-        console.log( "Server closed" );
+    SERVER.close(() => {
+        console.log("Server closed");
         process.exit(0);
     })
 
     SERVER.closeAllConnections()
 
-    setTimeout( () => {
-        console.log( "Could not close server, forcefully shutting down" );
+    setTimeout(() => {
+        console.log("Could not close server, forcefully shutting down");
         process.exit(1);
-    }, 10000 )
+    }, 10000)
 }

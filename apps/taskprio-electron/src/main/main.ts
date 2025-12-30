@@ -12,28 +12,29 @@ declare const MAIN_WINDOW_VITE_NAME: string;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
-  app.quit();
+    app.quit();
 }
 
 // Set the custom protocol
-if ( process.defaultApp ) {
-  if ( process.argv.length >= 2 ) {
-    app.setAsDefaultProtocolClient( "taskprio-app", process.execPath, [ path.resolve(process.argv[1]) ]  )
-  }
+if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient("taskprio-app", process.execPath, [path.resolve(process.argv[1])])
+    }
 } else {
-  app.setAsDefaultProtocolClient( "taskprio-app" )
+    app.setAsDefaultProtocolClient("taskprio-app")
 }
 
-export let mainWindow : BrowserWindow;
+export let mainWindow: BrowserWindow;
 
 const createWindow = () => {
+
     const { width, height } = screen.getPrimaryDisplay().workAreaSize
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        autoHideMenuBar : true,
-        width : width - 40,
-        height : height - 40,
-        titleBarStyle : "hidden",
+        autoHideMenuBar: true,
+        width: width - 40,
+        height: height - 40,
+        titleBarStyle: "hidden",
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         }
@@ -43,55 +44,16 @@ const createWindow = () => {
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     } else {
         mainWindow.loadFile(
-        path.join(__dirname, `../dist/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+            path.join(__dirname, `../dist/renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
         );
     }
 
-    mainWindow.setPosition( 20, 20 )
+    mainWindow.setPosition(20, 20)
 
     // mainWindow.webContents.openDevTools()
 
     return mainWindow
 };
-
-const gotTheLock = app.requestSingleInstanceLock()
-
-if ( !gotTheLock ) {
-    app.quit()
-} else {
-    app.on( "second-instance", ( _, commandLine, _workingDirectory ) => {
-        if ( mainWindow ) {
-        if ( mainWindow.isMinimized() ) mainWindow.restore()
-        mainWindow.focus()
-        const urlString = commandLine.pop()
-        mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString )
-        mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
-        if ( urlString.includes("taskprio-app://googlelogin") ) {
-            const url = new URL(urlString)
-            const searchParams = url.searchParams
-            const credential = searchParams.get("credential")
-            const clientId = searchParams.get("clientId")
-            mainWindow.webContents.send( EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId )
-        }
-        }
-    } )
-}
-
-app.on( "open-url", (_, url) => {
-    if ( mainWindow )
-    if ( mainWindow.isMinimized() ) mainWindow.restore()
-    mainWindow.focus()
-    const urlString = url
-    mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString )
-    mainWindow.webContents.send( EEventListeners.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin") )
-    if ( urlString.includes("taskprio-app://googlelogin") ) {
-        const url = new URL(urlString)
-        const searchParams = url.searchParams
-        const credential = searchParams.get("credential")
-        const clientId = searchParams.get("clientId")
-        mainWindow.webContents.send( EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId )
-    }
-} )
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
