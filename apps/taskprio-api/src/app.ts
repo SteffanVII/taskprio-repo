@@ -90,10 +90,6 @@ reigsterAuthenticationRoutes()
 const privateRoutes = express.Router()
 privateRoutes.use(authenticateRequestMiddleware)
 
-// Redirect routes
-const redirectRoutes = express.Router()
-registerRedirectRoutes(redirectRoutes)
-
 // Workspace routes
 const workspaceRoutes = express.Router()
 registerWorkspaceRoutes(workspaceRoutes)
@@ -122,6 +118,10 @@ registerInvitationPrivateRoutes(invitationRoutes)
 const invitationPublicRoutes = express.Router()
 registerInvitationPublicRoutes(invitationPublicRoutes)
 
+// Redirect private routes
+const redirectRoutes = express.Router()
+registerRedirectRoutes(redirectRoutes)
+
 // Tag routes
 const tagRoutes = express.Router()
 registerTagRoutes(tagRoutes)
@@ -138,7 +138,6 @@ registerToDoRoutes(toDoRoutes)
 privateRoutes.post("/ping", async (_req: IAuthenticatedRequest, res: Response) => {
     res.status(200).json({ message: "Pong" })
 })
-privateRoutes.use("/redirect", redirectRoutes)
 privateRoutes.use("/workspace", workspaceRoutes)
 privateRoutes.use("/project", projectRoutes)
 privateRoutes.use("/taskboard", taskBoardRoutes)
@@ -150,6 +149,8 @@ privateRoutes.use("/profile", profileRoutes)
 privateRoutes.use("/todo", toDoRoutes)
 APP.use("/private", privateRoutes)
 APP.use("/invitation", invitationPublicRoutes)
+APP.use("/redirect", redirectRoutes)
+
 
 // Start the server
 SERVER.listen(PORT, () => {
