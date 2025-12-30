@@ -9,7 +9,6 @@ import { useNavigate } from "react-router";
 import { WebSocketContext } from "../../websocket/WebsocketProvider";
 import { StateManager_ElectronContext } from "@/stateManagers/StateManager_Electron";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Header_TaskTodoPageOverlay = () => {
 
@@ -27,14 +26,14 @@ const Header_TaskTodoPageOverlay = () => {
         switchToFullModeFromOverlayOrFocusMode
     } = useContext(StateManager_ElectronContext)
 
-    const handleWorkspaceChange = ( workspace : TWorkspace ) => {
-        if ( selectedWorkspace?.workspace_id === workspace.workspace_id ) return
-        const workspaceRole : EWorkspaceRole | null = workspace.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null
+    const handleWorkspaceChange = (workspace: TWorkspace) => {
+        if (selectedWorkspace?.workspace_id === workspace.workspace_id) return
+        const workspaceRole: EWorkspaceRole | null = workspace.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null
         updateGlobalsStore({
-            selectedWorkspace : workspace,
+            selectedWorkspace: workspace,
             workspaceRole,
-            selectedProject : null,
-            selectedTaskboard : null
+            selectedProject: null,
+            selectedTaskboard: null
         })
         navigate(`/p/task_todo_overlay/${workspace.workspace_id}`)
         pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
@@ -46,8 +45,8 @@ const Header_TaskTodoPageOverlay = () => {
 
     const handleOpenPreferencesDialog = () => {
         updateDialogsStore({
-            overlayModePreferencesDialog : {
-                open : true
+            overlayModePreferencesDialog: {
+                open: true
             }
         })
     }
@@ -99,7 +98,7 @@ const Header_TaskTodoPageOverlay = () => {
                                 variant={"ghost"}
                                 onClick={handleOpenPreferencesDialog}
                             >
-                                <Settings2/>
+                                <Settings2 />
                             </Button>
                         }
                     />
@@ -119,14 +118,14 @@ const Header_TaskTodoPageOverlay = () => {
                                 variant={"ghost"}
                                 onClick={handleBackHome}
                             >
-                                <Home/>
+                                <Home />
                             </Button>
                         }
                     />
                     <TooltipContent>Home</TooltipContent>
                 </Tooltip>
             </div>
-        </div>   
+        </div>
     )
 
 }

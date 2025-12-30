@@ -13,14 +13,7 @@ if (!gotTheLock) {
             mainWindow.focus()
             const urlString = commandLine.pop()
             mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, urlString)
-            mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin"))
-            if (urlString.includes("taskprio-app://googlelogin")) {
-                const url = new URL(urlString)
-                const searchParams = url.searchParams
-                const credential = searchParams.get("credential")
-                const clientId = searchParams.get("clientId")
-                mainWindow.webContents.send(EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId)
-            }
+            handler(urlString)
         }
     })
 }
@@ -31,12 +24,24 @@ app.on("open-url", (_, url) => {
     mainWindow.focus()
     const urlString = url
     mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, urlString)
-    mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, urlString.includes("taskprio-app://googlelogin"))
-    if (urlString.includes("taskprio-app://googlelogin")) {
-        const url = new URL(urlString)
-        const searchParams = url.searchParams
+    handler(urlString)
+})
+
+const handler = (url: string) => {
+
+    if (url.includes("taskprio-app://googlelogin")) {
+        const urlObj = new URL(url)
+        const searchParams = urlObj.searchParams
         const credential = searchParams.get("credential")
         const clientId = searchParams.get("clientId")
         mainWindow.webContents.send(EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId)
     }
-})
+
+    if (url.includes("taskprio-app://accept_invitation")) {
+        const urlObj = new URL(url)
+        const searchParams = urlObj.searchParams
+        const inviteToken = searchParams.get("invite_token")
+        mainWindow.webContents.send(EEventListeners.ACCEPT_INVITATION, inviteToken)
+    }
+
+}

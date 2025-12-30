@@ -24,12 +24,11 @@ import { WebSocketContext } from "@/components/others/websocket/WebsocketProvide
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
 import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
-import OverlaySettingsDialog from "@/components/others/dialogs/taskboardTaskDialog/overlaySettingsDialog/OverlaySettingsDialog";
 
 const MainPage = () => {
-    
+
     const {
-        connected : webSocketConnected
+        connected: webSocketConnected
     } = useContext(WebSocketContext)
     const authenticated = useGlobalsStore_authenticated()
     const authenticateIsPending = useGlobalsStore_authenticateIsPending()
@@ -40,7 +39,7 @@ const MainPage = () => {
     const logoutIsPending = useGlobalsStore_logoutIsPending()
 
     const showLoadingScreen = useMemo(() => {
-        return (( !authenticated || !webSocketConnected || authenticateIsPending ) && !logoutIsPending);
+        return ((!authenticated || !webSocketConnected || authenticateIsPending) && !logoutIsPending);
     }, [
         authenticated,
         webSocketConnected,
@@ -52,82 +51,82 @@ const MainPage = () => {
         <>
             {
                 showLoadingScreen ?
-                // Show loading screen when not authenticated
-                <div
-                    className={cn(
-                        ` size-full max-w-screen max-h-screen `,
-                        ` flex flex-col gap-[4rem] items-center justify-center `,
-                        ` bg-background z-50 `
-                    )}
-                >
-                    <Spinner size="xl" />
-                    <div className="flex flex-col gap-2" >
-                        <div className="flex gap-4 items-center" >
-                            <Label>Authenticated</Label>
-                            {
-                                authenticateIsPending ?
-                                <Spinner/> : <Check className="text-green-400" />
-                            }
-                        </div>
-                        <div className="flex gap-4 items-center" >
-                            <Label>Websocket</Label>
-                            {
-                                !webSocketConnected ?
-                                <Spinner/> : <Check className="text-green-400"/>
-                            }
-                        </div>
-                    </div>
-                </div>
-                :
-                <>
-                    <SidebarProvider>
-                        <MainDashboardPane/>
-                        <SidebarInset
-                            custom
-                            className="z-10"
-                        >
-                            <div
-                                className={cn(
-                                    `relative w-full min-w-0 min-h-0 max-h-full overflow-hidden `,
-                                    `flex flex-col grow`
-                                )}
-                            >
+                    // Show loading screen when not authenticated
+                    <div
+                        className={cn(
+                            ` size-full max-w-screen max-h-screen `,
+                            ` flex flex-col gap-[4rem] items-center justify-center `,
+                            ` bg-background z-50 `
+                        )}
+                    >
+                        <Spinner size="xl" />
+                        <div className="flex flex-col gap-2" >
+                            <div className="flex gap-4 items-center" >
+                                <Label>Authenticated</Label>
                                 {
-                                    (noWorkspaces && !workspacesIsLoading) ?
-                                    // Show no workspaces stage
-                                    <NoWorkspaceStage/>
-                                    :
-                                    // Show main page
-                                    <>
-                                        {
-                                            ( noProjects && !projectsIsLoading ) ?
-                                            // Show no projects stage
-                                            <NoProjectStage/>
-                                            :
-                                            <>                  
-                                                <Outlet/>
-                                            </>
-                                        }
-                                    </>
+                                    authenticateIsPending ?
+                                        <Spinner /> : <Check className="text-green-400" />
                                 }
                             </div>
-                        </SidebarInset>
-                        <CreateProjectDialog/>
-                        <CreateWorkspaceDialog/>
-                        <CreateTaskboardDialog/>
-                        <RenameTaskboardDialog/>
-                        <DropTaskboardDialog/>
-                        <DeactivateTaskboardDialog/>
-                        <ReactivateTaskboardDialog/>
-                        <DropProjectDialog/>
-                        <DeactivateProjectDialog/>
-                        <ReactivateProjectDialog/>
-                        <WorkspaceInvitationDialog/>
-                        <TagDialog/>
-                        <TaskboardTaskAssignerDialog/>
-                        <TaskboardTrashSheet/>
-                    </SidebarProvider>
-                </>
+                            <div className="flex gap-4 items-center" >
+                                <Label>Websocket</Label>
+                                {
+                                    !webSocketConnected ?
+                                        <Spinner /> : <Check className="text-green-400" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    :
+                    <>
+                        <SidebarProvider>
+                            <MainDashboardPane />
+                            <SidebarInset
+                                custom
+                                className="z-10"
+                            >
+                                <div
+                                    className={cn(
+                                        `relative w-full min-w-0 min-h-0 max-h-full overflow-hidden `,
+                                        `flex flex-col grow`
+                                    )}
+                                >
+                                    {
+                                        (noWorkspaces && !workspacesIsLoading) ?
+                                            // Show no workspaces stage
+                                            <NoWorkspaceStage />
+                                            :
+                                            // Show main page
+                                            <>
+                                                {
+                                                    (noProjects && !projectsIsLoading) ?
+                                                        // Show no projects stage
+                                                        <NoProjectStage />
+                                                        :
+                                                        <>
+                                                            <Outlet />
+                                                        </>
+                                                }
+                                            </>
+                                    }
+                                </div>
+                            </SidebarInset>
+                            <CreateProjectDialog />
+                            <CreateWorkspaceDialog />
+                            <CreateTaskboardDialog />
+                            <RenameTaskboardDialog />
+                            <DropTaskboardDialog />
+                            <DeactivateTaskboardDialog />
+                            <ReactivateTaskboardDialog />
+                            <DropProjectDialog />
+                            <DeactivateProjectDialog />
+                            <ReactivateProjectDialog />
+                            <WorkspaceInvitationDialog />
+                            <TagDialog />
+                            <TaskboardTaskAssignerDialog />
+                            <TaskboardTrashSheet />
+                        </SidebarProvider>
+                    </>
             }
         </>
     )

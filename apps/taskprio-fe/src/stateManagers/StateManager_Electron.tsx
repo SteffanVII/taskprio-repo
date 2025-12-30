@@ -7,28 +7,28 @@ import React, { createContext, useLayoutEffect } from "react";
 import { useNavigate } from "react-router";
 
 type TStateManager_ElectronProps = {
-    children : React.ReactNode
+    children: React.ReactNode
 }
 
 type TStateManager_ElectronContext = {
-    switchToOverlayModeFromFullMode : () => void,
-    switchToOverlayModeFromFocusMode : () => void,
-    switchToFocusModeFromFullMode : () => void,
-    switchToFocusModeFromOverlayMode : () => void,
-    switchToFullModeFromOverlayOrFocusMode : () => void,
-    switchOverlayLocation : ( location : TElectronStorePreferencesOverlayLocation ) => void
+    switchToOverlayModeFromFullMode: () => void,
+    switchToOverlayModeFromFocusMode: () => void,
+    switchToFocusModeFromFullMode: () => void,
+    switchToFocusModeFromOverlayMode: () => void,
+    switchToFullModeFromOverlayOrFocusMode: () => void,
+    switchOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void
 }
 
 export const StateManager_ElectronContext = createContext<TStateManager_ElectronContext>({
-    switchToOverlayModeFromFullMode : () => {},
-    switchToOverlayModeFromFocusMode : () => {},
-    switchToFocusModeFromFullMode : () => {},
-    switchToFocusModeFromOverlayMode : () => {},
-    switchToFullModeFromOverlayOrFocusMode : () => {},
-    switchOverlayLocation : () => {}
+    switchToOverlayModeFromFullMode: () => { },
+    switchToOverlayModeFromFocusMode: () => { },
+    switchToFocusModeFromFullMode: () => { },
+    switchToFocusModeFromOverlayMode: () => { },
+    switchToFullModeFromOverlayOrFocusMode: () => { },
+    switchOverlayLocation: () => { }
 })
 
-const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ children }) => {
+const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children }) => {
 
     const navigate = useNavigate()
 
@@ -37,13 +37,12 @@ const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ childre
 
     const {
         mutateAsync: googleLoginT,
-    } = useGoogleLoginT( () => {
+    } = useGoogleLoginT(() => {
         navigate("/p/w")
-    } )
+    })
 
     const setDisplays = async () => {
         const displays = await window.electronAPI.requestDisplayList()
-        console.log(displays);
         updateElectronStore({
             displays
         })
@@ -51,78 +50,80 @@ const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ childre
 
     const getAppPreferences = async () => {
         const value = await window.electronAPI.requestAppPreferences()
-        console.log(value);
         updateElectronStore({
-            preferences : value ?? null
+            preferences: value ?? null
         })
     }
 
-    useLayoutEffect( () => {
-        if ( !!window.electronAPI ) {
+    useLayoutEffect(() => {
+        if (!!window.electronAPI) {
             updateElectronStore({
-                isElectron : !!window.electronAPI
+                isElectron: !!window.electronAPI
             })
-            window.electronAPI.onWindowMaximizeStateChange( ( value ) => {
+            window.electronAPI.onWindowMaximizeStateChange((value) => {
                 updateElectronStore({
-                    windowMaximize : value
-                })                
-            } )
-            window.electronAPI.onGoogleLoginSuccess( ( credential, clientId ) => {
-                googleLoginT({
-                    clientId : clientId,
-                    credential : credential
+                    windowMaximize: value
                 })
-            } )
-            window.electronAPI.onConsoleLog( ( value ) => {
-                console.log( value )
-            } )
+            })
+            window.electronAPI.onGoogleLoginSuccess((credential, clientId) => {
+                googleLoginT({
+                    clientId: clientId,
+                    credential: credential
+                })
+            })
+            window.electronAPI.onAcceptInvitation((inviteToken) => {
+
+            })
+            window.electronAPI.onConsoleLog((value) => {
+                console.log(value)
+            })
             setDisplays()
             getAppPreferences()
         }
     }, [])
 
     const switchToOverlayModeFromFullMode = () => {
-        if ( !!window.electronAPI ) {
+        if (!!window.electronAPI) {
             navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
             updateTaskTodoPageStore({
-                uIMode : ETaskTodoPageUIMode.OVERLAY
+                uIMode: ETaskTodoPageUIMode.OVERLAY
             })
             window.electronAPI.makeWindowToTaskTodoOverlayMode()
         }
     }
-    
+
     const switchToOverlayModeFromFocusMode = () => {
-        if ( !!window.electronAPI ) {
+        if (!!window.electronAPI) {
             updateTaskTodoPageStore({
-                uIMode : ETaskTodoPageUIMode.OVERLAY
+                uIMode: ETaskTodoPageUIMode.OVERLAY
             })
             window.electronAPI.makeWindowToTaskTodoOverlayMode(true)
         }
     }
 
     const switchToFocusModeFromFullMode = () => {
-        if ( !!window.electronAPI ) {
+        if (!!window.electronAPI) {
             navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
             updateTaskTodoPageStore({
-                uIMode : ETaskTodoPageUIMode.WIDGET
+                uIMode: ETaskTodoPageUIMode.WIDGET
             })
             window.electronAPI.makeWindowToFocusMode()
         }
     }
-    
+
     const switchToFocusModeFromOverlayMode = () => {
-        if ( !!window.electronAPI ) {
+        if (!!window.electronAPI) {
             updateTaskTodoPageStore({
-                uIMode : ETaskTodoPageUIMode.WIDGET
+                uIMode: ETaskTodoPageUIMode.WIDGET
             })
             window.electronAPI.makeWindowToFocusMode(true)
         }
     }
 
     const switchToFullModeFromOverlayOrFocusMode = () => {
-        if ( !!window.electronAPI ) {
+        if (!!window.electronAPI) {
             updateTaskTodoPageStore({
-                uIMode : ETaskTodoPageUIMode.FULL
+                uIMode: ETaskTodoPageUIMode.FULL
             })
             window.electronAPI.makeWindowToFullMode()
             setTimeout(() => {
@@ -131,15 +132,15 @@ const StateManager_Electron : React.FC<TStateManager_ElectronProps> = ({ childre
         }
     }
 
-    const switchOverlayLocation = ( location : TElectronStorePreferencesOverlayLocation ) => {
-        if ( !!window.electronAPI ) {
+    const switchOverlayLocation = (location: TElectronStorePreferencesOverlayLocation) => {
+        if (!!window.electronAPI) {
             window.electronAPI.changeOverlayLocation(location)
             updateElectronStore({
-                preferences : {
+                preferences: {
                     ...preferences,
-                    overlay : {
+                    overlay: {
                         ...preferences?.overlay,
-                        location : location
+                        location: location
                     }
                 }
             })

@@ -4,12 +4,10 @@
 import { contextBridge } from "electron/renderer";
 import { generalAPI } from "./general/index.js";
 import { titlebarAPI } from "./titlebar/index.js";
-import { authenticationAPI } from "./authentication/index.js";
 import { taskTodoAPI } from "./taskTodoOverlay/index.js";
 
-contextBridge.exposeInMainWorld( "electronAPI", {
+contextBridge.exposeInMainWorld("electronAPI", {
     ...generalAPI,
     ...titlebarAPI,
-    ...authenticationAPI,
     ...taskTodoAPI
-} )
+})

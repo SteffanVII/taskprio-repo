@@ -8,11 +8,11 @@ export enum EEvents {
     UNMAXIMIZE_WINDOW = "unmaximize-window",
     // Titlebar listeners
     CLOSE_WINDOW = "close-window",
-    
+
     // General
     REQUEST_DISPLAY_LIST = "request_display_list",
     REQUEST_APP_PREFERENCES = "request_app_preferences",
-    
+
     // Task todo
     MAKE_WINDOW_TO_TASK_TODO_OVERLAY_MODE = "make-window-to-task-todo-overlay-mode",
     MAKE_WINDOW_TO_FULL_MODE = "make-window-to-full-mode",
@@ -24,8 +24,9 @@ export enum EEvents {
 export enum EEventListeners {
     // Titlebar
     WINDOW_MAXIMIZE_STATE_CHANGED = "window-maximize-state-changed",
-    
+
     // General
     CONSOLE_LOG = "console-log",
     GOOGLE_LOGIN_SUCCESS = "google-login-success",
+    ACCEPT_INVITATION = "accept_invitation"
 }

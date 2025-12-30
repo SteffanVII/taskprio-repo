@@ -4,14 +4,12 @@ import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { EWorkspaceRole } from "@repo/taskprio-types/src";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
-import Cookies from "js-cookie";
-import dayjs from "dayjs";
 
 type TStateManager_Workspace = {
-    children : React.ReactNode
+    children: React.ReactNode
 }
 
-const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }) => {
+const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children }) => {
 
     const navigate = useNavigate()
 
@@ -22,17 +20,17 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const {
-        connected : webSocketConnected,
+        connected: webSocketConnected,
         pathChangeMethods
     } = useContext(WebSocketContext)
 
     const {
-        data : workspaces,
-        isFetching : workspacesIsFetching,
-        isLoading : workspacesIsLoading,
-        isError : workspacesIsError
+        data: workspaces,
+        isFetching: workspacesIsFetching,
+        isLoading: workspacesIsLoading,
+        isError: workspacesIsError
     } = useGetUserWorkspaces({
-        enabled : webSocketConnected
+        enabled: webSocketConnected
     })
 
     useEffect(() => {
@@ -41,7 +39,7 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
             workspacesIsFetching,
             workspacesIsLoading,
             workspacesIsError,
-            noWorkspaces : (workspaces && workspaces.length < 1) ?? false
+            noWorkspaces: (workspaces && workspaces.length < 1) ?? false
         })
     }, [
         workspaces,
@@ -61,22 +59,22 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
             pathname.includes("/statistics")
         ) return
 
-        if ( !workspace_id ) {
-            if ( workspaces && workspaces.length > 0 ) {
-                const lastVisitedWorkspaceId = localStorage.getItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME )
-                if ( lastVisitedWorkspaceId ) {
-                    const foundWorkspace = workspaces.find( workspace => workspace.workspace_id === lastVisitedWorkspaceId )
-                    if ( foundWorkspace ) {
-                        localStorage.setItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, foundWorkspace.workspace_id )
+        if (!workspace_id) {
+            if (workspaces && workspaces.length > 0) {
+                const lastVisitedWorkspaceId = localStorage.getItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
+                if (lastVisitedWorkspaceId) {
+                    const foundWorkspace = workspaces.find(workspace => workspace.workspace_id === lastVisitedWorkspaceId)
+                    if (foundWorkspace) {
+                        localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, foundWorkspace.workspace_id)
                         navigate(`/p/w/${foundWorkspace.workspace_id}`)
                         return
                     }
                 }
-                localStorage.setItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspaces[0].workspace_id )
+                localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspaces[0].workspace_id)
                 navigate(`/p/w/${workspaces[0].workspace_id}`)
             }
         }
-    }, [ workspaces, workspace_id ])
+    }, [workspaces, workspace_id])
 
     useLayoutEffect(() => {
         // If selectedWorkspace is null or selectedWorkspace doesn't match the workspace_id
@@ -84,16 +82,16 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
         // This doesn't set to other the first workspace if workspace isn't found
         // This is only for when the webapp is loaded already in a workspace route but doesn't have selectedWorkspace data set yet
         // if ( (!selectedWorkspace || ( selectedWorkspace && selectedWorkspace.workspace_id !== workspace_id )) && workspace_id ) {
-        if ( !selectedWorkspace && workspace_id ) {
-            const foundWorkspace = workspaces?.find( workspace => workspace.workspace_id === workspace_id ) ?? null;
-            const workspaceRole : EWorkspaceRole | null = foundWorkspace?.workspace_members.find( member => member.user_id === user?.user_id )?.workspace_role ?? null;
+        if (!selectedWorkspace && workspace_id) {
+            const foundWorkspace = workspaces?.find(workspace => workspace.workspace_id === workspace_id) ?? null;
+            const workspaceRole: EWorkspaceRole | null = foundWorkspace?.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null;
             updateGlobalsStore({
-                selectedWorkspace : foundWorkspace,
+                selectedWorkspace: foundWorkspace,
                 workspaceRole,
-                noProjects : false,
-                noTaskboards : false
+                noProjects: false,
+                noTaskboards: false
             })
-            if ( foundWorkspace ) {
+            if (foundWorkspace) {
                 pathChangeMethods.updateWorkspacePath(foundWorkspace.workspace_id)
             }
         }
@@ -106,9 +104,9 @@ const StateManager_Workspace : React.FC<TStateManager_Workspace> = ({ children }
     // Set noWorkspaces global store state
     useLayoutEffect(() => {
         updateGlobalsStore({
-            noWorkspaces : (workspaces && !workspacesIsFetching && workspaces.length < 1)
+            noWorkspaces: (workspaces && !workspacesIsFetching && workspaces.length < 1)
         })
-    }, [ workspaces, workspacesIsFetching ])
+    }, [workspaces, workspacesIsFetching])
 
     return children
 

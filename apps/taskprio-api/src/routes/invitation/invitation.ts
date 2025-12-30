@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { getUserByEmail } from "../../database/queries/user/query.js";
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../database/postgresql.js";
-import { EProjectRole, EWorkspaceRole, IGetInvitationInfoResponseData, TInvitationTokenDecoded } from "@repo/taskprio-types";
+import { TGetInvitationInfoResponseData, TInvitationTokenDecoded } from "@repo/taskprio-types";
 import { getInvitation } from "../../database/queries/invitation/query.js";
 import { addWorkspaceMember } from "../../database/queries/workspace/mutation.js";
 import { acceptInvitation, createInvitationBatch } from "../../database/queries/invitation/mutation.js";
@@ -187,12 +187,16 @@ export const registerInvitationPublicRoutes = (router: Router) => {
                     decodedToken.email
                 )
 
-                const returnData: IGetInvitationInfoResponseData = {
+                const returnData: TGetInvitationInfoResponseData = {
                     sender_id: decodedToken.sender_id,
                     email: decodedToken.email,
                     is_invitation_exists: true,
                     is_user_exists: true,
-                    accepted: false
+                    accepted: false,
+                    workspace_name: "",
+                    sender_email: "",
+                    sender_firstname: "",
+                    sender_lastname: ""
                 }
 
                 if (!user) {
@@ -205,6 +209,13 @@ export const registerInvitationPublicRoutes = (router: Router) => {
 
                 if (invitation && invitation.accepted) {
                     returnData.accepted = true
+                }
+
+                if (invitation) {
+                    returnData.workspace_name = invitation.workspace_name
+                    returnData.sender_email = invitation.sender_email
+                    returnData.sender_firstname = invitation.sender_firstname
+                    returnData.sender_lastname = invitation.sender_lastname
                 }
 
                 res.status(200).json(returnData)

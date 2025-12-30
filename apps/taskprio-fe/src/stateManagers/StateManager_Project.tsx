@@ -1,15 +1,13 @@
-import dayjs from "@/lib/dayjs";
 import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
 import { updateGlobalsStore, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
-import Cookies from "js-cookie";
 import React, { useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 type TStateManager_Project = {
-    children : React.ReactNode
+    children: React.ReactNode
 }
 
-const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) => {
+const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => {
 
     const navigate = useNavigate()
 
@@ -21,11 +19,11 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
     const selectedProject = useGlobalsStore_selectedProject()
 
     const {
-        data : projects,
-        isFetching : projectsIsFetching,
-        isLoading : projectsIsLoading,
-        isError : projectsIsError
-    } = useGetUserProjectsByWorkspace( selectedWorkspace?.workspace_id )
+        data: projects,
+        isFetching: projectsIsFetching,
+        isLoading: projectsIsLoading,
+        isError: projectsIsError
+    } = useGetUserProjectsByWorkspace(selectedWorkspace?.workspace_id)
 
     useEffect(() => {
         updateGlobalsStore({
@@ -33,7 +31,7 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
             projectsIsFetching,
             projectsIsLoading,
             projectsIsError,
-            noProjects : (projects && projects.length < 1) ?? false
+            noProjects: (projects && projects.length < 1) ?? false
         })
     }, [
         projects,
@@ -51,24 +49,24 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
             pathname.includes("/task_todo_overlay") ||
             pathname.includes("/statistics")
         ) return
-        
-        if ( !project_id ) {
-            if ( projects ) {
-                if ( projects.length > 0 ) {
+
+        if (!project_id) {
+            if (projects) {
+                if (projects.length > 0) {
                     // Check if the selected workspace is the same as the workspace_id
                     // If it's not means the user might have switched workspace and the workspace data hasn't fetched yet
                     // This is to prevent fetching the project data that doesn't belong to the selected workspace
-                    if ( selectedWorkspace?.workspace_id === workspace_id ) {
-                        const lastVisitedProject = localStorage.getItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME )
-                        if ( lastVisitedProject ) {
-                            const foundProject = projects.find( project => project.project_id === lastVisitedProject )
-                            if ( foundProject ) {
-                                localStorage.setItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, foundProject.project_id )
+                    if (selectedWorkspace?.workspace_id === workspace_id) {
+                        const lastVisitedProject = localStorage.getItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME)
+                        if (lastVisitedProject) {
+                            const foundProject = projects.find(project => project.project_id === lastVisitedProject)
+                            if (foundProject) {
+                                localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, foundProject.project_id)
                                 navigate(`/p/w/${workspace_id}/d/${foundProject.project_id}/t`)
                                 return
                             }
                         }
-                        localStorage.setItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, projects[0].project_id )
+                        localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, projects[0].project_id)
                         navigate(`/p/w/${workspace_id}/d/${projects[0].project_id}/t`)
                     }
                     // updateGlobalsStore({
@@ -89,14 +87,14 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
     ])
 
     useLayoutEffect(() => {
-        if ( !selectedProject && project_id ) {
-            const foundProject = projects?.find( project => project.project_id === project_id ) ?? null;
-            const projectMemberRole = foundProject?.project_members.find( projectMember => projectMember.user_id === user?.user_id )?.project_role ?? null
+        if (!selectedProject && project_id) {
+            const foundProject = projects?.find(project => project.project_id === project_id) ?? null;
+            const projectMemberRole = foundProject?.project_members.find(projectMember => projectMember.user_id === user?.user_id)?.project_role ?? null
             updateGlobalsStore({
-                selectedProject : foundProject,
-                projectRole : projectMemberRole,
-                noProjects : false,
-                noTaskboards : false
+                selectedProject: foundProject,
+                projectRole: projectMemberRole,
+                noProjects: false,
+                noTaskboards: false
             })
         }
     }, [
@@ -107,9 +105,9 @@ const StateManager_Project : React.FC<TStateManager_Project> = ({ children }) =>
     // Set noProjects global store state
     useLayoutEffect(() => {
         updateGlobalsStore({
-            noProjects : (projects && !projectsIsFetching && projects.length < 1)
+            noProjects: (projects && !projectsIsFetching && projects.length < 1)
         })
-    }, [ projects, projectsIsFetching  ])
+    }, [projects, projectsIsFetching])
 
     return children;
 

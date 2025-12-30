@@ -2,33 +2,34 @@ import { TDisplay, TElectronStorePreferencesOverlayLocation, TElectronStorePrefe
 
 declare global {
     interface Window {
-        electronAPI : {
+        electronAPI: {
 
             // Titlebar
-            closeWindow : () => void,
-            maximizeWindow : () => void,
-            unmaximizeWindow : () => void,
-            minimizeWindow : () => void,
+            closeWindow: () => void,
+            maximizeWindow: () => void,
+            unmaximizeWindow: () => void,
+            minimizeWindow: () => void,
 
             // Titlebar listeners
-            onWindowMaximizeStateChange : ( callback : ( value : boolean ) => void ) => void,
+            onWindowMaximizeStateChange: (callback: (value: boolean) => void) => void,
 
             // General
-            requestDisplayList : () => Promise<TDisplay[]>,
-            requestAppPreferences : () => Promise<TElectronStorePreferencesType>
+            requestDisplayList: () => Promise<TDisplay[]>,
+            requestAppPreferences: () => Promise<TElectronStorePreferencesType>
 
             // General listeners
-            onGoogleLoginSuccess : ( callback : ( credential : string, clientId : string ) => void ) => void,
-            onConsoleLog : ( callback : ( value : string ) => void ) => void,
+            onGoogleLoginSuccess: (callback: (credential: string, clientId: string) => void) => void,
+            onAcceptInvitation: (callback: (inviteToken: string) => void) => void,
+            onConsoleLog: (callback: (value: string) => void) => void,
 
             // Task todo
-            makeWindowToTaskTodoOverlayMode : ( fromFocusMode? : boolean ) => void,
-            makeWindowToFullMode : () => void,
-            makeWindowToFocusMode : ( fromOverlayMode? : boolean ) => void,
-            changeOverlayScreen : ( screenId : number ) => void,
-            changeOverlayLocation : ( location : TElectronStorePreferencesOverlayLocation ) => void
+            makeWindowToTaskTodoOverlayMode: (fromFocusMode?: boolean) => void,
+            makeWindowToFullMode: () => void,
+            makeWindowToFocusMode: (fromOverlayMode?: boolean) => void,
+            changeOverlayScreen: (screenId: number) => void,
+            changeOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void
         }
     }
 }
 
-export {}
+export { }

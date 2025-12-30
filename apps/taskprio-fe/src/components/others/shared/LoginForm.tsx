@@ -13,17 +13,17 @@ import { GoogleLogin } from "@react-oauth/google"
 import { useElectronStore_isElectron } from "@/stores/electron"
 
 type TLoginFormProps = {
-    setRegisterFormOpen : ( isRegister : boolean ) => void,
-    dontNavigate? : boolean,
-    invitationPurpose? : boolean
+    setRegisterFormOpen: (isRegister: boolean) => void,
+    dontNavigate?: boolean,
+    invitationPurpose?: boolean
 }
 
 const loginFormSchema = z.object({
-    email : z.string().email(),
-    password : z.string(),
+    email: z.string().email(),
+    password: z.string(),
 })
 
-const LoginForm : React.FC<TLoginFormProps> = ({
+const LoginForm: React.FC<TLoginFormProps> = ({
     setRegisterFormOpen,
     dontNavigate = false,
     invitationPurpose = false
@@ -47,30 +47,30 @@ const LoginForm : React.FC<TLoginFormProps> = ({
         isPending: isLoginPending,
         isError: isLoginError,
         error: loginError,
-    } = useLogin( () => {
-        if ( !dontNavigate ) {
+    } = useLogin(() => {
+        if (!dontNavigate) {
             navigate("/p/w")
         }
-    } )
+    })
 
     const {
         mutateAsync: googleLoginT,
-        isPending : isGoogleLoginPending
-    } = useGoogleLoginT( () => {
-        if ( !dontNavigate ) {
+        isPending: isGoogleLoginPending
+    } = useGoogleLoginT(() => {
+        if (!dontNavigate) {
             navigate("/p/w")
         }
-    } )
+    })
 
     const inputsDisabled = useMemo(() => {
         return isLoginPending || isGoogleLoginPending
-    }, [ isLoginPending, isGoogleLoginPending ])
+    }, [isLoginPending, isGoogleLoginPending])
 
     const onSubmitLogin = async (data: z.infer<typeof loginFormSchema>) => {
         login({
             body: {
                 ...data,
-                for_invitation_purpose : invitationPurpose
+                for_invitation_purpose: invitationPurpose
             },
         })
     }
@@ -111,12 +111,12 @@ const LoginForm : React.FC<TLoginFormProps> = ({
                     type="submit"
                     disabled={inputsDisabled}
                 >
-                    { inputsDisabled ? <Spinner size="sm"/> : "Login"}
+                    {inputsDisabled ? <Spinner size="sm" /> : "Login"}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
                     Don't have an account?{" "}
-                    <span 
-                        className="text-primary font-medium hover:underline cursor-pointer transition-colors" 
+                    <span
+                        className="text-primary font-medium hover:underline cursor-pointer transition-colors"
                         onClick={() => {
                             loginForm.reset()
                             setRegisterFormOpen(true)
@@ -142,10 +142,10 @@ const LoginForm : React.FC<TLoginFormProps> = ({
 
                 <GoogleLogin
                     onSuccess={(credentialResponse) => {
-                        if ( !credentialResponse.clientId || !credentialResponse.credential ) {
+                        if (!credentialResponse.clientId || !credentialResponse.credential) {
                             return
                         }
-                        if ( !isElectron ) {
+                        if (!isElectron) {
                             // const url = new URL(window.location.origin)
                             // url.protocol = "taskprio-app:"
                             // url.pathname = "googlelogin"
@@ -154,15 +154,15 @@ const LoginForm : React.FC<TLoginFormProps> = ({
                             // console.log(url.toString());
                             // window.location.href = url.toString()
                             googleLoginT({
-                                clientId : credentialResponse.clientId,
-                                credential : credentialResponse.credential,
-                                for_invitation_purpose : invitationPurpose
+                                clientId: credentialResponse.clientId,
+                                credential: credentialResponse.credential,
+                                for_invitation_purpose: invitationPurpose
                             })
                         }
                     }}
                     auto_select={true}
-                    ux_mode={ isElectron ? "redirect" : "popup" }
-                    login_uri={ isElectron ? "https://taskprio-repo.onrender.com/redirect-to-electron-app" : undefined }
+                    ux_mode={isElectron ? "redirect" : "popup"}
+                    login_uri={isElectron ? "https://taskprio-repo.onrender.com/redirect/google_login" : undefined}
                 />
             </form>
         </Form>
