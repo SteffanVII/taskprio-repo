@@ -63,7 +63,7 @@ export const registerInvitationPrivateRoutes = (router: Router) => {
                         html: `
                                 <h1>You've been invited to a workspace</h1>
                                 <p>You've been invited to a workspace by ${user_email}.</p>
-                                <p>Click <a href="taskprio-app://accept_invitation?invite_token=${emailWithToken.token}">here</a> redirect to the app and accept invitation.</p>
+                                <p>Click <a href="https://taskprio-repo.onrender.com/redirect/accept_invitation?invite_token=${emailWithToken.token}">here</a> redirect to the app and accept invitation.</p>
                             `
                     })
                     )
