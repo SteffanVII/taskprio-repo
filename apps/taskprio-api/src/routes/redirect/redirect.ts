@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 
 function registerRedirectRoutes(router: Router) {
 
-    router.post(
+    router.get(
         `/google_login`,
         async (req: Request, res: Response) => {
             const { credential, client_id } = req.body;
@@ -13,7 +13,7 @@ function registerRedirectRoutes(router: Router) {
         }
     )
 
-    router.post(
+    router.get(
         `/accept_invitation`,
         async (req: Request, res: Response) => {
             const { invite_token } = req.query
