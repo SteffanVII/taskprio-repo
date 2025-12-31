@@ -10,23 +10,23 @@ export const getInvitation = async (
 ): Promise<TWorkspaceInvitationExtended | undefined> => {
 
     const query = taskprioKysely.selectFrom("invitation.workspace_invitation")
-        .leftJoin("workspace.workspace", "invitation.workspace_invitation.workspace_id", "workspace.workspace.workspace_id")
-        .leftJoin("tp_user.user", "invitation.workspace_invitation.sender_id", "tp_user.user.user_id")
+        .leftJoin("workspace.workspace", "workspace.workspace.workspace_id", "invitation.workspace_invitation.workspace_id")
+        .leftJoin("tp_user.user", "tp_user.user.user_id", "invitation.workspace_invitation.sender_id")
         .select([
-            "token_string",
-            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace_id)`.as("workspace_id"),
-            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(sender_id)`.as("sender_id"),
-            "email",
-            "accepted",
-            "created_at",
+            "invitation.workspace_invitation.token_string",
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(invitation.workspace_invitation.workspace_id)`.as("workspace_id"),
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(invitation.workspace_invitation.sender_id)`.as("sender_id"),
+            "invitation.workspace_invitation.email",
+            "invitation.workspace_invitation.accepted",
+            "invitation.workspace_invitation.created_at",
             "workspace.workspace.workspace_name",
             "tp_user.user.email as sender_email",
             "tp_user.user.firstname as sender_firstname",
             "tp_user.user.lastname as sender_lastname"
         ])
-        .where("token_string", "=", token)
-        .where("workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`)
-        .where("email", "=", email)
+        .where("invitation.workspace_invitation.token_string", "=", token)
+        .where("invitation.workspace_invitation.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`)
+        .where("invitation.workspace_invitation.email", "=", email)
 
     return await query.executeTakeFirst()
 

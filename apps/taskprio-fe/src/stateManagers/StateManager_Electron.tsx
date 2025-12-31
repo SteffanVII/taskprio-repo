@@ -1,4 +1,5 @@
 import { useGoogleLoginT } from "@/services/authentication";
+import { updateDialogsStore } from "@/stores/dialogs";
 import { updateElectronStore, useElectronStore_preferences } from "@/stores/electron";
 import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
@@ -72,7 +73,14 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
                 })
             })
             window.electronAPI.onAcceptInvitation((inviteToken) => {
-
+                if (inviteToken) {
+                    updateDialogsStore({
+                        acceptInvitationDialog: {
+                            open: true,
+                            token: inviteToken
+                        }
+                    })
+                }
             })
             window.electronAPI.onConsoleLog((value) => {
                 console.log(value)

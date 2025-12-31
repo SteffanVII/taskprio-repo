@@ -24,6 +24,7 @@ import { WebSocketContext } from "@/components/others/websocket/WebsocketProvide
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
 import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
+import AcceptInvitationDialog from "@/components/others/dialogs/AcceptInvitationDialog";
 
 const MainPage = () => {
 
@@ -125,6 +126,7 @@ const MainPage = () => {
                             <TagDialog />
                             <TaskboardTaskAssignerDialog />
                             <TaskboardTrashSheet />
+                            <AcceptInvitationDialog />
                         </SidebarProvider>
                     </>
             }

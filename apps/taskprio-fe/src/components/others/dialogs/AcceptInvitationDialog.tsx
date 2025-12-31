@@ -1,9 +1,11 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useGetInvitationInfo } from "@/services/public/invitation/query"
 import { updateDialogsStore, useDialogsStore_acceptInvitationDialog } from "@/stores/dialogs"
 import Spinner from "../Spinner"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { useAcceptInvitation } from "@/services/private/invitation/mutation"
 
 const AcceptInvitationDialog = () => {
 
@@ -16,6 +18,27 @@ const AcceptInvitationDialog = () => {
         error: getInvitationInfoError
     } = useGetInvitationInfo(token)
 
+    const {
+        mutateAsync: acceptInvitation,
+        isPending: isAcceptInvitationPending,
+        error: acceptInvitationError,
+    } = useAcceptInvitation(() => {
+        updateDialogsStore({
+            acceptInvitationDialog: {
+                open: false,
+                token: null
+            }
+        })
+    })
+
+
+    const handleAcceptInvitation = () => {
+        if (token) {
+            acceptInvitation(token)
+        }
+    }
+
+
     const content = () => {
         if (getInvitationInfoIsLoading) {
             return <Spinner />
@@ -25,26 +48,50 @@ const AcceptInvitationDialog = () => {
         }
         if (!getInvitationInfoIsLoading && !getInvitationInfoIsError && invitationInfo) {
             return (
-                <div
-                    className={cn(
-                        `flex flex-col gap-4`
-                    )}
-                >
-                    <div className="flex gap-2 items-center" >
-                        <p>Workspace</p>
-                        <p className="text-lg font-bold" >{invitationInfo.workspace_name}</p>
-                    </div>
-                    <div className="flex gap-2 items-center" >
-                        <p>Sent by</p>
-                        <p className="text-lg font-bold" >{invitationInfo.sender_firstname} {invitationInfo.sender_lastname}</p>
+                <>
+                    <div
+                        className={cn(
+                            `flex flex-col`
+                        )}
+                    >
+                        <div className="flex flex-col p-2 px-3 rounded-t-md border bg-card" >
+                            <p className="text-muted-foreground text-sm" >Workspace</p>
+                            <p className="text-lg font-bold" >{invitationInfo.workspace_name}</p>
+                        </div>
+                        <div className="flex flex-col p-2 px-3 rounded-b-md border-x border-b bg-card" >
+                            <p className="text-muted-foreground text-sm" >Sent by</p>
+                            <p className="text-lg font-bold" >{invitationInfo.sender_firstname} {invitationInfo.sender_lastname}</p>
+                        </div>
+                        {
+                            invitationInfo.accepted &&
+                            <Card className="w-full" >
+                                <p className="text-destructive text-center" >You have already accepted this invitation</p>
+                            </Card>
+                        }
+                        {
+                            (acceptInvitationError && !isAcceptInvitationPending) &&
+                            <Card className="w-full" >
+                                <p className="text-destructive text-center" >Error: {acceptInvitationError.message}</p>
+                            </Card>
+                        }
                     </div>
                     {
-                        invitationInfo.accepted &&
-                        <Card className="w-full" >
-                            <p className="text-destructive text-center" >You have already accepted this invitation</p>
-                        </Card>
+                        !invitationInfo.accepted &&
+                        <DialogFooter>
+                            <Button variant={"outline"} >Decline</Button>
+                            <Button
+                                onClick={handleAcceptInvitation}
+                            >
+                                {
+                                    isAcceptInvitationPending ?
+                                        <Spinner />
+                                        :
+                                        "Accept"
+                                }
+                            </Button>
+                        </DialogFooter>
                     }
-                </div>
+                </>
             )
 
         }
@@ -67,9 +114,7 @@ const AcceptInvitationDialog = () => {
                 <DialogHeader>
                     <DialogTitle>Invitation Information</DialogTitle>
                 </DialogHeader>
-                <div>
-                    {content()}
-                </div>
+                {content()}
             </DialogContent>
         </Dialog>
     )
