@@ -39,6 +39,8 @@ const Customization_ProjectSettingsPage = () => {
     const projectCustomizationForm = useForm<z.infer<typeof projectCustomizationSchema>>({
         resolver : zodResolver(projectCustomizationSchema),
         defaultValues : {
+            project_name : "",
+            project_abbreviation : "",
             project_color : "#ffffff"
         }
     })
@@ -94,9 +96,9 @@ const Customization_ProjectSettingsPage = () => {
                                 <FormItem className="gap-4" >
                                     <FormLabel htmlFor="projectName" >Project Name</FormLabel>
                                     <Input
+                                        {...field}
                                         id="projectName"
                                         placeholder="Enter project name"
-                                        {...field}
                                     />
                                     <FormMessage/>
                                 </FormItem>
@@ -109,10 +111,10 @@ const Customization_ProjectSettingsPage = () => {
                                 <FormItem >
                                     <FormLabel htmlFor="projectAbbreviation" >Project Abbreviation</FormLabel>
                                     <Input
+                                        {...field}
                                         id="projectAbbreviation"
                                         placeholder="Enter project abbreviation"
                                         className="mt-2"
-                                        {...field}
                                         onChange={ event => {
                                             field.onChange(event.target.value.toUpperCase())
                                         } }

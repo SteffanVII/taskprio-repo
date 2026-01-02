@@ -2,7 +2,7 @@ import {
     useTaskTodoPageStore_sessionActive, 
     useTaskTodoPageStore_timerCount 
 } from "@/stores/taskTodoPage";
-import { useContext, useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -70,10 +70,6 @@ const TodoCard_MainDashboardPane = () => {
         setLoading(false)
     }
     
-    useLayoutEffect(() => {
-        console.log("topTaskTodo", topTaskTodo)
-    }, [topTaskTodo])
-
     if ( !userTaskTodoState || userTaskTodoState.length === 0 || topTaskTodo === null || pathname.includes("/tt") ) return null
 
     return (

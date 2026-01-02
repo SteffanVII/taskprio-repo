@@ -181,7 +181,7 @@ export const Taskboard = () => {
                             ></div>
                         }
                         {
-                            scrollAreaRef.current?.scrollLeft !== (scrollAreaRef.current!.scrollWidth - scrollAreaRef.current!.clientWidth) &&
+                            scrollAreaRef.current?.scrollLeft !== ((scrollAreaRef.current?.scrollWidth ?? 0) - (scrollAreaRef.current?.clientWidth ?? 0)) &&
                             <div
                                 onDragEnter={onAutoScrollerRightOnMouseEnter}
                                 onDragLeave={onAutoScrollerOnMouseLeave}

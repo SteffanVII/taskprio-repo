@@ -97,7 +97,7 @@ export const updateGlobalsStore = ( store : Partial<TGlobalsStore> ) => {
 }
 
 export const resetGlobalsStore = () => {
-    GlobalsStore.setState( () => (initialState) )
+    GlobalsStore.setState( () => ({...initialState}) )
 }
 
 export const useGlobalsStore = () => {

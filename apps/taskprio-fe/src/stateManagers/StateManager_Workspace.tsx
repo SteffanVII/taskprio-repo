@@ -1,5 +1,5 @@
 import { useGetUserWorkspaces } from "@/services/private/workspace/query";
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_authenticated, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
 import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { EWorkspaceRole } from "@repo/taskprio-types/src";
@@ -16,6 +16,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
     const { pathname } = useLocation()
     const { workspace_id } = useParams()
 
+    const authenticated = useGlobalsStore_authenticated()
     const user = useGlobalsStore_user()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
@@ -107,6 +108,10 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
             noWorkspaces: (workspaces && !workspacesIsFetching && workspaces.length < 1)
         })
     }, [workspaces, workspacesIsFetching])
+
+    useLayoutEffect(() => {
+        console.log(selectedWorkspace)
+    }, [selectedWorkspace])
 
     return children
 

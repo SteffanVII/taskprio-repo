@@ -4,7 +4,6 @@ import RegisterForm from "@/components/others/shared/RegisterForm"
 
 const LoginRoute = () => {
 
-
     const [registerFormOpen, setRegisterFormOpen] = useState<boolean>(false)
 
     return (

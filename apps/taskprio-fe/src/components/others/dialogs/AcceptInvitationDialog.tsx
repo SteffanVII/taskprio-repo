@@ -6,9 +6,11 @@ import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAcceptInvitation } from "@/services/private/invitation/mutation"
+import { useGlobalsStore_user } from "@/stores/globals"
 
 const AcceptInvitationDialog = () => {
 
+    const user = useGlobalsStore_user()
     const { open, token } = useDialogsStore_acceptInvitationDialog()
 
     const {
@@ -69,6 +71,12 @@ const AcceptInvitationDialog = () => {
                             </Card>
                         }
                         {
+                            invitationInfo.email !== user?.email &&
+                            <Card className="w-full" >
+                                <p className="text-destructive text-center" >You are not the correct user to accept this invitation</p>
+                            </Card>
+                        }
+                        {
                             (acceptInvitationError && !isAcceptInvitationPending) &&
                             <Card className="w-full" >
                                 <p className="text-destructive text-center" >Error: {acceptInvitationError.message}</p>
@@ -76,7 +84,7 @@ const AcceptInvitationDialog = () => {
                         }
                     </div>
                     {
-                        !invitationInfo.accepted &&
+                        (!invitationInfo.accepted || invitationInfo.email !== user?.email) &&
                         <DialogFooter>
                             <Button variant={"outline"} >Decline</Button>
                             <Button

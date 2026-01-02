@@ -7,7 +7,7 @@ import { updateGlobalsStore, useGlobalsStore_noTaskboards, useGlobalsStore_proje
 
 import { TTaskboard } from "@repo/taskprio-types/src";
 import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router";
 import TaskboardListSkeleton from "./TaskboardListSkeleton";
 import { cn } from "@/lib/utils";
@@ -32,10 +32,6 @@ const TaskboardList = () => {
             }
         })
     }
-
-        useEffect(() => {
-        console.log(selectedTaskboard);
-    }, [ selectedTaskboard ])
 
     return (
         <div

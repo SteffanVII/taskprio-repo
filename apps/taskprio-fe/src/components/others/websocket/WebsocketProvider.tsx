@@ -14,7 +14,9 @@ type TWebSocketContext = {
         updateWorkspacePath : ( workspace_id : string ) => void,
         // updateProjectPath : ( project_id : string ) => void,
         // updateBoardPath : ( board_id : string ) => void
-    }
+    },
+    initialConnection : boolean,
+    setInitialConnection : ( value : boolean ) => void
 }
 
 export const WebSocketContext = createContext<TWebSocketContext>({
@@ -26,7 +28,9 @@ export const WebSocketContext = createContext<TWebSocketContext>({
         updateWorkspacePath : () => {},
         // updateProjectPath : () => {},
         // updateBoardPath : () => {}
-    }
+    },
+    initialConnection : true,
+    setInitialConnection : () => {}
 })
 
 type TWebSocketProviderProps = {
@@ -40,6 +44,7 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ connected, setConnected ] = useState<boolean>(false)
+    const initialConnection = useRef<boolean>(true)
     const socket = useRef<WebSocket | null>(null)
     const checkHealthTimerWorker = useRef<Worker>(null)
 
@@ -69,6 +74,7 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         socket.current.close()
         socket.current = null
         setConnected(false)
+        initialConnection.current = true
     }
 
     // Event Handlers
@@ -100,10 +106,10 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         }
     }
 
-    useLayoutEffect(() => {
-        if ( socket.current ) return
+    const createConnection = () => {
         if ( !authenticated ) return
 
+        socket.current = null;
         socket.current = new WebSocket(
             `${import.meta.env.VITE_TASKPRIO_WSS_URL}?connection_type=${isElectron ? "electron" : "webapp"}`
         )
@@ -111,17 +117,34 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
             console.log("Connection open")
             createCheckHealthTimer()
             setConnected(true)
+            initialConnection.current = false
         }
+
         socket.current.onclose = () => {
             console.log("Connection closed")
             clearCheckHealthTimer()
             setConnected(false)
+            if ( initialConnection.current === false ) {
+                createConnection()
+            }
         }
-        
+
+        socket.current.onerror = () => {
+            console.log("Connection error")
+            clearCheckHealthTimer()
+            setConnected(false)
+            if ( initialConnection.current === false ) {
+                createConnection()
+            }
+        }
+    }
+
+    useLayoutEffect(() => {
+        if ( socket.current ) return
+        createConnection()
         return () => {
             clearCheckHealthTimer()
         }
-
     }, [ authenticated, isElectron ] )
 
     // Attach the message handlers to the socket
@@ -138,6 +161,10 @@ export const WebSocketProvider = ({ children } : TWebSocketProviderProps) => {
         <WebSocketContext.Provider
             value={{
                 connected,
+                initialConnection : initialConnection.current,
+                setInitialConnection : ( value ) => {
+                    initialConnection.current = value
+                },
                 socket : socket.current,
                 sendWebSocketMessage,
                 closeWebSocketConnection,

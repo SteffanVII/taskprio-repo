@@ -82,13 +82,13 @@ const TodoList_TaskTodoPageOverlay = () => {
                 gridTemplateRows : "min-content 1fr min-content"
             }}
         >
-            <div
+            {/* <div
                 className={cn(
                     "absolute z-[1] w-[20rem] h-[3rem] scale-50 top-[14rem] left-1/2 translate-x-[-50%] shadow-[0_3rem_14rem_0.7rem] shadow-primary bg-transparent",
                     `opacity-0 transition-all duration-[3000ms]`,
                     sessionActive && `opacity-100 scale-100`
                 )}
-            ></div>
+            ></div> */}
             <TaskTodoFinishSessionDialog
                 open={finishSessionDialogOpen}
                 onOpenChange={setFinishSessionDialogOpen}

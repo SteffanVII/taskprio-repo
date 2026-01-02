@@ -315,4 +315,4 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
 
 }
 
-export default TaskboardSection;
+export default React.memo(TaskboardSection) ;

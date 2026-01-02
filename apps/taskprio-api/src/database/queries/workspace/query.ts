@@ -122,6 +122,7 @@ export const getUserWorkspaces = async (
                             .end()
                             .as("profile_photo")
                     ])
+                    .whereRef("workspace.workspace_members.workspace_id", "=", eb.ref("workspace.workspace.workspace_id"))
                     .where("tp_user.user.user_id", "is not", null)
             ).as("workspace_members")
         ])

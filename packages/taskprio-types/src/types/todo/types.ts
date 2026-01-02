@@ -96,8 +96,7 @@ export type TUserAvailableTaskTodoByProject = Pick<
     "project_abbreviation" |
     "project_color"
 > & {
-    tasks : (TUserTaskTodoState | TUserAvailableTaskTodo)[],
-    taskboards : Pick<TTaskboard, "task_board_id" | "task_board_name">[]
+    tasks : (TUserTaskTodoState | TUserAvailableTaskTodo)[]
 }
 
 export type TUserAvailableTaskTodo = {

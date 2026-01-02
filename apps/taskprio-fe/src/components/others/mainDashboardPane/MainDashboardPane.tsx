@@ -36,7 +36,9 @@ const MainDashboardPane = () => {
                         </SidebarHeader>
                         <SidebarContent>
                             <GeneralButtons/>
-                            <ProjectsList_MainDashboardPane/>
+                            <div className="px-3 py-4" >
+                                <ProjectsList_MainDashboardPane/>
+                            </div>
                         </SidebarContent>
                     </>
                     :

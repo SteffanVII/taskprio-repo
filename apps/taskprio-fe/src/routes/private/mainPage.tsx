@@ -29,7 +29,8 @@ import AcceptInvitationDialog from "@/components/others/dialogs/AcceptInvitation
 const MainPage = () => {
 
     const {
-        connected: webSocketConnected
+        connected: webSocketConnected,
+        initialConnection : webSocketInitialConnection
     } = useContext(WebSocketContext)
     const authenticated = useGlobalsStore_authenticated()
     const authenticateIsPending = useGlobalsStore_authenticateIsPending()
@@ -40,7 +41,7 @@ const MainPage = () => {
     const logoutIsPending = useGlobalsStore_logoutIsPending()
 
     const showLoadingScreen = useMemo(() => {
-        return ((!authenticated || !webSocketConnected || authenticateIsPending) && !logoutIsPending);
+        return ((!authenticated || (!webSocketConnected && !webSocketInitialConnection) || authenticateIsPending) && !logoutIsPending);
     }, [
         authenticated,
         webSocketConnected,

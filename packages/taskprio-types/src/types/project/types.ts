@@ -3,6 +3,7 @@ import { ProjectProject, ProjectProjectMembers } from "../../db"
 import { TUser } from "../user/types"
 import { TTag } from "../tag/types"
 import { EProjectRole } from "./enums"
+import { TTaskboard } from "../taskboard/types"
 
 export type TCreateProjectRequestBody = {
     project_name : string,
@@ -106,4 +107,6 @@ export type TProjectWithUserAssignedTasks = Pick<
     "project_name" |
     "project_abbreviation" |
     "project_color"
->
+> & {
+    taskboards : Pick<TTaskboard, "task_board_id" | "task_board_name">[]
+}

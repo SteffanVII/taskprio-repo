@@ -10,6 +10,7 @@ import TagBadge from "../shared/tag/TagBadge"
 import { BookTypeIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
+import React from "react"
 
 export type TTaskboardTaskProps = {
     task : TTaskForCardView,
@@ -181,4 +182,4 @@ export const TaskboardTask : React.FC<TTaskboardTaskProps> = ( {
 
 }
 
-export default TaskboardTask
+export default React.memo(TaskboardTask)

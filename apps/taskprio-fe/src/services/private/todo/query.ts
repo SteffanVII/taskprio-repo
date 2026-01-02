@@ -8,6 +8,8 @@ import { AxiosError } from "axios"
 
 export const useGetTasksAssignedToUserByWorkspace = ( payload : TGetTasksAssignedToUserByWorkspacePayload ) => {
 
+    const authenticated = useGlobalsStore_authenticated()
+
     return useQuery<TGetAvailableTasksByWorkspaceResponseData, Error>({
         queryKey : [ ...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, payload.pathParameter.workspace_id ],
         queryFn : async () => {
@@ -16,7 +18,7 @@ export const useGetTasksAssignedToUserByWorkspace = ( payload : TGetTasksAssigne
             )
             return response.data
         },
-        enabled : !!payload.pathParameter.workspace_id
+        enabled : !!payload.pathParameter.workspace_id && authenticated
     })
 
 }
@@ -30,6 +32,8 @@ type TUseGetAvailableTasksByProjectConfig = {
 }
 
 export const useGetAvailableTasksByProject = ( config? : TUseGetAvailableTasksByProjectConfig ) => {
+
+    const authenticated = useGlobalsStore_authenticated()
 
     return useQuery<TGetAvailableTasksByProjectResponseData, AxiosError>({
         queryKey : [ ...QueryKeys.GET_AVAILABLE_TASKS_BY_PROJECT.split, config?.payload?.params?.project_id, JSON.stringify(config?.payload?.query) ],
@@ -46,7 +50,7 @@ export const useGetAvailableTasksByProject = ( config? : TUseGetAvailableTasksBy
             return response.data;
         },
         placeholderData : keepPreviousData,
-        enabled : (config?.options?.enabled ?? true) && !!config?.payload?.params?.project_id
+        enabled : (config?.options?.enabled ?? true) && !!config?.payload?.params?.project_id && authenticated
     })
 
 }

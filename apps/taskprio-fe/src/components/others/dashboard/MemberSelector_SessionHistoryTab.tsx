@@ -46,7 +46,7 @@ const MemberSelector_SessionHistoryTab = () => {
             />
             <PopoverContent
                 className={cn(
-                    `p-2`
+                    `p-2 gap-1`
                 )}
             >
                 {

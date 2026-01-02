@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { databaseFunctionWrapper, EDatabaseFunction, getPoolClient, getPostgrePool } from "../../postgresql.js";
-import { DB, TProject, TProjectMember, TProjectWithUserAssignedTasks } from "@repo/taskprio-types";
+import { DB, TProject, TProjectMember, TProjectWithUserAssignedTasks, TTaskboard } from "@repo/taskprio-types";
 import { Transaction } from "kysely";
 import { taskprioKysely } from "../../kysely/kysely.js";
 import { sql } from "kysely";
@@ -410,13 +410,25 @@ export const getProjectListWithUserAssignedTasks = (
         .leftJoin( "taskboard.task_board", "taskboard.task_board.project_id", "project.project.project_id" )
         .leftJoin( "taskboard.task", "taskboard.task.task_board_id", "taskboard.task_board.task_board_id" )
         .leftJoin( "taskboard.task_assignee", "taskboard.task_assignee.task_id", "taskboard.task.task_id" )
-        .select( [
+        .select( eb => [
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as( "project_id" ),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as( "workspace_id" ),
             "project.project.project_name",
             "project.project.project_color",
             "project.project.project_abbreviation",
-            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as( "created_by" )
+            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.created_by)`.as( "created_by" ),
+            eb.fn.coalesce(
+                jsonArrayFrom(
+                    eb.selectFrom("taskboard.task_board")
+                        .select([
+                            sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_board.task_board_id)`.as("task_board_id"),
+                            "taskboard.task_board.task_board_name"
+                        ])
+                        .whereRef("taskboard.task_board.project_id", "=", "project.project.project_id")
+                        .where("taskboard.task_board.inactive", "=", false)
+                ),
+                sql<Pick<TTaskboard, "task_board_id" | "task_board_name">[]>`'[]'`
+            ).as("taskboards")
         ] )
         .where( "project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
         .where( "project.project.active", "=", true )

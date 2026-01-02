@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useCreateWorkspace } from "@/services/private/workspace/mutation"
@@ -7,7 +6,8 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import Spinner from "../Spinner"
 import { useSidebar } from "@/components/ui/sidebar"
-import { Menu } from "lucide-react"
+import { FolderClosed, Menu } from "lucide-react"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 
 const NoWorkspaceStage = () => {
 
@@ -53,26 +53,23 @@ const NoWorkspaceStage = () => {
                     }}
                 ><Menu/></Button>
             }
-            <Card
-                className={cn(
-                    ` w-[30rem] `
-                )}
-            >
-                <CardHeader>
-                    <CardTitle>No Workspace</CardTitle>
-                    <CardDescription>You're currently not a member of any workspace. Please create one or join a workspace.</CardDescription>
-                </CardHeader>
-                <CardContent>
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia
+                        variant={"icon"}
+                    >
+                        <FolderClosed/>
+                    </EmptyMedia>
+                    <EmptyTitle>No Workspaces Yet</EmptyTitle>
+                    <EmptyDescription>You're currently not a member of any workspace. Please create one or join a workspace.</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
                     <Input
                         placeholder="Workspace name"
                         value={workspaceName}
                         onChange={ ( e ) => setWorkspaceName( e.target.value ) }
                         disabled={isCreatingWorkspace}
                     />
-                </CardContent>
-                <CardFooter
-                    className=" justify-end "
-                >
                     <Button
                         variant="outline"
                         disabled={isCreatingWorkspace}
@@ -85,8 +82,8 @@ const NoWorkspaceStage = () => {
                             "Create workspace"
                         }
                     </Button>
-                </CardFooter>
-            </Card>
+                </EmptyContent>
+            </Empty>
         </div>
     )
 

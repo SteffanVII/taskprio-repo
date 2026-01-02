@@ -2,6 +2,7 @@ import { WebSocketContext } from "@/components/others/websocket/WebsocketProvide
 import { useLogoutRequest } from "@/services/authentication"
 import { resetDialogsStore } from "@/stores/dialogs"
 import { resetGlobalsStore, updateGlobalsStore } from "@/stores/globals"
+import { resetSessionHistoryTabStore } from "@/stores/sessionHistoryTab"
 import { resetTaskboardDragStore } from "@/stores/taskboardDrag"
 import { resetTaskTodoPageStore } from "@/stores/taskTodoPage"
 import { useQueryClient } from "@tanstack/react-query"
@@ -34,12 +35,18 @@ export const useLogout = () : TUseLogout => {
         onSuccess : () => {
             if ( connected ) closeWebSocketConnection()
             Cookies.remove("access_token")
-            resetGlobalsStore()
-            resetTaskboardDragStore()
-            resetTaskTodoPageStore()
-            resetDialogsStore()
+            localStorage.removeItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME )
+            localStorage.removeItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME )
+            localStorage.removeItem( import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME )
             navigate("/login")
-            queryClient.clear()
+            setTimeout(() => {
+                resetGlobalsStore()
+                resetTaskboardDragStore()
+                resetSessionHistoryTabStore()
+                resetTaskTodoPageStore()
+                resetDialogsStore()
+                queryClient.clear()
+            }, 300)
         }
     })
 

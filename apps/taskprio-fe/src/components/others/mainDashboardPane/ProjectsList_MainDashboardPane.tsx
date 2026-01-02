@@ -1,14 +1,12 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { updateDialogsStore } from "@/stores/dialogs"
 import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_user, useGlobalsStore_workspaceIsLoading, useGlobalsStore_workspaceRole } from "@/stores/globals"
 
 import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
-import Cookies from "js-cookie"
 import { Plus } from "lucide-react"
 import { useMemo } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
@@ -59,22 +57,23 @@ const ProjectsList_MainDashboardPane = () => {
     return (
         <div
             className={cn(
-                ` w-full h-fit `
+                ` w-full h-fit `,
+                ` bg-muted rounded-md border overflow-hidden`,
             )}
         >
             <div
                 className={cn(
-                    ` w-full h-fit p-4 `,
+                    ` w-full h-fit pl-3 `,
                     ` flex items-center justify-between `
                 )}
             >
-                <p>Projects</p>
+                <p className="text-lg font-bold" >Projects</p>
                 <div
                     className=" flex items-center gap-2 "
                 >
                     <Button
-                        size={"icon"}
-                        variant={"outline"}
+                        size={"icon-lg"}
+                        variant={"ghost"}
                         onClick={() => {
                             updateDialogsStore({
                                 createProjectDialog : {
@@ -91,10 +90,12 @@ const ProjectsList_MainDashboardPane = () => {
                     </Button>
                 </div>
             </div>
-            <Separator className="mb-2" />
+            <Separator
+                // className="mb-2"
+            />
             <div
                 className={cn(
-                    ` w-full h-fit gap-2 p-2 `,
+                    ` w-full h-fit `,
                     ` flex flex-col `
                 )}
             >
@@ -116,10 +117,10 @@ const ProjectsList_MainDashboardPane = () => {
                         <button
                             key={project.project_id}
                             className={cn(
-                                ` relative w-full h-8 px-4 `,
+                                ` relative w-full h-8 px-4 py-5 `,
                                 ` flex items-center gap-4 `,
                                 ` transition-all `,
-                                ` border-r-[0.6rem] rounded-md `,
+                                ` border-r-[0.6rem] `,
                                 ` hover:bg-border `,
                                 selectedProject?.project_id === project.project_id && ` text-primary bg-border overflow-hidden `,
                                 getHexLuminance(project.project_color) > 0.4 ?
@@ -141,5 +142,49 @@ const ProjectsList_MainDashboardPane = () => {
     )
 
 }
+
+// type TProjectButtonProps = {
+//     data : TProject,
+//     handleProjectButtonOnClick : ( project : TProject ) => void
+// }
+
+// const ProjectButton : React.FC<TProjectButtonProps> = ({
+//     data,
+//     handleProjectButtonOnClick
+// }) => {
+
+//     const selectedProject = useGlobalsStore_selectedProject()
+
+//     return (
+//         <Collapsible>
+//             <CollapsibleTrigger
+//                 render={
+//                     <button
+//                         key={data.project_id}
+//                         className={cn(
+//                             ` relative w-full h-8 px-4 `,
+//                             ` flex items-center gap-4 `,
+//                             ` transition-all `,
+//                             ` border-r-[0.6rem] rounded-md rounded-r-none `,
+//                             ` hover:bg-border `,
+//                             selectedProject?.project_id === data.project_id && ` text-primary bg-border overflow-hidden `,
+//                             getHexLuminance(data.project_color) > 0.4 ?
+//                             `text-black` :
+//                             `text-white`
+//                         )}
+//                         style={{
+//                             borderColor : data.project_color
+//                         }}
+//                         disabled={selectedProject?.project_id === data.project_id}
+//                         onClick={() => handleProjectButtonOnClick(data)}
+//                     >
+//                         <p className=" text-sm font-medium text-foreground " >{data.project_name}</p>
+//                     </button>
+//                 }
+//             />
+//         </Collapsible>
+//     )
+
+// }
 
 export default ProjectsList_MainDashboardPane;

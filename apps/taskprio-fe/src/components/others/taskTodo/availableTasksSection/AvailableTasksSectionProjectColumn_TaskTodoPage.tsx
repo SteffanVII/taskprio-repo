@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import NumberFlow from "@number-flow/react"
 import { updateTaskTodoPageStore, useTaskTodoPageStore_projectColumnsFilterState } from "@/stores/taskTodoPage"
 import { useDebounce } from "use-debounce"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 
 type TProjectColumnProps = {
     data : TProjectWithUserAssignedTasks,
@@ -113,16 +114,12 @@ const ProjectColumn = React.forwardRef<HTMLDivElement, TProjectColumnProps>( ({
                     } }
                 />
                 <ProjectColumnFilterPopover
-                    taskboards={availableTasks?.taskboards || []}
+                    taskboards={data.taskboards || []}
                     taskboardsFilter={taskboardsFilter}
                     setTaskboardsFilter={setTaskboardsFilter}
                 />
             </div>
 
-            {/* <ScrollArea
-                className="relative flex flex-col w-full h-full min-h-full max-h-full "
-            >
-            </ScrollArea> */}
             <div
                 className={cn(
                     `max-h-full min-h-0 space-y-4 pb-[10rem] overflow-y-auto `
@@ -135,8 +132,15 @@ const ProjectColumn = React.forwardRef<HTMLDivElement, TProjectColumnProps>( ({
                     ) )
                 }
                 {
-                    (!availableTasksIsLoading && availableTasks?.tasks && availableTasks.tasks.length === 0) &&
-                    <p className="font-bold text-center" >All tasks are already added to todo list</p>
+                    (!availableTasksIsLoading && availableTasks?.tasks?.length === 0) &&
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyTitle>No Available Tasks</EmptyTitle>
+                            <EmptyDescription>
+                                There are no tasks assigned to you in this project or all tasks are already added to your todo list
+                            </EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
                 }
                 {
                     (!availableTasksIsLoading && availableTasks?.tasks) &&

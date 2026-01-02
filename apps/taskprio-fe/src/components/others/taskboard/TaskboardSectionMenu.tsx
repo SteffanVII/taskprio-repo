@@ -64,10 +64,10 @@ export const TaskboardSectionMenu : React.FC<TTaskboardSectionMenuProps> = ({
                                         " flex items-center gap-2 ",
                                         taskSection.task_section_color === color && " bg-foreground/10 "
                                     )}
-                                    onSelect={() => onColorChange( color )}
+                                    onClick={() => onColorChange( color )}
                                 >
-                                    <div className=" size-4 rounded-sm" style={{ backgroundColor : color }}></div>
-                                    {color}
+                                    <div className=" size-4 w-full rounded-sm" style={{ backgroundColor : color }}></div>
+                                    {/* {color} */}
                                 </DropdownMenuItem>
                             ))
                         }

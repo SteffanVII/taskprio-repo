@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Spinner from "../Spinner";
 import { useCreateProject } from "@/services/private/project/mutation";
@@ -9,7 +8,8 @@ import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/
 
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/ui/sidebar";
-import { Menu } from "lucide-react";
+import { FolderClosed, Menu } from "lucide-react";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 const NoProjectStage = () => {
 
@@ -60,26 +60,23 @@ const NoProjectStage = () => {
                     }}
                 ><Menu/></Button>
             }
-            <Card
-                className={cn(
-                    ` w-[30rem] border-none shadow-none `
-                )}
-            >
-                <CardHeader>
-                    <CardTitle>No Projects</CardTitle>
-                    <CardDescription>This workspace doesn't have any projects. Please create one.</CardDescription>
-                </CardHeader>
-                <CardContent>
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia
+                        variant={"icon"}
+                    >
+                        <FolderClosed/>
+                    </EmptyMedia>
+                    <EmptyTitle>No Projects Yet</EmptyTitle>
+                    <EmptyDescription>This workspace doesn't have any projects. Please create one.</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
                     <Input
                         placeholder="Project name"
                         value={projectName}
                         onChange={ ( e ) => setProjectName( e.target.value ) }
                         disabled={isCreatingProject}
                     />
-                </CardContent>
-                <CardFooter
-                    className=" justify-end "
-                >
                     <Button
                         variant="outline"
                         disabled={isCreatingProject}
@@ -92,8 +89,8 @@ const NoProjectStage = () => {
                             "Create project"
                         }
                     </Button>
-                </CardFooter>
-            </Card>
+                </EmptyContent>
+            </Empty>
         </div>
     )
 

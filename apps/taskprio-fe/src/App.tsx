@@ -1,30 +1,30 @@
 import './App.css'
-import { createHashRouter, RouteObject } from 'react-router'
-import LoginRoute from './routes/public/login'
+import { RouteObject } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AuthLayout from './routes/layouts/authLayout'
-import PrivateLayout from './services/private/PrivateLayout'
-import ProjectPage from './routes/private/project/projectPage'
-import MainPage from './routes/private/mainPage'
-import TaskboardPage from './routes/private/project/taskboard/taskboardPage'
-import AcceptRoute from './routes/public/accept'
 import { ThemeProvider } from './lib/utils/themeProvider'
-import ProjectSettingsPage from './routes/private/project/settings/projectSettingsPage'
-import ProfilePage from './routes/private/profile/profilePage'
-import TaskTodoPage from './routes/private/taskTodo/taskTodoPage'
 import MousePositionProvider from './lib/utils/mousePositionProvider'
-import WorkspaceSettingsPage from './routes/private/workspace/settings/workspaceSettingsPage'
 import { Toaster } from './components/ui/sonner'
 import RouterProviderCustom from './components/others/shared/RouterProviderCustom'
 import ElectronCustomTitlebar from './components/others/shared/ElectronCustomTitlebar'
 import { useElectronStore_isElectron } from './stores/electron'
-import TaskTodoPageOverlay from './routes/private/taskTodo/taskTodoPageOverlay'
 import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from './stores/taskTodoPage'
-import StatisticsPage from './routes/private/statistics/statisticsPage'
+import { lazy, Suspense } from 'react'
+
+const LoginRoute = lazy(() => import('./routes/public/login'))
+const AcceptRoute = lazy(() => import('./routes/public/accept'))
+const PrivateLayout = lazy(() => import('./services/private/PrivateLayout'))
+const MainPage = lazy(() => import('./routes/private/mainPage'))
+const ProjectPage = lazy(() => import('./routes/private/project/projectPage'))
+const TaskboardPage = lazy(() => import('./routes/private/project/taskboard/taskboardPage'))
+const ProjectSettingsPage = lazy(() => import('./routes/private/project/settings/projectSettingsPage'))
+const TaskTodoPage = lazy(() => import('./routes/private/taskTodo/taskTodoPage'))
+const WorkspaceSettingsPage = lazy(() => import('./routes/private/workspace/settings/workspaceSettingsPage'))
+const StatisticsPage = lazy(() => import('./routes/private/statistics/statisticsPage'))
+const TaskTodoPageOverlay = lazy(() => import('./routes/private/taskTodo/taskTodoPageOverlay'))
+const ProfilePage = lazy(() => import('./routes/private/profile/profilePage'))
 
 const queryClient = new QueryClient()
-
-createHashRouter
 
 const routeObjects : RouteObject[] = [
 	{
@@ -33,64 +33,61 @@ const routeObjects : RouteObject[] = [
 		children : [
 			{
 				path : "login",
-				element : <LoginRoute />
+				element : <Suspense><LoginRoute /></Suspense>
 			},
 			{
 				path : "accept",
-				element : <AcceptRoute/>
+				element : <Suspense><AcceptRoute /></Suspense>
 			},
 			{
 				path : "p",
-				element : <PrivateLayout/>,
+				element : <Suspense><PrivateLayout /></Suspense>,
 				children : [
 					{
 						path : "w/:workspace_id?",
-						element : <MainPage/>,
+						element : <Suspense><MainPage /></Suspense>,
 						children : [
 							{
 								path : "d/:project_id?",
-								element : <ProjectPage/>,
+								element : <Suspense><ProjectPage /></Suspense>,
 								children : [
 									{
 										path : "t/:task_board_id?/:task_id?",
-										element : <TaskboardPage/>
+										element : <Suspense><TaskboardPage /></Suspense>
 									},
 									{
 										path : "project_settings",
-										element : <ProjectSettingsPage/>
+										element : <Suspense><ProjectSettingsPage /></Suspense>
 									}
 								]
 							},
 							{
 								path : "tt",
-								element : <TaskTodoPage/>
+								element : <Suspense><TaskTodoPage /></Suspense>
 							},
 							{
 								path : "workspace_settings",
-								element : <WorkspaceSettingsPage/>
+								element : <Suspense><WorkspaceSettingsPage /></Suspense>
 							},
 							{
 								path : "statistics",
-								element : <StatisticsPage/>
+								element : <Suspense><StatisticsPage /></Suspense>
 							}
 						]
 					},
 					{
 						path : "task_todo_overlay/:workspace_id?",
-						element : <TaskTodoPageOverlay/>
+						element : <Suspense><TaskTodoPageOverlay /></Suspense>
 					},
 					{
 						path : "profile",
-						element : <ProfilePage/>
+						element : <Suspense><ProfilePage /></Suspense>
 					}
 				]
 			}
 		]
 	}
 ]
-
-// const routerBrowser = createBrowserRouter(routeObjects)
-// const routerHash = createHashRouter(routeObjects)
 
 function App() {
 
