@@ -1,16 +1,21 @@
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLocation, useNavigate } from "react-router";
-import { useMemo } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { useContext, useMemo } from "react";
 import { Menu, Settings2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
+import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const MainDashboardHeader = () => {
 
+    const { task_board_id } = useParams()
     const { pathname } = useLocation()
     const navigate = useNavigate()
+    const {
+        channelActions
+    } = useContext(WebSocketContext)
 
     const sidebar = useSidebar()
     
@@ -56,6 +61,9 @@ const MainDashboardHeader = () => {
                             value="project_settings"
                             onClick={() => {
                                 navigate( "project_settings" )
+                                if ( task_board_id ) {
+                                    channelActions.leaveTaskboardChannel(task_board_id)
+                                }
                             }}
                         >
                             <Tooltip>

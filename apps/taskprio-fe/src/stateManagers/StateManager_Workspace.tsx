@@ -1,5 +1,5 @@
 import { useGetUserWorkspaces } from "@/services/private/workspace/query";
-import { updateGlobalsStore, useGlobalsStore_authenticated, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
 import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { EWorkspaceRole } from "@repo/taskprio-types/src";
@@ -16,13 +16,12 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
     const { pathname } = useLocation()
     const { workspace_id } = useParams()
 
-    const authenticated = useGlobalsStore_authenticated()
     const user = useGlobalsStore_user()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const {
         connected: webSocketConnected,
-        pathChangeMethods
+        channelActions
     } = useContext(WebSocketContext)
 
     const {
@@ -82,7 +81,6 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
         // Try to find the workspace in workspaces data to be set as selectedWorkspace
         // This doesn't set to other the first workspace if workspace isn't found
         // This is only for when the webapp is loaded already in a workspace route but doesn't have selectedWorkspace data set yet
-        // if ( (!selectedWorkspace || ( selectedWorkspace && selectedWorkspace.workspace_id !== workspace_id )) && workspace_id ) {
         if (!selectedWorkspace && workspace_id) {
             const foundWorkspace = workspaces?.find(workspace => workspace.workspace_id === workspace_id) ?? null;
             const workspaceRole: EWorkspaceRole | null = foundWorkspace?.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null;
@@ -93,7 +91,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
                 noTaskboards: false
             })
             if (foundWorkspace) {
-                pathChangeMethods.updateWorkspacePath(foundWorkspace.workspace_id)
+                channelActions.joinWorkspaceChannel(foundWorkspace.workspace_id)
             }
         }
     }, [
@@ -108,10 +106,6 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
             noWorkspaces: (workspaces && !workspacesIsFetching && workspaces.length < 1)
         })
     }, [workspaces, workspacesIsFetching])
-
-    useLayoutEffect(() => {
-        console.log(selectedWorkspace)
-    }, [selectedWorkspace])
 
     return children
 

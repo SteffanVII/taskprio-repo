@@ -3,15 +3,16 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { updateGlobalsStore, useGlobalsStore_noTaskboards, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_selectedWorkspace, useGlobalsStore_taskboards, useGlobalsStore_taskboardsIsLoading } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_noTaskboards, useGlobalsStore_projectRole, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_selectedWorkspace, useGlobalsStore_taskboards, useGlobalsStore_taskboardsIsLoading } from "@/stores/globals";
 
-import { TTaskboard } from "@repo/taskprio-types/src";
+import { EProjectRole, TTaskboard } from "@repo/taskprio-types/src";
 import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import { useNavigate } from "react-router";
 import TaskboardListSkeleton from "./TaskboardListSkeleton";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const TaskboardList = () => {
 
@@ -99,17 +100,23 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
 }) => {
 
     const navigate = useNavigate()
+    const {
+        channelActions
+    } = useContext(WebSocketContext)
 
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const selectedProject = useGlobalsStore_selectedProject()
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const projectRole = useGlobalsStore_projectRole()
 
     const handleTaskboardTabOnClick = () => {
+        if ( selectedTaskboard?.task_board_id === taskboard.task_board_id ) return
         updateGlobalsStore({
             selectedTaskboard : taskboard,
             noTaskboards : false
         })
         navigate( `/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}` )
+        channelActions.joinTaskboardChannel(taskboard.task_board_id)
     }
 
     const handleOpenRenameTaskboardDialog = ( e : React.MouseEvent ) => {
@@ -155,6 +162,14 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
         })
     }
 
+    const taskboardMenuVisible = useMemo(() => {
+        return selectedTaskboard?.task_board_id === taskboard.task_board_id && [ EProjectRole.ADMIN, EProjectRole.OWNER ].includes(projectRole || EProjectRole.GUEST)
+    }, [
+        selectedTaskboard?.task_board_id,
+        taskboard.task_board_id,
+        projectRole
+    ])
+
     return (
         <TabsTrigger
             // variant={""}
@@ -167,7 +182,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
         >
             {taskboard.task_board_name}
             {
-                selectedTaskboard?.task_board_id === taskboard.task_board_id &&
+                taskboardMenuVisible &&
                 <DropdownMenu modal={false} >
                     <DropdownMenuTrigger
                         render={

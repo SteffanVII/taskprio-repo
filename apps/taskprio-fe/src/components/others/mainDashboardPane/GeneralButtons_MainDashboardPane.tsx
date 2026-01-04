@@ -2,12 +2,17 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils"
 import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
 import { ChartSpline, Notebook, Settings2 } from "lucide-react";
+import { useContext } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
+import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const GeneralButtons = () => {
 
-    const { workspace_id } = useParams()
+    const { workspace_id, project_id, task_board_id } = useParams()
     const { pathname } = useLocation()
+    const {
+        channelActions
+    } = useContext(WebSocketContext)
 
     const navigate = useNavigate()
     const selectedWorkpace = useGlobalsStore_selectedWorkspace()
@@ -20,6 +25,12 @@ const GeneralButtons = () => {
             selectedTaskboard : null,
             selectedTask : null
         })
+        if ( project_id ) {
+            channelActions.leaveProjectChannel(project_id)
+        }
+        if ( task_board_id ) {
+            channelActions.leaveTaskboardChannel(task_board_id)
+        }
     }
     
     const workspaceSettingsOnClick = () => {
@@ -30,6 +41,12 @@ const GeneralButtons = () => {
             selectedTaskboard : null,
             selectedTask : null
         })
+        if ( project_id ) {
+            channelActions.leaveProjectChannel(project_id)
+        }
+        if ( task_board_id ) {
+            channelActions.leaveTaskboardChannel(task_board_id)
+        }
     }
     
     const statisticsOnClick = () => {
@@ -40,6 +57,12 @@ const GeneralButtons = () => {
             selectedTaskboard : null,
             selectedTask : null
         })
+        if ( project_id ) {
+            channelActions.leaveProjectChannel(project_id)
+        }
+        if ( task_board_id ) {
+            channelActions.leaveTaskboardChannel(task_board_id)
+        }
     }
 
     return (

@@ -10,16 +10,15 @@ const DangerZone_ProjectSettingsPage = () => {
 
     return (
         <React.Fragment>
-            <div className=" flex flex-col space-y-2 " >
-                <h3 className={` text-lg text-destructive font-medium `} >Danger Zone</h3>
-                <p className=" text-sm text-muted-foreground " >
+            <div className="SettingsSectionHeader" >
+                <h3 className={`SettingsSectionHeaderTitle`} >Danger Zone</h3>
+                <p className="SettingsSectionHeaderDescription" >
                     Deactivate or delete the project.
                 </p>
             </div>
             <div
                 className={cn(
-                    `p-4 border border-transparent rounded-md`,
-                    `hover:bg-secondary/50 hover:border-foreground/10`
+                    `SettingsSectionContent`
                 )}
             >
                 <div className=" flex flex-col space-y-4 " >

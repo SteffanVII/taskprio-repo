@@ -8,7 +8,7 @@ import { EProjectRole, EWebSocketEventType, TTaskboardDeactivatedWebSocketMessag
 import { createTaskboard, deactivateTaskboard, dropTaskboard, reactivateTaskboard } from "../../database/queries/taskboard/mutation.js";
 import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
 import { taskboardDroppedEventSender } from "../../websocket/eventSenders/taskboardEventSenders.js";
-import { wsConnectionsManagerSimple } from "../../app.js";
+import { wsConnectionsManager } from "../../app.js";
 
 export const registerTaskboardRoutes = ( router : Router ) => {
 
@@ -110,7 +110,7 @@ export const registerTaskboardRoutes = ( router : Router ) => {
                         taskboard_id,
                         workspace_id : workspaceId
                     }
-                    wsConnectionsManagerSimple.sendMessage(
+                    wsConnectionsManager.sendMessage(
                         {
                             type : EWebSocketEventType.TASKBOARD_DEACTIVATED,
                             data : wsMessage
@@ -140,7 +140,7 @@ export const registerTaskboardRoutes = ( router : Router ) => {
                     const wsMessage : TTaskboardReactivatedWebSocketMessage = {
                         project_id
                     }
-                    wsConnectionsManagerSimple.sendMessage(
+                    wsConnectionsManager.sendMessage(
                         {
                             type : EWebSocketEventType.TASKBOARD_REACTIVATED,
                             data : wsMessage
@@ -174,7 +174,7 @@ export const registerTaskboardRoutes = ( router : Router ) => {
                     taskboard_id,
                     workspace_id : workspaceId
                 }
-                wsConnectionsManagerSimple.sendMessage(
+                wsConnectionsManager.sendMessage(
                     {
                         type : EWebSocketEventType.TASKBOARD_DROPPED,
                         data : wsMessage

@@ -1,6 +1,7 @@
+import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
 import { updateGlobalsStore, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
-import React, { useEffect, useLayoutEffect } from "react";
+import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 type TStateManager_Project = {
@@ -13,6 +14,9 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
 
     const { workspace_id, project_id } = useParams()
     const { pathname } = useLocation()
+    const {
+        channelActions
+    } = useContext(WebSocketContext)
 
     const user = useGlobalsStore_user()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
@@ -69,13 +73,6 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
                         localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, projects[0].project_id)
                         navigate(`/p/w/${workspace_id}/d/${projects[0].project_id}/t`)
                     }
-                    // updateGlobalsStore({
-                    //     noProjects : false
-                    // })
-                } else {
-                    // updateGlobalsStore({
-                    //     noProjects : true
-                    // })
                 }
             }
         }
@@ -96,6 +93,9 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
                 noProjects: false,
                 noTaskboards: false
             })
+            if ( foundProject ) {
+                channelActions.joinProjectChannel(foundProject.project_id)
+            }
         }
     }, [
         projects,

@@ -2,14 +2,23 @@ import { cn } from "@/lib/utils";
 import { useGetTaskboardSections } from "@/services/private/tasksection/query";
 import { useGlobalsStore_selectedTaskboard, useGlobalsStore_taskboardsIsLoading } from "@/stores/globals";
 import TaskboardSection from "./TaskboardSection";
-import { TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
+import { TTaskForCardView, TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
 import TaskboardSectionDrop from "./TaskboardSectionDrop";
 import { TaskboardTaskDialog } from "../dialogs/taskboardTaskDialog/TaskboardTaskdialog";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import { useParams } from "react-router";
+import { updateTaskboardDragStore, useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag";
+import { closestCorners, DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
+import { useArrangeTask } from "@/services/private/task/mutation";
+import { TTaskboardTaskDrop } from "./TaskboardTaskDrop";
 import TaskboardSkeleton from "./TaskboardSkeleton";
-import { useTaskboardDragStore_taskboardSectionDrag, useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag";
+import TaskboardTask from "./TaskboardTask";
+
+export enum ETaskboardDragDataType {
+    TASK = "task",
+    SECTION = "section"
+}
 
 type TTaskboardSectionRenderInfo = {
     firstSection : boolean,
@@ -28,14 +37,18 @@ export const Taskboard = () => {
     } = useParams()
 
     const taskboardTaskDrag = useTaskboardDragStore_taskboardTaskDrag()
-    const taskboardSectionDrag = useTaskboardDragStore_taskboardSectionDrag()
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
     const taskboardsIsLoading = useGlobalsStore_taskboardsIsLoading()
 
     const scrollAreaRef = useRef<HTMLDivElement>(null)
-    const animationFrameRef = useRef<ReturnType<typeof requestAnimationFrame>>(null)
 
-    const [ dragDirection, setDragDirection ] = useState<number>(0)
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint : {
+                distance : 8
+            }
+        })
+    )
 
     const {
         data : taskboardSections,
@@ -53,6 +66,10 @@ export const Taskboard = () => {
             enabled : !!selectedTaskboard && !!task_board_id
         }
     })
+
+    const {
+        mutateAsync : arrangeTaskMutation
+    } = useArrangeTask()
 
     const taskboardSectionWithRenderInfo = useMemo<React.ReactNode[]>(() => {
 
@@ -118,46 +135,85 @@ export const Taskboard = () => {
         task_board_id
     ])
 
-    const onAutoScrollerLeftOnMouseEnter = () => {
-        setDragDirection(-1)
-    }
-    
-    const onAutoScrollerRightOnMouseEnter = () => {
-        setDragDirection(1)
-    }
-    
-    const onAutoScrollerOnMouseLeave = () => {
-        setDragDirection(0)
+    const onScrollAreaMouseDown = ( e : React.MouseEvent<HTMLDivElement, MouseEvent> ) => {
+
+        e.preventDefault()
+
+        if ( !!taskboardTaskDrag.taskboardTask ) return
+
+        const el = e.currentTarget
+        const startX = e.pageX
+        const startScrollLeft = el.scrollLeft
+
+        let ticking = false
+        const onMouseMove = ( moveEvent : MouseEvent ) => {
+            if ( !ticking ) {
+                // Determine current x immediately
+                const currentX = moveEvent.pageX
+                
+                requestAnimationFrame(() => {
+                    const dx = currentX - startX
+                    el.scrollLeft = startScrollLeft - dx
+                    ticking = false
+                })
+                
+                ticking = true
+            }
+        }
+
+        const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove)
+            document.removeEventListener("mouseup", onMouseUp)
+        }
+
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+
     }
 
-    useEffect(() => {
-        const dragFunction = () => {
-            if ( scrollAreaRef.current ) {
-                if ( dragDirection < 0 ) {
-                    scrollAreaRef.current.scrollLeft = scrollAreaRef.current.scrollLeft - 10
-                    // scrollAreaRef.current.scrollBy({
-                    //     left : -40,
-                    //     behavior : "smooth"
-                    // })
-                } else {
-                    scrollAreaRef.current.scrollLeft = scrollAreaRef.current.scrollLeft + 10
-                    // scrollAreaRef.current.scrollBy({
-                    //     left : 40,
-                    //     behavior : "smooth"
-                    // })
+    const onDndContextDragStart = ( e : DragStartEvent ) => {
+        if ( e.active.data.current && e.active.data.current.type === ETaskboardDragDataType.TASK ) {
+            updateTaskboardDragStore({
+                taskboardTaskDrag : {
+                    taskboardTask : e.active.data.current.data as TTaskForCardView
                 }
+            })
+        }
+    }
+
+    const onDndContextDragEnd = ( e : DragEndEvent ) => {
+
+        updateTaskboardDragStore({
+            taskboardTaskDrag : {
+                taskboardTask : null
+            },
+            taskboardSectionDrag : {
+                taskboardSection : null
             }
-            animationFrameRef.current = requestAnimationFrame(dragFunction)
+        })
+
+        if (
+            e.active.data.current &&
+            e.active.data.current.type === ETaskboardDragDataType.TASK &&
+            e.over?.data.current
+        ) {
+            if ( !!e.active.data.current.data ) {
+                const task = e.active.data.current.data as TTaskForCardView
+                const dropData = e.over?.data.current as TTaskboardTaskDrop
+                arrangeTaskMutation({
+                    task_id : task.task_id,
+                    body : {
+                        task_section_id : dropData.task_section_id,
+                        display_order : dropData.display_order
+                    }
+                })
+            }
         }
-        if ( animationFrameRef.current ) {
-            cancelAnimationFrame(animationFrameRef.current)
-        }
-        if ( dragDirection !== 0 ) {
-            animationFrameRef.current = requestAnimationFrame(dragFunction)
-        }
-    }, [dragDirection])
+
+    }
 
     return (
+
         <div
             className={cn(
                 `relative grow grid h-full min-w-0 min-h-0 max-h-full`
@@ -166,34 +222,6 @@ export const Taskboard = () => {
                 gridTemplateColumns : "1fr"
             }}
         >
-            {
-                (!!taskboardTaskDrag.taskboardTask || !!taskboardSectionDrag.taskboardSection) && (
-                    <>
-                        {
-                            scrollAreaRef.current?.scrollLeft !== 0 &&
-                            <div
-                                onDragEnter={onAutoScrollerLeftOnMouseEnter}
-                                onDragLeave={onAutoScrollerOnMouseLeave}
-                                className={cn(
-                                    `absolute top-0 left-0 w-[2rem] h-full z-[9999]`,
-                                    // `bg-red-400 border border-destructive`
-                                )}
-                            ></div>
-                        }
-                        {
-                            scrollAreaRef.current?.scrollLeft !== ((scrollAreaRef.current?.scrollWidth ?? 0) - (scrollAreaRef.current?.clientWidth ?? 0)) &&
-                            <div
-                                onDragEnter={onAutoScrollerRightOnMouseEnter}
-                                onDragLeave={onAutoScrollerOnMouseLeave}
-                                className={cn(
-                                    `absolute top-0 right-0 w-[2rem] h-full z-[9999]`,
-                                    // `bg-red-400 border border-destructive`
-                                )}
-                            ></div>
-                        }
-                    </>
-                )
-            }
             <div
                 ref={scrollAreaRef}
                 className={cn(
@@ -201,28 +229,8 @@ export const Taskboard = () => {
                     ` size-full min-h-0 pt-6 overflow-x-auto `,
                     ` flex grow flex-nowrap rounded-tl-md `,
                     ` cursor-grab active:cursor-grabbing select-none `,
-                    // ` border border-red-500 `
                 )}
-                onMouseDown={ e => {
-                    
-                    const el = e.currentTarget
-                    const startX = e.pageX
-                    const scrollLeft = el.scrollLeft
-
-                    const onMouseMove = ( e : MouseEvent ) => {
-                        const dx = e.pageX - startX
-                        el.scrollLeft = scrollLeft - dx
-                    }
-
-                    const onMouseUp = () => {
-                        document.removeEventListener("mousemove", onMouseMove)
-                        document.removeEventListener("mouseup", onMouseUp)
-                    }
-
-                    document.addEventListener("mousemove", onMouseMove)
-                    document.addEventListener("mouseup", onMouseUp)
-                    
-                } }
+                onMouseDown={onScrollAreaMouseDown}
             >
                 {
                     showSkeleton &&
@@ -230,18 +238,33 @@ export const Taskboard = () => {
                 }
                 {
                     ( !showSkeleton && task_board_id && taskboardSections && taskboardSections.length > 0 ) &&
-                    <>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={rectIntersection}
+                        onDragStart={onDndContextDragStart}
+                        onDragEnd={onDndContextDragEnd}
+                    >
+                        <DragOverlay
+                            dropAnimation={null}
+                        >
+                            {
+                                taskboardTaskDrag.taskboardTask && (
+                                    <TaskboardTask
+                                        task={taskboardTaskDrag.taskboardTask}
+                                        preview
+                                    />
+                                )
+                            }
+                        </DragOverlay>
                         {...taskboardSectionWithRenderInfo}
                         <TaskboardTaskDialog/>
-                    </>
+                    </DndContext>
                 }
                 {
                     !showSkeleton &&
                     <TaskboardSectionCreator/>
                 }
-                {/* <ScrollBar orientation="horizontal" /> */}
             </div>
-            {/* <TaskboardSidebar/> */}
         </div>
     )
 

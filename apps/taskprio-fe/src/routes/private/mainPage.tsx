@@ -41,7 +41,7 @@ const MainPage = () => {
     const logoutIsPending = useGlobalsStore_logoutIsPending()
 
     const showLoadingScreen = useMemo(() => {
-        return ((!authenticated || (!webSocketConnected && !webSocketInitialConnection) || authenticateIsPending) && !logoutIsPending);
+        return ((!authenticated || (!webSocketConnected && webSocketInitialConnection) || authenticateIsPending) && !logoutIsPending);
     }, [
         authenticated,
         webSocketConnected,
@@ -85,7 +85,7 @@ const MainPage = () => {
                             <MainDashboardPane />
                             <SidebarInset
                                 custom
-                                className="z-10"
+                                className="border-0 z-10 !shadow-none"
                             >
                                 <div
                                     className={cn(

@@ -70,17 +70,15 @@ const Customization_ProjectSettingsPage = () => {
 
     return (
         <>
-            <div className=" flex flex-col space-y-2 " >
-                <h3 className={` text-lg font-medium `} >Customization</h3>
-                <p className=" text-sm text-muted-foreground " >
+            <div className="SettingsSectionHeader" >
+                <h3 className={`SettingsSectionHeaderTitle`} >Customization</h3>
+                <p className="SettingsSectionHeaderDescription" >
                     Customize the project.
                 </p>
             </div>
             <div
                 className={cn(
-                    `space-y-4`,
-                    `p-4 border border-transparent rounded-md`,
-                    `hover:bg-secondary/50 hover:border-foreground/10`
+                    `SettingsSectionContent`
                 )}
             >
                 <Form {...projectCustomizationForm}>

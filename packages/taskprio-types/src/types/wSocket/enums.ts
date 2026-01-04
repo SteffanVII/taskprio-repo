@@ -30,6 +30,15 @@ export enum EWebSocketEventType {
 // Events coming from the client to server
 export enum EWebsocketClientEventType {
 
+    JOIN_WORKSPACE_CHANNEL = "join_workspace_channel",
+    LEAVE_WORKSPACE_CHANNEL = "leave_workspace_channel",
+
+    JOIN_PROJECT_CHANNEL = "join_project_channel",
+    LEAVE_PROJECT_CHANNEL = "leave_project_channel",
+
+    JOIN_TASKBOARD_CHANNEL = "join_taskboard_channel",
+    LEAVE_TASKBOARD_CHANNEL = "leave_taskboard_channel",
+
     CHECK_HEALTH = "check_health",
 
     PATH_CHANGE = "path_change",

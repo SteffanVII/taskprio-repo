@@ -23,17 +23,15 @@ const TagsSection_ProjectSettingsPage = () => {
 
     return (
         <>
-            <div className=" flex flex-col space-y-2 " >
-                <h3 className={` text-lg font-medium `} >Tags</h3>
-                <p className=" text-sm text-muted-foreground " >
+            <div className="SettingsSectionHeader" >
+                <h3 className={`SettingsSectionHeaderTitle`} >Tags</h3>
+                <p className="SettingsSectionHeaderDescription" >
                     Tags are used to categorize tasks.
                 </p>
             </div>
             <div
                 className={cn(
-                    ` flex flex-col gap-8 `,
-                    `p-4 border border-transparent rounded-md`,
-                    `hover:bg-secondary/50 hover:border-foreground/10`,
+                    `SettingsSectionContent`,
                 )}
             >
                     {

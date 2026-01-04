@@ -9,11 +9,11 @@ import { getProjectMemberByTaskId } from "../../database/queries/project/query.j
 import { EWebSocketEventType } from "@repo/taskprio-types";
 import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
 import { verifyProjectMemberMiddleware } from "../../middlewares/authentication.js";
-import { WebSocketConnectionsManagerSimple } from "../../websocket/connectionsManager.js";
+import { WebSocketConnectionsManager } from "../../websocket/connectionsManager.js";
 import { taskprioKysely } from "../../database/kysely/kysely.js";
 import { addTaskTag, removeTaskTag } from "../../database/queries/tag/mutation.js";
 
-export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple : WebSocketConnectionsManagerSimple ) => {
+export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebSocketConnectionsManager ) => {
 
     // GET Routes
     // Get Task
@@ -109,7 +109,7 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple 
                     workspace_id : transactionReturn.workspaceId
                 }
 
-                wsConnectionsManagerSimple.sendMessage(
+                wsConnectionsManager.sendMessage(
                     {
                         type : EWebSocketEventType.TASK_CREATED,
                         data : message
@@ -365,6 +365,7 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple 
                     task_id,
                     body
                 )
+
                 res.status(200).json(updatedTask)
                 
             } catch (error) {
@@ -417,7 +418,7 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManagerSimple 
 
                 const workspaceId = await getWorkspaceIdFromProjectId( projectId );
 
-                wsConnectionsManagerSimple.sendMessage(
+                wsConnectionsManager.sendMessage(
                     {
                         type : EWebSocketEventType.TASK_UPDATED,
                         data : updatedTask

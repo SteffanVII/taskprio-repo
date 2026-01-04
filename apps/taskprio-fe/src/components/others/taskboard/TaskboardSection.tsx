@@ -276,23 +276,6 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                                             bottomTaskId={task?.task_id}
                                         />
                                     }
-                                    {/* <div
-                                        data-task-id={task.task_id}
-                                        className={cn(
-                                            `w-[20rem] min-h-[8rem] h-fit pointer-events-none`
-                                        )}
-                                        ref={(el) => {
-                                            if (el) {
-                                                taskRefs.current[task.task_id] = el;
-                                            } else {
-                                                delete taskRefs.current[task.task_id];
-                                            }
-                                        }}
-                                    >
-                                        {
-                                            taskVisibility[task.task_id] &&
-                                        }
-                                    </div>  */}
                                     <TaskboardTask
                                         key={task.task_id}
                                         task={task}

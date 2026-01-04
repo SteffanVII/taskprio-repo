@@ -9,7 +9,8 @@ import RouterProviderCustom from './components/others/shared/RouterProviderCusto
 import ElectronCustomTitlebar from './components/others/shared/ElectronCustomTitlebar'
 import { useElectronStore_isElectron } from './stores/electron'
 import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from './stores/taskTodoPage'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useLayoutEffect } from 'react'
+import { v4 as uuidV4 } from "uuid";
 
 const LoginRoute = lazy(() => import('./routes/public/login'))
 const AcceptRoute = lazy(() => import('./routes/public/accept'))
@@ -93,6 +94,12 @@ function App() {
 
 	const isElectron = useElectronStore_isElectron()
 	const taskTodoPageUIMode = useTaskTodoPageStore_uIMode()
+
+	useLayoutEffect(() => {
+		if ( !localStorage.getItem( import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME ) ) {
+			localStorage.setItem( import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME, uuidV4() )
+		}
+	}, [])
 
 	return (
 		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >

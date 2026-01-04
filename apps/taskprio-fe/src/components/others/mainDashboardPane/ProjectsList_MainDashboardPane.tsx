@@ -4,38 +4,42 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { updateDialogsStore } from "@/stores/dialogs"
-import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_user, useGlobalsStore_workspaceIsLoading, useGlobalsStore_workspaceRole } from "@/stores/globals"
+import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_user, useGlobalsStore_workspaceRole, useGlobalsStore_workspacesIsLoading } from "@/stores/globals"
 
 import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
 import { Plus } from "lucide-react"
-import { useMemo } from "react"
+import { useContext, useMemo } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
+import { WebSocketContext } from "../websocket/WebsocketProvider"
 
 const ProjectsList_MainDashboardPane = () => {
 
     const navigate = useNavigate()
     const { workspace_id } = useParams()
     const { pathname } = useLocation()
+    const {
+        channelActions
+    } = useContext(WebSocketContext)
 
     const user = useGlobalsStore_user()
     const workspaceRole = useGlobalsStore_workspaceRole()
-    const workspaceIsLoading = useGlobalsStore_workspaceIsLoading()
+    const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
     const projectsIsLoading = useGlobalsStore_projectsIsLoading()
     const selectedProject = useGlobalsStore_selectedProject()
     const projects = useGlobalsStore_projects()
     const noProjects = useGlobalsStore_noProjects()
 
     const showSkeleton = useMemo(() => {
-        return (projectsIsLoading || workspaceIsLoading)
-    }, [projectsIsLoading, workspaceIsLoading])
+        return (projectsIsLoading || workspacesIsLoading)
+    }, [projectsIsLoading, workspacesIsLoading])
 
     const showNoProjectsState = useMemo(() => {
-        return (!projectsIsLoading && !workspaceIsLoading && noProjects)
-    }, [projectsIsLoading, workspaceIsLoading, noProjects])
+        return (!projectsIsLoading && !workspacesIsLoading && noProjects)
+    }, [projectsIsLoading, workspacesIsLoading, noProjects])
 
     const showProjectsButtons = useMemo(() => {
-        return (!projectsIsLoading && !workspaceIsLoading && !!projects)
-    }, [projectsIsLoading, workspaceIsLoading, projects])
+        return (!projectsIsLoading && !workspacesIsLoading && !!projects)
+    }, [projectsIsLoading, workspacesIsLoading, projects])
 
     const handleProjectButtonOnClick = ( project : TProject ) => {
         const projectRole : EProjectRole | null = project.project_members.find( member => member.user_id === user?.user_id )?.project_role ?? null
@@ -51,6 +55,7 @@ const ProjectsList_MainDashboardPane = () => {
             navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
         }
         localStorage.setItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id )
+        channelActions.joinProjectChannel(project.project_id)
 
     }
 
@@ -103,7 +108,7 @@ const ProjectsList_MainDashboardPane = () => {
                     showSkeleton &&
                     Array.from({ length : 5 }).map((_, index) => (
                         <Skeleton key={index} className={cn(
-                            ` w-full h-[2rem] `
+                            ` w-full h-[1rem] !rounded-none `
                         )} />
                     ))
                 }

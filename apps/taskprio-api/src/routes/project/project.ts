@@ -7,7 +7,7 @@ import { addMembersToProject, createProject, deactivateProject, dropProject, rea
 import { verifyProjectMemberMiddleware, verifyProjectOwnerOrAdminMiddleware, verifyWorkspaceMemberMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
 import { getWorkspaceMemberByTaskSectionId, getWorkspaceMembers } from "../../database/queries/workspace/query.js";
 import { EWebSocketEventType, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectReactivatedSocketMessage } from "@repo/taskprio-types";
-import { wsConnectionsManagerSimple } from "../../app.js";
+import { wsConnectionsManager } from "../../app.js";
 
 dotenv.config();
 
@@ -205,7 +205,7 @@ const registerProjectRoutes = ( router : Router ) => {
                     workspace_id,
                     project_id
                 }
-                wsConnectionsManagerSimple.sendMessage(
+                wsConnectionsManager.sendMessage(
                     {
                         type : EWebSocketEventType.PROJECT_DEACTIVATED,
                         data : wsMessage
@@ -235,7 +235,7 @@ const registerProjectRoutes = ( router : Router ) => {
                     workspace_id,
                     project_id
                 }
-                wsConnectionsManagerSimple.sendMessage(
+                wsConnectionsManager.sendMessage(
                     {
                         type : EWebSocketEventType.PROJECT_REACTIVATED,
                         data : wsMessage
@@ -323,7 +323,7 @@ const registerProjectRoutes = ( router : Router ) => {
                     workspace_id,
                     project_id
                 }
-                wsConnectionsManagerSimple.sendMessage(
+                wsConnectionsManager.sendMessage(
                     {
                         type : EWebSocketEventType.PROJECT_DROPPED,
                         data : wsMessage

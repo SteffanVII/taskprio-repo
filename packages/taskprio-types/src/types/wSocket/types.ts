@@ -11,6 +11,33 @@ export type TWebSocketChangePathMessageSimple = {
     workspace_id : string
 }
 
+export type TWebSocketJoinWorkspaceChannelMessage = {
+    workspace_id : string,
+    previous_workspace_id? : string
+}
+
+export type TWebSocketLeaveWorkspaceChannelMessage = {
+    workspace_id : string
+}
+
+export type TWebSocketJoinProjectChannelMessage = {
+    project_id : string,
+    previous_project_id? : string
+}
+
+export type TWebSocketLeaveProjectChannelMessage = {
+    project_id : string
+}
+
+export type TWebSocketJoinTaskboardChannelMessage = {
+    taskboard_id : string,
+    previous_taskboard_id? : string
+}
+
+export type TWebSocketLeaveTaskboardChannelMessage = {
+    taskboard_id : string
+}
+
 export type TCheckHealthWebSocketMessage = {
     message : "ping" | "pong"
 }

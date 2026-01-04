@@ -19,7 +19,7 @@ const Header_TaskTodoPageOverlay = () => {
     const user = useGlobalsStore_user()
 
     const {
-        pathChangeMethods
+        channelActions
     } = useContext(WebSocketContext)
 
     const {
@@ -36,7 +36,7 @@ const Header_TaskTodoPageOverlay = () => {
             selectedTaskboard: null
         })
         navigate(`/p/task_todo_overlay/${workspace.workspace_id}`)
-        pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
+        channelActions.joinWorkspaceChannel(workspace.workspace_id)
     }
 
     const handleBackHome = () => {

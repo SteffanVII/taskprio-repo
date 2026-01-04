@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils"
-import { useArrangeTask } from "@/services/private/task/mutation"
 import { useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag"
+import { useDroppable } from "@dnd-kit/core"
 
-import React, { useState } from "react"
+import React from "react"
+import TaskboardTask from "./TaskboardTask"
 
 export type TTaskboardTaskDrop = {
     task_section_id : string,
@@ -12,44 +13,20 @@ export type TTaskboardTaskDrop = {
     fullSize? : boolean
 }
 
-const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ({ task_section_id, display_order, topTaskId, bottomTaskId, fullSize }) => {
+const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ( props ) => {
+
+    const { task_section_id, display_order, topTaskId, bottomTaskId, fullSize } = props
 
     const { taskboardTask } = useTaskboardDragStore_taskboardTaskDrag()
 
-    const [ draggedOver, setDraggedOver ] = useState<boolean>( false)
-
     const {
-        mutateAsync : arrangeTaskMutation
-    } = useArrangeTask()
-
-    const onDragOverHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        e.preventDefault();
-        if ( taskboardTask && taskboardTask.task_id !== topTaskId && taskboardTask.task_id !== bottomTaskId ) {
-            e.dataTransfer.setData( "displayOrder", display_order.toString() )
-            setDraggedOver( true )
-        }
-    }
-
-    const onDragLeaveHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        setDraggedOver( false )
-    }
-
-    const onDropHandler = () => {
-
-        if ( taskboardTask ) {
-            arrangeTaskMutation({
-                task_id : taskboardTask.task_id,
-                body : {
-                    task_section_id : task_section_id,
-                    display_order : display_order
-                }
-            })
-        }
-
-        setDraggedOver( false )
-    }
+        isOver,
+        setNodeRef
+    } = useDroppable({
+        id : `${display_order}_${task_section_id}${topTaskId ? `_${topTaskId}` : ""}${bottomTaskId ? `_${bottomTaskId}` : ""}`,
+        data : props,
+        disabled : taskboardTask?.task_id === topTaskId || taskboardTask?.task_id === bottomTaskId
+    })
 
     return (
         <div
@@ -57,33 +34,28 @@ const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ({ task_section_id, dis
                 ` relative `,
                 ` flex items-center `,
                 ` h-[1rem] w-full min-h-0 pointer-events-none `,
-                draggedOver && ` h-[6rem] `,
+                isOver && ` h-fit !py-4 `,
                 fullSize && `grow h-[40rem] `,
             )}
         >
-            {/* <p className="w-full text-right" >{display_order}</p> */}
             <div
+                ref={setNodeRef}
                 className={cn(
-                    // ` border border-red-300 `,
-                    ` absolute top-1/2 -translate-y-1/2 `,
-                    ` h-[calc(100%+1rem)] w-full `,
+                    ` h-full w-full `,
                     ` pointer-events-none `,
-                    taskboardTask && ` pointer-events-auto `
+                    taskboardTask && `pointer-events-auto `
                 )}
-                onDragOver={ onDragOverHandler }
-                onDragLeave={ onDragLeaveHandler }
-                onDrop={ onDropHandler }
-            ></div>
-            <div
-                className={cn(
-                    ` w-full h-[0rem] my-auto rounded-md `,
-                    ` border-blue-300 bg-blue-300/10 `,
-                    ` pointer-events-none `,
-                    fullSize && ` mt-auto `,
-                    draggedOver && !fullSize && ` border h-[3rem]  `,
-                    draggedOver && fullSize && ` border h-[calc(100%-2rem)] `
-                )}
-            ></div>
+            >
+                {
+                    (isOver && taskboardTask) && (
+                        <TaskboardTask
+                            task={taskboardTask}
+                            preview
+                            dimensionFiller
+                        />
+                    )
+                }
+            </div>
         </div>
     )
 

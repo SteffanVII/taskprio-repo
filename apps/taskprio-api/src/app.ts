@@ -13,7 +13,7 @@ import { registerTaskRoutes } from "./routes/task/task.js";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { registerWebSocketLogic } from "./websocket/index.js";
-import { WebSocketConnectionsManagerSimple } from "./websocket/connectionsManager.js";
+import { WebSocketConnectionsManager } from "./websocket/connectionsManager.js";
 import { OAuth2Client } from "google-auth-library";
 import { Resend } from "resend";
 import { registerInvitationPrivateRoutes, registerInvitationPublicRoutes } from "./routes/invitation/invitation.js";
@@ -55,7 +55,7 @@ APP.use(express.urlencoded({ extended: true }));
 export const SERVER = http.createServer(APP)
 const wss = new WebSocketServer({ server: SERVER })
 // export const wsConnectionsManager = new WebSocketConnectionsManager( wss );
-export const wsConnectionsManagerSimple = new WebSocketConnectionsManagerSimple(wss)
+export const wsConnectionsManager = new WebSocketConnectionsManager(wss)
 
 // Create the pool for postgre clients
 createPostgrePool()
@@ -67,7 +67,7 @@ initAWSS3()
 await testAWSS3Connection()
 
 // Mount the websocket
-registerWebSocketLogic(wss, wsConnectionsManagerSimple)
+registerWebSocketLogic(wss, wsConnectionsManager)
 
 // // Connect to redis
 // redisConnect()
@@ -108,7 +108,7 @@ registerTaskSectionRoutes(taskSectionRoutes)
 
 // Task routes
 const taskRoutes = express.Router()
-registerTaskRoutes(taskRoutes, wsConnectionsManagerSimple)
+registerTaskRoutes(taskRoutes, wsConnectionsManager)
 
 // Invitation private routes
 const invitationRoutes = express.Router()

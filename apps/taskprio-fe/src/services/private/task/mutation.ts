@@ -52,33 +52,54 @@ export const useArrangeTask = () => {
                 [ ...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard?.task_board_id, true ],
                 ( oldData : TTaskSectionWithTasks[] ) => {
 
-                    let task : TTaskForCardView | undefined;
-
                     const newData = produce( oldData, draft => {
+                        let targetTask : TTaskForCardView | undefined;
+                        let targetTaskSection : TTaskSectionWithTasks | undefined;
 
                         for ( const taskSection of draft ) {
-                            const taskIndex = taskSection.tasks.findIndex( task => task.task_id === payload.task_id )
-                            if ( taskIndex !== -1 ) {
-                                task = taskSection.tasks.splice( taskIndex, 1 )[0]
-                                if ( task ) break
+
+                            // Target section found
+                            if ( taskSection.task_section_id === payload.body.task_section_id ) {
+                                targetTaskSection = taskSection
                             }
+
+                            // Find task in the current section if the target task is undefined
+                            if ( targetTask === undefined ) {
+                                const taskIndex = taskSection.tasks.findIndex( task => task.task_id === payload.task_id )
+                                // Task found in the current section
+                                if ( taskIndex !== -1 ) {
+                                    // If the target section if already found
+                                    if ( targetTaskSection ) {
+                                        // And the target task is in the same section. Only update the display order of the task
+                                        if ( targetTaskSection.task_section_id === taskSection.tasks[taskIndex].task_section_id ) {
+                                            taskSection.tasks[taskIndex].display_order = payload.body.display_order
+                                            break
+                                        // If the target task is in a different section. Move the task to the target section
+                                        } else {
+                                            targetTask = taskSection.tasks.splice( taskIndex, 1 )[0]
+                                            targetTask.task_section_id = payload.body.task_section_id
+                                            targetTask.display_order = payload.body.display_order
+                                            targetTaskSection.tasks.push( targetTask )
+                                            break
+                                        }
+                                    // If the target section is not found. Extract the target task
+                                    } else {
+                                        targetTask = taskSection.tasks.splice( taskIndex, 1 )[0]
+                                    }
+                                }
+                            }
+
+                            // If both the target task and section are found. Move the target task to the target section
+                            if ( targetTask && targetTaskSection ) {
+                                targetTask.task_section_id = payload.body.task_section_id
+                                targetTask.display_order = payload.body.display_order
+                                targetTaskSection.tasks.push( targetTask )
+                                break;
+                            }
+
                         }
 
-                        draft.map( taskSection => {
-    
-                            if ( task && taskSection.task_section_id === payload.body.task_section_id ) {
-                                task.task_section_id = payload.body.task_section_id
-                                task.display_order = payload.body.display_order
-                                taskSection.tasks.push( task )
-                            }
-    
-                            return taskSection
-    
-                        } )
-
                     } )
-
-
 
                     return newData
                 }

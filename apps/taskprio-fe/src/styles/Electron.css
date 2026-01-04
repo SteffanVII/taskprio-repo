@@ -1,0 +1,7 @@
+.electron-custom-titlebar-drag-area {
+  app-region: drag;
+}
+
+.electron-focus-mode-drag-area {
+  app-region: drag;
+}

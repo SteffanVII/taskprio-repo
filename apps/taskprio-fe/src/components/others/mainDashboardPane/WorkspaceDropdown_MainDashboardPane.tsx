@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_authenticateIsPending, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 
 import { CheckCircle2Icon, ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
 import { useContext, useState } from "react";
@@ -30,7 +30,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
     const { pathname } = useLocation()
 
     const {
-        pathChangeMethods
+        channelActions
     } = useContext(WebSocketContext)
 
     const {
@@ -42,6 +42,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
 
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const workspaces = useGlobalsStore_workspaces()
+    const authenticating = useGlobalsStore_authenticateIsPending()
     const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
     const user = useGlobalsStore_user()
 
@@ -94,7 +95,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
             navigate(`/p/w/${workspace.workspace_id}`)
         }
         localStorage.setItem( import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspace.workspace_id )
-        pathChangeMethods.updateWorkspacePath(workspace.workspace_id)
+        channelActions.joinWorkspaceChannel(workspace.workspace_id)
     }
 
     const handleIgnoreTodoSessionActiveWarningCheckbox = ( value : boolean ) => {
@@ -109,12 +110,12 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                     render={
                         <div
                             className={cn(
-                                `border bg-background text-foreground rounded-md px-3 py-2`,
-                                ` cursor-pointer flex items-center justify-between `
+                                `border border-primary/40 bg-background text-foreground rounded-md px-3 py-2 shadow`,
+                                `cursor-pointer flex items-center justify-between`
                             )}
                         >
                             {
-                                (workspacesIsLoading) ?
+                                (workspacesIsLoading || authenticating) ?
                                 <Skeleton className="bg-primary/20 w-[16rem] h-[1.8rem]" />
                                 :
                                 <>

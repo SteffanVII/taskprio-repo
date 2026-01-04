@@ -51,15 +51,15 @@ export const Members_WorkspaceSettingsPage = () => {
                     setSelectedMember
                 }}
             >
-                <div className=" flex flex-col space-y-2 " >
-                    <h3 className={` text-lg font-medium `} >Members</h3>
-                    <p className=" text-sm text-muted-foreground " >
+                <div className="SettingsSectionHeader" >
+                    <h3 className={`SettingsSectionHeaderTitle`} >Members</h3>
+                    <p className="SettingsSectionHeaderDescription" >
                         Manage the workspace members
                     </p>
                 </div>
                 <div
                     className={cn(
-                        `flex flex-col gap-4`
+                        `SettingsSectionContent`
                     )}
                 >
                     {

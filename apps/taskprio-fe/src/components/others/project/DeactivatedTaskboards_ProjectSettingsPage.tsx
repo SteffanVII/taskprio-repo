@@ -27,16 +27,15 @@ const DeactivatedTaskboards_ProjectSettingsPage : React.FC = () => {
 
     return (
         <React.Fragment>
-            <div className=" flex flex-col space-y-2 " >
-                <h3 className={` text-lg font-medium `} >Deactivated Taskboards</h3>
-                <p className=" text-sm text-muted-foreground " >
+            <div className="SettingsSectionHeader" >
+                <h3 className={`SettingsSectionHeaderTitle`} >Deactivated Taskboards</h3>
+                <p className="SettingsSectionHeaderDescription" >
                     Deactivated taskboards. These taskboards are hidden from the dashboard.
                 </p>
             </div>
             <div
                 className={cn(
-                    `p-4 border border-transparent rounded-md`,
-                    `hover:bg-secondary/50 hover:border-foreground/10`
+                    `SettingsSectionContent`
                 )}
             >
                 <Card className="p-0" >

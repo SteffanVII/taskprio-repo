@@ -6,6 +6,10 @@
 @import "@fontsource-variable/inter";
 @plugin "@tailwindcss/typography";
 
+@import "./styles/Settings.css";
+@import "./styles/Globals.css";
+@import "./styles/Electron.css";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -266,35 +270,6 @@
     @apply font-sans;
 
   }
-}
-
-.SettingsSectionsContainer {
-  @apply grid grid-cols-[20rem_1fr] space-y-20 max-lg:space-y-4 max-lg:grid-cols-[1fr];
-}
-
-.SettingsBodyContainer {
-  @apply relative grow size-full min-h-0 min-w-0 max-w-full max-h-full overflow-auto bg-background;
-}
-
-.SettingsHeader {
-  @apply text-2xl font-medium;
-}
-
-.SettingsBody {
-  @apply max-w-[90rem] min-w-[80rem] mx-auto px-[10rem] max-lg:px-[2rem] max-lg:min-w-full;
-  @apply flex flex-col space-y-16 py-16;
-}
-
-.SettingsSectionHeader {}
-
-.SettingsSectionContent {}
-
-.electron-custom-titlebar-drag-area {
-  app-region: drag;
-}
-
-.electron-focus-mode-drag-area {
-  app-region: drag;
 }
 
 @layer base {
