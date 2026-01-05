@@ -1,11 +1,11 @@
 import WebSocket from "ws"
 import { EWebSocketEventType, TCheckHealthWebSocketMessage, TWebSocketMessage } from "@repo/taskprio-types";
 
-export const checkHealthEventHandler = ( ws : WebSocket, message : TWebSocketMessage<TCheckHealthWebSocketMessage> ) => {
-    if ( message.data.message === "ping" ) {
+export const checkHealthEventHandler = ( ws : WebSocket, payload : TWebSocketMessage<TCheckHealthWebSocketMessage> ) => {
+    if ( payload.message.message === "ping" ) {
         const reply : TWebSocketMessage<TCheckHealthWebSocketMessage> = {
             type : EWebSocketEventType.CHECK_HEALTH,
-            data : {
+            message : {
                 message : "pong"
             }
         }

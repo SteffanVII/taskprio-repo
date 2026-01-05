@@ -185,7 +185,7 @@ const StateManager_TaskTodoPage : React.FC<TStateManager_TaskTodoPage> = ({
                         if ( (e.data + 1) % 60 === 0 ) {
                             taskTodoTimerHeartbeatEventHandler({
                                 type : EWebsocketClientEventType.TASK_TODO_TIMER_HEARTBEAT,
-                                data : {
+                                message : {
                                     task_id : topTaskTodo.task_id,
                                     workspace_id : selectedWorkpace?.workspace_id!
                                 }

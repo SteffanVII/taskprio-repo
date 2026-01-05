@@ -3,10 +3,10 @@ import { TTaskTodoTimerHeartbeatWebSocketMesssage, TWebSocketMessage } from "@re
 import { updateTaskTodoTimerLastSeen } from "../../database/queries/todo/mutation.js";
 import { taskTodoTimerHeartbeatTimeoutManager } from "../../initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 
-export const taskTodoTimerHeartbeatEventHandler = async ( ws : WebSocket, data : TWebSocketMessage<TTaskTodoTimerHeartbeatWebSocketMesssage> ) => {
-    console.log("Task todo timer heartbeat event handler", data.data.workspace_id);
+export const taskTodoTimerHeartbeatEventHandler = async ( ws : WebSocket, payload : TWebSocketMessage<TTaskTodoTimerHeartbeatWebSocketMesssage> ) => {
+    console.log("Task todo timer heartbeat event handler", payload.message.workspace_id);
     try {
-        const { task_id, workspace_id } = data.data;
+        const { task_id, workspace_id } = payload.message;
         const updatedTaskTodoTimer = await updateTaskTodoTimerLastSeen(
             task_id,
             ws.user_id,

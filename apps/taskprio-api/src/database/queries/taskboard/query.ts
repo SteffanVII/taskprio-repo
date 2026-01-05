@@ -57,3 +57,18 @@ export const getProjectInactiveTaskboardList = async (
         .execute()
 
 }
+
+export const getTaskboardIdFromTaskId = async (
+    taskId : string,
+    trx? : Transaction<DB>
+) : Promise<string | undefined> => {
+
+    const taskboardId = await (trx ? trx : taskprioKysely)
+        .selectFrom( "taskboard.task" )
+        .select( sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task.task_board_id)`.as( "task_board_id" ) )
+        .where( "taskboard.task.task_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${taskId})` )
+        .executeTakeFirst()
+
+    return taskboardId?.task_board_id
+
+}

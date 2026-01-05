@@ -1,6 +1,5 @@
 import WebSocket, { WebSocketServer } from "ws";
-import { EWebSocketEventType, TWebSocketMessage, TWebSocketChangePathMessageSimple, EWebsocketClientEventType } from "@repo/taskprio-types";
-import { pathUpdateEventHandlerSimple } from "./eventHandlers/pathUpdateEventHandler.js";
+import { EWebSocketEventType, TWebSocketMessage, EWebsocketClientEventType } from "@repo/taskprio-types";
 import { taskTodoTimerHeartbeatEventHandler } from "./eventHandlers/taskTodoEventHandlers.js";
 import { checkHealthEventHandler } from "./eventHandlers/generalEventHandlers.js";
 import { joinProjectChannelEventHandler, joinTaskboardChannelEventHandler, joinWorkspaceChannelEventHandler, leaveProjectChannelEventHandler, leaveTaskboardChannelEventHandler, leaveWorkspaceChannelEventHandler } from "./eventHandlers/channelHandlers.js";
@@ -14,9 +13,9 @@ export class WebSocketConnectionsManager {
 
     private wss : WebSocketServer;
     private allConnections : Map<string, Map<string, WebSocket>>;
-    private workspaceChannels : Map<string, WorkspaceWebSocketChannel>;
-    private projectChannels : Map<string, ProjectWebSocketChannel>;
-    private taskboardChannels : Map<string, TaskboardWebSocketChannel>;
+    private workspaceChannels : Map<string, WebSocketChannel>;
+    private projectChannels : Map<string, WebSocketChannel>;
+    private taskboardChannels : Map<string, WebSocketChannel>;
     private eventHandlers : Map<(EWebSocketEventType | EWebsocketClientEventType), ( ws : WebSocket, data : TWebSocketMessage ) => void>;
     
     constructor( wss : WebSocketServer ) {
@@ -32,7 +31,6 @@ export class WebSocketConnectionsManager {
             [ EWebsocketClientEventType.LEAVE_PROJECT_CHANNEL, leaveProjectChannelEventHandler ],
             [ EWebsocketClientEventType.JOIN_TASKBOARD_CHANNEL, joinTaskboardChannelEventHandler ],
             [ EWebsocketClientEventType.LEAVE_TASKBOARD_CHANNEL, leaveTaskboardChannelEventHandler ],
-            [ EWebsocketClientEventType.PATH_CHANGE, pathUpdateEventHandlerSimple ],
             [ EWebsocketClientEventType.TASK_TODO_TIMER_HEARTBEAT, taskTodoTimerHeartbeatEventHandler ],
             [ EWebsocketClientEventType.CHECK_HEALTH, checkHealthEventHandler ] 
         ]);
@@ -59,126 +57,109 @@ export class WebSocketConnectionsManager {
     }
 
     public removeConnection( userId : string, clientId : string ) {
+
+        [
+            this.workspaceChannels,
+            this.projectChannels,
+            this.taskboardChannels
+        ].forEach( channelMap => {
+            channelMap.forEach( ( channel : IWebSocketChannel ) => {
+                channel.removeConnection( userId, clientId )
+                if ( channel.isEmpty() ) {
+                    channelMap.delete( channel.getId() )
+                }
+            } )
+        } ) 
         this.allConnections.get(userId)?.delete(clientId)
-        this.workspaceChannels.forEach( workspaceClientGroup => {
-            workspaceClientGroup.removeConnection( userId, clientId )
-        } )
     }
 
-    // When the user switches workspace, we remove the connection from the previous workspace connection group and add it to the new workspace connection group
-    public joinWorkspaceChannel( webSocket : WebSocket, workspaceId : string, previousWorkspaceId? : string ) {
+    public joinChannel(
+        channelType : "workspace" | "project" | "taskboard",
+        webSocket : WebSocket,
+        channelId : string,
+        previousChannelId? : string,
+    ) {
 
-        // If the user is switching workspace, we remove the connection from the previous workspace connection group
-        if ( previousWorkspaceId ) {
-            const previousChannel = this.workspaceChannels.get( previousWorkspaceId );
+        const channelMap : Map<string, IWebSocketChannel> = {
+            workspace : this.workspaceChannels,
+            project : this.projectChannels,
+            taskboard : this.taskboardChannels
+        }[channelType];
+
+        const channel = channelMap.get( channelId );
+
+        if ( channel ) {
+            channel.addConnection( webSocket );
+            console.log("Connection added to channel", channelType, channelId);
+        } else {
+            let newChannel : IWebSocketChannel = new WebSocketChannel( channelId );
+            channelMap.set( channelId, newChannel );
+            newChannel.addConnection( webSocket );
+            console.log("New channel created and connection added", channelType, channelId);
+        }
+
+        if ( previousChannelId ) {
+            const previousChannel = channelMap.get( previousChannelId );
             if ( previousChannel ) {
                 previousChannel.removeConnection( webSocket.user_id , webSocket.client_id );
-                console.log("Connection removed from previous workspace", previousWorkspaceId);
+                console.log("Connection removed from previous channel", channelType, previousChannelId);
+                if ( previousChannel.isEmpty() ) {
+                    channelMap.delete( previousChannelId );
+                }
             }
         }
 
-        // If the target workspace group doesnt exist, we create a new one
-        let newChannel = this.workspaceChannels.get( workspaceId );
-        if ( !newChannel ) {
-            newChannel = new WorkspaceWebSocketChannel( workspaceId );
-            this.workspaceChannels.set( workspaceId, newChannel );
-            console.log("Created new workspace client group for workspace", workspaceId);
-        }
-        newChannel.addConnection( webSocket );
-        console.log("Connection added to workspace client group", workspaceId);
-
     }
 
-    public leaveWorkspaceChannel( webSocket : WebSocket, workspaceId : string ) {
-        const channel = this.workspaceChannels.get( workspaceId );
+    public leaveChannel(
+        channelType : "workspace" | "project" | "taskboard",
+        webSocket : WebSocket,
+        channelId : string
+    ) {
+
+        const channelMap = {
+            workspace : this.workspaceChannels,
+            project : this.projectChannels,
+            taskboard : this.taskboardChannels
+        }[channelType];
+
+        const channel = channelMap.get( channelId );
         if ( channel ) {
             channel.removeConnection( webSocket.user_id , webSocket.client_id );
-            console.log("Connection removed from workspace client group", workspaceId);
-        }
-    }
-
-    public joinProjectChannel( webSocket : WebSocket, projectId : string, previousProjectId? : string ) {
-
-        if ( previousProjectId ) {
-            const previousChannel = this.projectChannels.get( previousProjectId );
-            if ( previousChannel ) {
-                previousChannel.removeConnection( webSocket.user_id , webSocket.client_id );
-                console.log("Connection removed from previous project", previousProjectId);
+            console.log("Connection removed from channel", channelType, channelId);
+            if ( channel.isEmpty() ) {
+                channelMap.delete( channelId );
             }
         }
 
-        let newChannel = this.projectChannels.get( projectId );
-        if ( !newChannel ) {
-            newChannel = new ProjectWebSocketChannel( projectId );
-            this.projectChannels.set( projectId, newChannel );
-            console.log("Created new project client group for project", projectId);
-        }
-        newChannel.addConnection( webSocket );
-        console.log("Connection added to project client group", projectId);
     }
 
-    public leaveProjectChannel( webSocket : WebSocket, projectId : string ) {
-        const channel = this.projectChannels.get( projectId );
+    public broadcastToChannel(
+        channelType : "workspace" | "project" | "taskboard",
+        channelId : string,
+        message : TWebSocketMessage,
+        includedUserIds? : string[],
+        excludedUserIds? : string[]
+    ) {
+
+        const channelMap = {
+            workspace : this.workspaceChannels,
+            project : this.projectChannels,
+            taskboard : this.taskboardChannels
+        }[channelType];
+
+        const channel = channelMap.get( channelId );
         if ( channel ) {
-            channel.removeConnection( webSocket.user_id , webSocket.client_id );
-            console.log("Connection removed from project", projectId);
-        }
-    }
+            channel.getConnections().forEach( (userConnections, userId) => {
+                if (includedUserIds?.length && !includedUserIds.includes(userId)) return;
+                if (excludedUserIds?.length && excludedUserIds.includes(userId)) return;
 
-    public joinTaskboardChannel( webSocket : WebSocket, taskboardId : string, previousTaskboardId? : string ) {
-
-        if ( previousTaskboardId ) {
-            const previousChannel = this.taskboardChannels.get( previousTaskboardId );
-            if ( previousChannel ) {
-                previousChannel.removeConnection( webSocket.user_id , webSocket.client_id );
-                console.log("Connection removed from previous taskboard", previousTaskboardId);
-            }
-        }
-
-        let newChannel = this.taskboardChannels.get( taskboardId );
-        if ( !newChannel ) {
-            newChannel = new TaskboardWebSocketChannel( taskboardId );
-            this.taskboardChannels.set( taskboardId, newChannel );
-            console.log("Created new taskboard client group for taskboard", taskboardId);
-        }
-        newChannel.addConnection( webSocket );
-        console.log("Connection added to taskboard client group", taskboardId);
-    }
-
-    public leaveTaskboardChannel( webSocket : WebSocket, taskboardId : string ) {
-        const channel = this.taskboardChannels.get( taskboardId );
-        if ( channel ) {
-            channel.removeConnection( webSocket.user_id , webSocket.client_id );
-            console.log("Connection removed from taskboard", taskboardId);
-        }
-    }
-
-    public sendMessage( message : TWebSocketMessage, workspaceId : string, includedUserIds? : string[], excludedUserIds? : string[] ) {
-
-        const channel = this.workspaceChannels.get( workspaceId );
-        if ( channel ) {
-            channel.getConnections().forEach( userConnections => {
-                if ( userConnections.size !== 0 ) {
-                    let skip = false;
-                    const connection = userConnections.get(userConnections.keys().next().value);
-
-                    if ( includedUserIds && includedUserIds.length > 0 ) {
-                        if ( !includedUserIds.includes( connection.user_id ) ) {
-                            skip = true;
-                        }
-                    }
-    
-                    if ( excludedUserIds && excludedUserIds.length > 0 ) {
-                        if ( excludedUserIds.includes( connection.user_id ) ) {
-                            skip = true;
-                        }
-                    }
-
-                    if ( !skip ) {
-                        console.log("Sending websocket message to user", connection.user_id, connection.readyState);
+                userConnections.forEach( connection => {
+                    if ( connection.readyState === WebSocket.OPEN ) {
+                        console.log("Sending websocket message to user", userId, connection.readyState);
                         connection.send( JSON.stringify( message ) )
                     }
-                }
+                } )
             } )
         }
 
@@ -186,68 +167,32 @@ export class WebSocketConnectionsManager {
 
 }
 
-class WorkspaceWebSocketChannel {
-
-    private workspaceId : string;
-    private connections : Map<string, Map<string, WebSocket>>;
-
-    constructor(
-        workspaceId : string
-    ) {
-        this.workspaceId = workspaceId;
-        this.connections = new Map();
-    }
-
-    public getId() {
-        return this.workspaceId;
-    }
-
-    public addConnection( webSocket : WebSocket ) {
-        const userWebSocketConnectionsMap : Map<string, WebSocket> | undefined = this.getUserConnections( webSocket.user_id )
-        if ( !!userWebSocketConnectionsMap ) {
-            userWebSocketConnectionsMap.set( webSocket.client_id, webSocket )
-        } else {
-            const newUserWebSocketConnectionsMap = new Map()
-            newUserWebSocketConnectionsMap.set( webSocket.client_id, webSocket )
-            this.connections.set( webSocket.user_id, newUserWebSocketConnectionsMap )
-        }
-    }
-
-    public getConnections() {
-        return this.connections;
-    }
-
-    public getUserConnections( userId : string ) : Map<string, WebSocket> | undefined {
-        return this.connections.get( userId );
-    }
-
-    public getUserClientConnection( userId : string, clientId : string ) : WebSocket | undefined {
-        return this.getUserConnections( userId ).get( clientId )
-    }
-
-    public removeConnection( userId : string, clientId : string ) {
-        const connection = this.getUserConnections( userId );
-        if ( connection ) {
-            connection.delete( clientId )
-        }
-    }
-
+interface IWebSocketChannel {
+    getId() : string;
+    isEmpty() : boolean;
+    addConnection( webSocket : WebSocket ) : void;
+    removeConnection( userId : string, clientId : string ) : void;
+    getConnections() : Map<string, Map<string, WebSocket>>;
 }
 
-class ProjectWebSocketChannel {
+class WebSocketChannel implements IWebSocketChannel {
 
-    private projectId : string;
+    private channelId : string;
     private connections : Map<string, Map<string, WebSocket>>;
 
     constructor(
-        projectId : string
+        channelId : string
     ) {
-        this.projectId = projectId;
+        this.channelId = channelId;
         this.connections = new Map();
     }
 
     public getId() {
-        return this.projectId;
+        return this.channelId;
+    }
+
+    public isEmpty() {
+        return this.connections.size === 0;
     }
 
     public addConnection( webSocket : WebSocket ) {
@@ -277,54 +222,9 @@ class ProjectWebSocketChannel {
         const connection = this.getUserConnections( userId );
         if ( connection ) {
             connection.delete( clientId )
-        }
-    }
-
-}
-
-class TaskboardWebSocketChannel {
-
-    private taskboardId : string;
-    private connections : Map<string, Map<string, WebSocket>>;
-
-    constructor(
-        taskboardId : string
-    ) {
-        this.taskboardId = taskboardId;
-        this.connections = new Map();
-    }
-
-    public getId() {
-        return this.taskboardId;
-    }
-
-    public addConnection( webSocket : WebSocket ) {
-        const userWebSocketConnectionsMap : Map<string, WebSocket> | undefined = this.getUserConnections( webSocket.user_id )
-        if ( !!userWebSocketConnectionsMap ) {
-            userWebSocketConnectionsMap.set( webSocket.client_id, webSocket )
-        } else {
-            const newUserWebSocketConnectionsMap = new Map()
-            newUserWebSocketConnectionsMap.set( webSocket.client_id, webSocket )
-            this.connections.set( webSocket.user_id, newUserWebSocketConnectionsMap )
-        }
-    }
-
-    public getConnections() {
-        return this.connections;
-    }
-
-    public getUserConnections( userId : string ) : Map<string, WebSocket> | undefined {
-        return this.connections.get( userId );
-    }
-
-    public getUserClientConnection( userId : string, clientId : string ) : WebSocket | undefined {
-        return this.getUserConnections( userId ).get( clientId )
-    }
-
-    public removeConnection( userId : string, clientId : string ) {
-        const connection = this.getUserConnections( userId );
-        if ( connection ) {
-            connection.delete( clientId )
+            if ( connection.size === 0 ) {
+                this.connections.delete( userId )
+            }
         }
     }
 

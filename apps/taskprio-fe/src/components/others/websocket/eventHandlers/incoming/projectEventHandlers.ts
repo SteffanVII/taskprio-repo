@@ -1,8 +1,9 @@
 import { QueryKeys } from "@/services/enum";
-import { updateGlobalsStore } from "@/stores/globals";
-import { TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectReactivatedSocketMessage, TWebSocketMessage } from "@repo/taskprio-types/src";
+import { updateGlobalsStore, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { TProject, TProjectCreatedWebSocketMessage, TProjectCustomizationUpdatedWebSocketMessage, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectMemberRoleUpdatedWebSocketMessage, TProjectMembersAddedWebSocketMessage, TProjectReactivatedSocketMessage, TWebSocketMessage } from "@repo/taskprio-types/src";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { produce } from "immer";
+import { useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 
 const useProjectEventHandlers = () => {
@@ -15,8 +16,11 @@ const useProjectEventHandlers = () => {
         project_id
     } = useParams()
 
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedProject = useGlobalsStore_selectedProject()
+
     const projectDeactivatedWebSocketMessageHandler = useCallback(( message : TWebSocketMessage<TProjectDeactivatedSocketMessage> ) => {
-        if ( message.data.workspace_id === workspace_id ) {
+        if ( message.message.workspace_id === workspace_id ) {
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, workspace_id ]
             })
@@ -26,7 +30,7 @@ const useProjectEventHandlers = () => {
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, workspace_id ]
             })
-            if ( project_id === message.data.project_id ) {
+            if ( project_id === message.message.project_id ) {
                 updateGlobalsStore({
                     selectedProject : null,
                     selectedTaskboard : null,
@@ -42,7 +46,7 @@ const useProjectEventHandlers = () => {
     ])
     
     const projectDroppedWebSocketMessageHandler = useCallback(( message : TWebSocketMessage<TProjectDroppedSocketMessage> ) => {
-        if ( message.data.workspace_id === workspace_id ) {
+        if ( message.message.workspace_id === workspace_id ) {
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, workspace_id ]
             })
@@ -52,7 +56,7 @@ const useProjectEventHandlers = () => {
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_USER_TASK_TODO_STATE.split, workspace_id ]
             })
-            if ( project_id === message.data.project_id ) {
+            if ( project_id === message.message.project_id ) {
                 updateGlobalsStore({
                     selectedProject : null,
                     selectedTaskboard : null,
@@ -68,7 +72,7 @@ const useProjectEventHandlers = () => {
     ])
 
     const projectReactivatedWebSocketMessageHandler = useCallback(( message : TWebSocketMessage<TProjectReactivatedSocketMessage> ) => {
-        if ( message.data.workspace_id === workspace_id ) {
+        if ( message.message.workspace_id === workspace_id ) {
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, workspace_id ]
             })
@@ -81,11 +85,149 @@ const useProjectEventHandlers = () => {
         }
     }, [workspace_id])
 
-    return {
+    const projectCustomizationUpdatedwebSocketMessageHandler = useCallback((
+        message : TWebSocketMessage<TProjectCustomizationUpdatedWebSocketMessage>
+    ) => {
+        if ( message.message.workspace_id === workspace_id ) {
+            queryClient.setQueryData([
+                ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, workspace_id
+            ], ( prevData : TProject[] ) => {
+                return prevData.map(( project ) => {
+                    if ( project.project_id === message.message.data.project_id ) {
+                        return {
+                            ...project,
+                            ...message.message.data
+                        }
+                    } else {
+                        return project
+                    }
+                })
+            })
+        }
+        if ( message.message.data.project_id === selectedProject?.project_id ) {
+            updateGlobalsStore({
+                selectedProject : {
+                    ...selectedProject,
+                    ...message.message.data
+                }
+            })
+        }
+    }, [workspace_id, selectedProject])
+
+    const projectCreatedWebSocketMessageHandler = useCallback(( message : TWebSocketMessage<TProjectCreatedWebSocketMessage> ) => {
+        if ( message.message.workspace_id === workspace_id ) {
+            queryClient.setQueryData([
+                ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, workspace_id
+            ], ( prevData : TProject[] ) => {
+                return [
+                    ...prevData,
+                    message.message.data
+                ]
+            })
+        }
+    }, [workspace_id])
+
+    const projectMembersAddedwebSocketMessage = useCallback((
+        message : TWebSocketMessage<TProjectMembersAddedWebSocketMessage>
+    ) => {
+        if ( message.message.workspace_id === selectedWorkspace?.workspace_id ) {
+            const projectId = message.message.members[0].project_id
+            queryClient.setQueryData(
+                [ ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id ],
+                ( prevData : TProject[] ) => {
+                    return produce( prevData, ( draft ) => {
+                        const projectIndex = draft.findIndex(( project ) => project.project_id === projectId)
+                        if ( projectIndex !== -1 ) {
+                            draft[projectIndex].project_members = [
+                                ...draft[projectIndex].project_members,
+                                ...message.message.members
+                            ]
+                        }
+                    })
+                }
+            )
+            if ( selectedProject?.project_id === projectId ) {
+                updateGlobalsStore({
+                    selectedProject : {
+                        ...selectedProject,
+                        project_members : [
+                            ...selectedProject.project_members,
+                            ...message.message.members
+                        ]
+                    }
+                })
+            }
+        }
+    }, [
+        selectedWorkspace,
+        selectedProject
+    ])
+
+    const projectMemberRoleUpdatedWebSocketMessage = useCallback((
+        message : TWebSocketMessage<TProjectMemberRoleUpdatedWebSocketMessage>
+    ) => {
+        if ( message.message.workspace_id === selectedWorkspace?.workspace_id ) {
+            const projectId = message.message.project_id
+            queryClient.setQueryData(
+                [ ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id ],
+                ( prevData : TProject[] ) => {
+                    return produce( prevData, ( draft ) => {
+                        const projectIndex = draft.findIndex(( project ) => project.project_id === projectId)
+                        if ( projectIndex !== -1 ) {
+                            draft[projectIndex].project_members = draft[projectIndex].project_members.map(( member ) => {
+                                if ( member.user_id === message.message.member_id ) {
+                                    return {
+                                        ...member,
+                                        role : message.message.role
+                                    }
+                                } else {
+                                    return member
+                                }
+                            })
+                        }
+                    })
+                }
+            )
+            if ( selectedProject?.project_id === projectId ) {
+                updateGlobalsStore({
+                    selectedProject : {
+                        ...selectedProject,
+                        project_members : selectedProject.project_members.map(( member ) => {
+                            if ( member.user_id === message.message.member_id ) {
+                                return {
+                                    ...member,
+                                    role : message.message.role
+                                }
+                            } else {
+                                return member
+                            }
+                        })
+                    }
+                })
+            }
+        }
+    }, [
+        selectedWorkspace,
+        selectedProject
+    ])
+
+    return useMemo(() => ({
         projectDeactivatedWebSocketMessageHandler,
         projectDroppedWebSocketMessageHandler,
-        projectReactivatedWebSocketMessageHandler
-    }
+        projectReactivatedWebSocketMessageHandler,
+        projectCustomizationUpdatedwebSocketMessageHandler,
+        projectCreatedWebSocketMessageHandler,
+        projectMembersAddedwebSocketMessage,
+        projectMemberRoleUpdatedWebSocketMessage
+    }), [
+        projectDeactivatedWebSocketMessageHandler,
+        projectDroppedWebSocketMessageHandler,
+        projectReactivatedWebSocketMessageHandler,
+        projectCustomizationUpdatedwebSocketMessageHandler,
+        projectCreatedWebSocketMessageHandler,
+        projectMembersAddedwebSocketMessage,
+        projectMemberRoleUpdatedWebSocketMessage
+    ])
 
 }
 

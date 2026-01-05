@@ -8,10 +8,10 @@ export enum EWebSocketEventType {
     // Task events
     TASK_CREATED = "task_created",
     TASK_UPDATED = "task_updated",
-    TASK_TIME_LOGGED = "task_time_logged",
-    TASK_TIME_LOG_REMOVED = "task_time_log_removed",
     TASK_ASSIGNEE_ADDED = "task_assignee_added",
     TASK_ASSIGNEE_REMOVED = "task_assignee_removed",
+    TASK_TAG_ADDED = "task_tag_added",
+    TASK_TAG_REMOVED = "task_tag_removed",
     TASK_MOVED = "task_moved",
     TASK_ARRANGED = "task_arranged",
 
@@ -21,9 +21,13 @@ export enum EWebSocketEventType {
     TASKBOARD_REACTIVATED = "taskboard_reactivated",
 
     // Project events
+    PROJECT_CREATED = "project_created",
     PROJECT_DROPPED = "project_dropped",
     PROJECT_DEACTIVATED = "project_deactivated",
-    PROJECT_REACTIVATED = "project_reactivated"
+    PROJECT_REACTIVATED = "project_reactivated",
+    PROJECT_MEMBERS_ADDED = "project_members_added",
+    PROJECT_CUSTOMIZATION_UPDATED = "project_customization_updated",
+    PROJECT_MEMBER_ROLE_UPDATED = "project_member_role_updated"
 
 }
 

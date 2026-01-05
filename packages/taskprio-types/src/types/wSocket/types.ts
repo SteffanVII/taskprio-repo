@@ -1,12 +1,15 @@
-import { TTask } from "../task/types"
+import { EProjectRole } from "../project/enums"
+import { TProject, TProjectMember, TProjectPrimitive } from "../project/types"
+import { TTaskTag } from "../tag/types"
+import { TTask, TTaskAssignee, TTaskPrimitive } from "../task/types"
 import { EWebsocketClientEventType, EWebSocketEventType } from "./enums"
 
 export type TWebSocketMessage<T = any> = {
     type : EWebSocketEventType | EWebsocketClientEventType,
-    data : T,
+    message : T,
 }
 
-export type TWebSocketChangePathMessageSimple = {
+export type TWebSocketChangePathMessage = {
     previous_workspace_id? : string,
     workspace_id : string
 }
@@ -43,14 +46,43 @@ export type TCheckHealthWebSocketMessage = {
 }
 
 // Task messages
-export type TTaskCreateWebSocketMessageSimple = {
+export type TTaskCreateWebSocketMessage = {
     data : TTask,
     workspace_id : string
 }
 
-export type TTaskUpdateWebSocketMessageSimple = {
+export type TTaskUpdateWebSocketMessage = {
     data : TTask,
     workspace_id : string
+}
+
+export type TTaskArrangedWebSocketMessage = {
+    data : TTaskPrimitive,
+    taskboard_id : string
+}
+
+export type TTaskAssigneeAddedWebSocketMessage = {
+    data : TTaskAssignee,
+    taskboard_id : string,
+    task_id : string
+}
+
+export type TTaskAssigneeRemovedWebSocketMessage = {
+    data : string,
+    taskboard_id : string,
+    task_id : string
+}
+
+export type TTaskTagAddedWebSocketMessage = {
+    data : TTaskTag,
+    taskboard_id : string,
+    task_id : string
+}
+
+export type TTaskTagRemovedWebSocketMessage = {
+    data : string,
+    taskboard_id : string,
+    task_id : string
 }
 
 // Task todo messages
@@ -75,6 +107,11 @@ export type TTaskboardReactivatedWebSocketMessage = {
 }
 
 // Project messages
+export type TProjectCreatedWebSocketMessage = {
+    data : TProject,
+    workspace_id : string
+}
+
 export type TProjectDeactivatedSocketMessage = {
     workspace_id : string,
     project_id : string
@@ -88,4 +125,21 @@ export type TProjectDroppedSocketMessage = {
 export type TProjectReactivatedSocketMessage = {
     workspace_id : string,
     project_id : string
+}
+
+export type TProjectMembersAddedWebSocketMessage = {
+    members : TProjectMember[],
+    workspace_id : string
+}
+
+export type TProjectCustomizationUpdatedWebSocketMessage = {
+    data : TProjectPrimitive,
+    workspace_id : string
+}
+
+export type TProjectMemberRoleUpdatedWebSocketMessage = {
+    workspace_id : string,
+    project_id : string,
+    member_id : string,
+    role : EProjectRole
 }

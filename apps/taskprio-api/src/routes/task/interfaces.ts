@@ -1,4 +1,4 @@
-import { TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TArrangeTaskRequestBody, TCreateTaskRequestBody, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRestoreTaskFromTrashRequestParams, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
+import { TAddTaskAssigneeRequestBody, TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TArrangeTaskRequestBody, TCreateTaskRequestBody, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRestoreTaskFromTrashRequestParams, TUpdateTaskPrimitiveFieldsRequestBody } from "@repo/taskprio-types"
 import { IAuthenticatedProjectMemberRequest, IAuthenticatedRequest } from "../../middlewares/interfaces.js"
 
 export interface IGetTaskRequest extends IAuthenticatedRequest {
@@ -26,10 +26,7 @@ export interface IUpdateTaskPrimitiveFieldsRequest extends IAuthenticatedProject
 }
 
 export interface IAddTaskAssigneeRequest extends IAuthenticatedRequest {
-    params : { task_id : string },
-    body : {
-        user_id : string
-    }
+    body : TAddTaskAssigneeRequestBody
 }
 
 export interface IRemoveTaskAssigneeRequest extends IAuthenticatedRequest {

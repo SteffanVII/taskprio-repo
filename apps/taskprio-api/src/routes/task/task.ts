@@ -1,10 +1,8 @@
 import { Response, Router } from "express";
-import { IAddTaskAssigneeRequest, IAddTaskCommentRequest, IAddTaskTagRequest, IArrangeTaskRequest, ICreateTaskRequest, IGetTaskCommentsRequest, IGetTaskRequest, ILogTaskTimeRequest, IMoveTaskToTrashRequest, IRemoveTaskAssigneeRequest, IRemoveTaskTagRequest, IRestoreTaskFromTrashRequest, ITransferTaskToTrashRequest, IUpdateTaskPrimitiveFieldsRequest } from "./interfaces.js";
-import { getPoolClient } from "../../database/postgresql.js";
+import { IAddTaskAssigneeRequest, IAddTaskCommentRequest, IAddTaskTagRequest, IArrangeTaskRequest, ICreateTaskRequest, IGetTaskCommentsRequest, IGetTaskRequest, ILogTaskTimeRequest, IMoveTaskToTrashRequest, IRemoveTaskAssigneeRequest, IRemoveTaskTagRequest, IRestoreTaskFromTrashRequest, IUpdateTaskPrimitiveFieldsRequest } from "./interfaces.js";
 import { addTaskAssignee, addTaskComment, arrangeTask, createTask, logTaskTime, removeTaskAssignee, restoreTaskFromTrash, transferTaskToTrash, updateTaskPrimitiveFields } from "../../database/queries/task/mutation.js";
-import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
 import { getTask, getTaskComments } from "../../database/queries/task/query.js";
-import { TTask, TTaskCreateWebSocketMessageSimple } from "@repo/taskprio-types";
+import { TTask, TTaskArrangedWebSocketMessage, TTaskAssigneeAddedWebSocketMessage, TTaskAssigneeRemovedWebSocketMessage, TTaskCreateWebSocketMessage, TTaskTagAddedWebSocketMessage, TTaskTagRemovedWebSocketMessage, TWebSocketMessage } from "@repo/taskprio-types";
 import { getProjectMemberByTaskId } from "../../database/queries/project/query.js";
 import { EWebSocketEventType } from "@repo/taskprio-types";
 import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
@@ -12,6 +10,7 @@ import { verifyProjectMemberMiddleware } from "../../middlewares/authentication.
 import { WebSocketConnectionsManager } from "../../websocket/connectionsManager.js";
 import { taskprioKysely } from "../../database/kysely/kysely.js";
 import { addTaskTag, removeTaskTag } from "../../database/queries/tag/mutation.js";
+import { getTaskboardIdFromTaskId } from "../../database/queries/taskboard/query.js";
 
 export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebSocketConnectionsManager ) => {
 
@@ -104,17 +103,18 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
 
                 } )
 
-                const message : TTaskCreateWebSocketMessageSimple = {
+                const message : TTaskCreateWebSocketMessage = {
                     data : transactionReturn.createdTask,
                     workspace_id : transactionReturn.workspaceId
                 }
 
-                wsConnectionsManager.sendMessage(
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    transactionReturn.createdTask.task_board_id,
                     {
                         type : EWebSocketEventType.TASK_CREATED,
-                        data : message
+                        message : message
                     },
-                    transactionReturn.workspaceId,
                     undefined,
                     [ req.user.user_id ],
                 )
@@ -136,8 +136,7 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
         `/assignee/:task_id`,
         async ( req : IAddTaskAssigneeRequest, res : Response ) => {
 
-            const { task_id } = req.params
-            const { user_id : target_user_id } = req.body
+            const { user_id : target_user_id, task_id, taskboard_id } = req.body
             const { user_id : source_user_id } = req.user
 
             if ( !task_id ) {
@@ -172,7 +171,24 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
                     })
                 }
 
-                await addTaskAssignee( task_id, target_user_id )
+                const assignee = await addTaskAssignee( task_id, target_user_id )
+
+                const wsMessage : TTaskAssigneeAddedWebSocketMessage = {
+                    data : assignee,
+                    task_id,
+                    taskboard_id
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    taskboard_id,
+                    {
+                        type : EWebSocketEventType.TASK_ASSIGNEE_ADDED,
+                        message : wsMessage
+                    },
+                    undefined,
+                    [ source_user_id ]
+                )
 
                 res.status(200).json({
                     message : "Task assignee added",
@@ -271,6 +287,15 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
 
             try {
 
+                const taskboardId = await getTaskboardIdFromTaskId( task_id )
+
+                if ( !taskboardId ) {
+                    res.status(404).json({
+                        message : "Taskboard not found"
+                    })
+                    return
+                }
+
                 const projectMember = await getProjectMemberByTaskId( task_id, user_id )
 
                 if ( !projectMember ) {
@@ -281,6 +306,23 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
                 }
 
                 const addedTaskTag = await addTaskTag( task_id, tag_id )
+
+                const wsMessage : TTaskTagAddedWebSocketMessage = {
+                    data : addedTaskTag,
+                    taskboard_id : taskboardId,
+                    task_id
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    taskboardId,
+                    {
+                        type : EWebSocketEventType.TASK_TAG_ADDED,
+                        message : wsMessage
+                    },
+                    undefined,
+                    [ user_id ]
+                )
 
                 res.status(200).json(addedTaskTag)
                 
@@ -366,6 +408,22 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
                     body
                 )
 
+                const wsMessage : TWebSocketMessage<TTaskArrangedWebSocketMessage> = {
+                    type : EWebSocketEventType.TASK_ARRANGED,
+                    message : {
+                        data : updatedTask,
+                        taskboard_id : updatedTask.task_board_id
+                    }
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    updatedTask.task_board_id,
+                    wsMessage,
+                    undefined,
+                    [ user_id ]
+                )
+
                 res.status(200).json(updatedTask)
                 
             } catch (error) {
@@ -386,7 +444,6 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
             const { task_id } = req.params
             const body = req.body
             const { user_id } = req.user
-            const projectId = req.projectId;
 
             if ( !task_id ) {
                 res.status(400).json({
@@ -416,14 +473,13 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
                     body
                 )
 
-                const workspaceId = await getWorkspaceIdFromProjectId( projectId );
-
-                wsConnectionsManager.sendMessage(
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    updatedTask.task_board_id,
                     {
                         type : EWebSocketEventType.TASK_UPDATED,
-                        data : updatedTask
+                        message : updatedTask
                     },
-                    workspaceId,
                     undefined,
                     [ user_id ],
                 )
@@ -526,6 +582,32 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
 
                 await removeTaskAssignee( task_id, target_user_id )
 
+                const taskboardId = await getTaskboardIdFromTaskId( task_id )
+
+                if ( !taskboardId ) {
+                    res.status(404).json({
+                        message : "Taskboard not found"
+                    })
+                    return
+                }
+
+                const wsMessage : TTaskAssigneeRemovedWebSocketMessage = {
+                    data : target_user_id,
+                    taskboard_id : taskboardId,
+                    task_id
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    taskboardId,
+                    {
+                        type : EWebSocketEventType.TASK_ASSIGNEE_REMOVED,
+                        message : wsMessage
+                    },
+                    undefined,
+                    [ source_user_id ]
+                )
+
                 res.status(200).json({
                     message : "Task assignee removed"
                 })
@@ -563,7 +645,33 @@ export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebS
 
             try {
 
+                const taskboardId = await getTaskboardIdFromTaskId( task_id )
+                if ( !taskboardId ) {
+                    res.status(404).json({
+                        message : "Taskboard not found"
+                    })
+                    return
+                }
+
                 await removeTaskTag( task_id, tag_id )
+
+
+                const wsMessage : TTaskTagRemovedWebSocketMessage = {
+                    data : tag_id,
+                    taskboard_id : taskboardId,
+                    task_id
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "taskboard",
+                    taskboardId,
+                    {
+                        type : EWebSocketEventType.TASK_TAG_REMOVED,
+                        message : wsMessage
+                    },
+                    undefined,
+                    [ user_id ]
+                )
 
                 res.status(200).json({
                     message : "Task tag removed"

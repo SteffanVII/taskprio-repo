@@ -9,7 +9,7 @@ import { TaskboardTaskDialog } from "../dialogs/taskboardTaskDialog/TaskboardTas
 import React, { useMemo, useRef } from "react";
 import { useParams } from "react-router";
 import { updateTaskboardDragStore, useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag";
-import { closestCorners, DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
 import { useArrangeTask } from "@/services/private/task/mutation";
 import { TTaskboardTaskDrop } from "./TaskboardTaskDrop";
 import TaskboardSkeleton from "./TaskboardSkeleton";

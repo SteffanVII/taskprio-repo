@@ -30,6 +30,12 @@ export type TRemoveTaskTagRequestBody = {
     task_id : string
 }
 
+export type TAddTaskAssigneeRequestBody = {
+    taskboard_id : string,
+    task_id : string,
+    user_id : string
+}
+
 export type TAddTaskCommentRequestPathParams = {
     task_id : string
 }

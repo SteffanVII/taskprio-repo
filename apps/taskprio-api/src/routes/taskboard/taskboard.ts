@@ -100,6 +100,7 @@ export const registerTaskboardRoutes = ( router : Router ) => {
         verifyProjectOwnerOrAdminMiddleware,
         async ( req : IDeactivateTaskboardRequest, res : Response ) => {
             const { taskboard_id, project_id } = req.body;
+            const { user_id } = req.user;
 
             try {
                 await deactivateTaskboard( project_id, taskboard_id)
@@ -110,13 +111,15 @@ export const registerTaskboardRoutes = ( router : Router ) => {
                         taskboard_id,
                         workspace_id : workspaceId
                     }
-                    wsConnectionsManager.sendMessage(
+                    wsConnectionsManager.broadcastToChannel(
+                        "project",
+                        project_id,
                         {
                             type : EWebSocketEventType.TASKBOARD_DEACTIVATED,
-                            data : wsMessage
+                            message : wsMessage
                         },
-                        workspaceId,
-                        projectMembers.map((member) => member.user_id)
+                        undefined,
+                        [ user_id ]
                     )
                 }
                 res.status(200).json({message : "Taskboard deactivated successfully"})
@@ -132,6 +135,7 @@ export const registerTaskboardRoutes = ( router : Router ) => {
         verifyProjectOwnerOrAdminMiddleware,
         async ( req : IReactivateTaskboardRequest, res : Response ) => {
             const { taskboard_id, project_id } = req.body;
+            const { user_id } = req.user;
             try {
                 await reactivateTaskboard(taskboard_id, project_id)
                 const workspaceId = await getWorkspaceIdFromProjectId(project_id)
@@ -140,14 +144,15 @@ export const registerTaskboardRoutes = ( router : Router ) => {
                     const wsMessage : TTaskboardReactivatedWebSocketMessage = {
                         project_id
                     }
-                    wsConnectionsManager.sendMessage(
+                    wsConnectionsManager.broadcastToChannel(
+                        "project",
+                        project_id,
                         {
                             type : EWebSocketEventType.TASKBOARD_REACTIVATED,
-                            data : wsMessage
+                            message : wsMessage
                         },
-                        workspaceId,
-                        projectMembers.map((member) => member.user_id)
-                        
+                        undefined,
+                        [ user_id ]
                     )
                 }
                 res.status(200).json({message : "Taskboard reactivated successfully"})
@@ -166,21 +171,23 @@ export const registerTaskboardRoutes = ( router : Router ) => {
         verifyProjectOwnerOrAdminMiddleware,
         async ( req : IDropTaskboardRequest, res : Response ) => {
             const { taskboard_id, project_id, taskboard_name_confirmation } = req.query
+            const { user_id } = req.user;
             try {
                 await dropTaskboard(project_id, taskboard_id, taskboard_name_confirmation)
                 const workspaceId = await getWorkspaceIdFromProjectId(project_id);
-                const projectMembers = await getProjectMembers(project_id);
                 const wsMessage : TTaskboardDroppedWebSocketMessage = {
                     taskboard_id,
                     workspace_id : workspaceId
                 }
-                wsConnectionsManager.sendMessage(
+                wsConnectionsManager.broadcastToChannel(
+                    "project",
+                    project_id,
                     {
                         type : EWebSocketEventType.TASKBOARD_DROPPED,
-                        data : wsMessage
+                        message : wsMessage
                     },
-                    workspaceId,
-                    projectMembers.map((member) => member.user_id)
+                    undefined,
+                    [ user_id ]
                 )
                 res.status(200).json({message : "Taskboard deleted successfully"})
             } catch (error) {

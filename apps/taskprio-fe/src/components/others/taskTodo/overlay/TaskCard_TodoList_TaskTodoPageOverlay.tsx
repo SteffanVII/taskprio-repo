@@ -51,7 +51,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     const [ editMode, setEditMode ] = useState( false )
 
     const [ workTimeGoal, setWorkTimeGoal ] = useState<number>(Number(data.work_time_goal))
-    const [ currentWorkTime, _setCurrentWorkTime ] = useState<number>(Number(data.current_work_time))
+    // const [ currentWorkTime, _setCurrentWorkTime ] = useState<number>(Number(data.current_work_time))
     const [ deepWork, setDeepWork ] = useState<boolean>(Number(data.work_time_goal) >= 3600)
 
     const totalWorkTime = useMemo(() => {
