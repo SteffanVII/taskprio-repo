@@ -148,14 +148,14 @@ export const useAddTaskAssignee = () => {
     return useMutation<any, Error, TAddTaskAssigneePayload>({
         mutationFn : async ( payload : TAddTaskAssigneePayload ) => {
             const response = await axiosInstance.post(
-                `/private/task/assignee/${payload.task_id}`,
+                `/private/task/assignee/${payload.body.task_id}`,
                 payload.body
             )
             return response.data
         },
         onSuccess : ( _, variables ) => {
             if ( variables.optimisticData !== undefined ) {
-                if ( variables.task_id === selectedTask?.task_id ) {
+                if ( variables.body.task_id === selectedTask?.task_id ) {
                     updateGlobalsStore({
                         selectedTask : {
                             ...selectedTask,
@@ -169,7 +169,7 @@ export const useAddTaskAssignee = () => {
                         draft.forEach( section => {
                             if ( "tasks" in section ) {
                                 section.tasks.forEach( task => {
-                                    if ( task.task_id === variables.task_id ) {
+                                    if ( task.task_id === variables.body.task_id ) {
                                         task.assignees = [ ...task.assignees, variables.optimisticData! ]
                                     }
                                 } )
@@ -192,7 +192,7 @@ export const useRemoveTaskAssignee = () => {
     return useMutation<any, Error, TRemoveTaskAssigneePayload>({
         mutationFn : async ( payload : TRemoveTaskAssigneePayload ) => {
             const response = await axiosInstance.delete(
-                `/private/task/assignee/${payload.task_id}`,
+                `/private/task/assignee/${payload.body.task_id}`,
                 {
                     data : payload.body
                 }
@@ -201,7 +201,7 @@ export const useRemoveTaskAssignee = () => {
             return response.data
         },
         onSuccess : ( _, variables ) => {
-           if ( variables.task_id === selectedTask?.task_id ) {
+           if ( variables.body.task_id === selectedTask?.task_id ) {
                 updateGlobalsStore({
                     selectedTask : {
                         ...selectedTask,
@@ -216,7 +216,7 @@ export const useRemoveTaskAssignee = () => {
                         draft.forEach( section => {
                             if ( "tasks" in section ) {
                                 section.tasks.forEach( task => {
-                                    if ( task.task_id === variables.task_id ) {
+                                    if ( task.task_id === variables.body.task_id ) {
                                         task.assignees = task.assignees.filter( assignee => assignee.user_id !== variables.body.user_id )
                                     }
                                 } )

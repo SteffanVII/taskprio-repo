@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { formatTaskTodoTimeSeconds } from "@/lib/utils/durationFormatter"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { useCommitTaskTodo, useCompleteTaskTodo, useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
-import { updateTaskboardDragStore } from "@/stores/taskboardDrag"
+import { ETaskTodoPageDragType, updateTaskboardDragStore } from "@/stores/taskboardDrag"
 
 import { TUserTaskTodoState } from "@repo/taskprio-types/src"
 import { CheckSquareIcon, EditIcon, GitCommitVertical, TrashIcon, XSquare } from "lucide-react"
@@ -123,7 +123,8 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         e.stopPropagation()
         updateTaskboardDragStore({
             taskboardTaskTodoDrag: {
-                taskboardTaskTodo: data
+                taskboardTaskTodo: data,
+                type : ETaskTodoPageDragType.TODO
             }
         })
     }
@@ -131,7 +132,8 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
     const onDragEndHandler = () => {
         updateTaskboardDragStore({
             taskboardTaskTodoDrag: {
-                taskboardTaskTodo: null
+                taskboardTaskTodo: null,
+                type : ETaskTodoPageDragType.TODO
             }
         })
     }

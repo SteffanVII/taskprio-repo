@@ -15,15 +15,18 @@ import { Input } from "@/components/ui/input";
 import { useUpdateTaskboardSection } from "@/services/private/tasksection/mutation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { updateTaskboardDragStore } from "@/stores/taskboardDrag";
 import NumberFlow from "@number-flow/react";
+import { useDraggable } from "@dnd-kit/core";
+import { ETaskboardDragDataType } from "./Taskboard";
 
 export type TTaskboardSectionProps = {
-    taskSection : TTaskSectionWithTasks
+    taskSection : TTaskSectionWithTasks,
+    preview? : boolean
 }
 
 export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
-    taskSection
+    taskSection,
+    preview
 } ) => {
 
     const selectedTaskboard = useGlobalsStore_selectedTaskboard()
@@ -32,6 +35,20 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
 
     const [ rename, setRename ] = useState( false )
     const [ renameValue, setRenameValue ] = useState( "" )
+
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        isDragging
+    } = useDraggable({
+        id : taskSection.task_section_id + (preview ? "_preview" : ""),
+        data : {
+            type : ETaskboardDragDataType.SECTION,
+            data : taskSection
+        },
+        disabled : preview
+    })
 
     // const [ taskVisibility, setTaskVisibility ] = useState<Record<string, boolean>>({})
 
@@ -62,23 +79,6 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
             task_section_id : taskSection.task_section_id,
             task_title : taskTitle
         } )
-    }
-
-    const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        updateTaskboardDragStore({
-            taskboardSectionDrag : {
-                taskboardSection : taskSection
-            }
-        })
-    }
-
-    const onDragEndHandler = () => {
-        updateTaskboardDragStore({
-            taskboardSectionDrag : {
-                taskboardSection : null
-            }
-        })
     }
 
     // IMPORTANT : Prevent the taskboard from being drag scrolled
@@ -156,13 +156,17 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
         <div
             className={cn(
                 ` w-[20rem] min-w-[20rem] h-full min-h-0 `,
-                ` grid `
+                ` grid transition-opacity `,
+                isDragging && `opacity-50`
             )}
             style={{
                 gridTemplateRows : "min-content 1fr"
             }}
         >
             <div
+                ref={setNodeRef}
+                {...attributes}
+                {...listeners}
                 className={cn(
                     ` w-full p-1 pl-2 `,
                     ` flex justify-between items-center gap-2 `,
@@ -174,9 +178,6 @@ export const TaskboardSection : React.FC<TTaskboardSectionProps> = ( {
                     backgroundColor : taskSection.task_section_color,
                     boxShadow : `${taskSection.task_section_color}40 0px 0.5rem 10px 0px`
                 } : undefined }
-                draggable={true}
-                onDragStart={ onDragStartHandler }
-                onDragEnd={ onDragEndHandler }
                 onMouseDown={ onMouseDownHandler }
             >
                 {

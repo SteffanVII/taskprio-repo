@@ -14,6 +14,8 @@
 
 :root {
   /* font-family: system-ui, Avenir, Helvetica, Arial, sans-serif; */
+  @apply rounded-md overflow-hidden;
+
   line-height: 1.5;
   font-weight: 400;
 
@@ -173,8 +175,10 @@
   --card-foreground: oklch(0.985 0.002 247.839);
   --popover: oklch(0.21 0.034 264.665);
   --popover-foreground: oklch(0.985 0.002 247.839); */
+
   /* --primary: oklch(0.928 0.006 264.531);
   --primary-foreground: oklch(0.21 0.034 264.665); */
+
   /* --secondary: oklch(0.278 0.033 256.848);
   --secondary-foreground: oklch(0.985 0.002 247.839);
   --muted: oklch(0.278 0.033 256.848);
@@ -185,11 +189,13 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364); */
+
   /* --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439); */
+
   /* --sidebar: oklch(0.21 0.034 264.665);
   --sidebar-foreground: oklch(0.985 0.002 247.839);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -247,42 +253,18 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    @apply border-border outline-ring/50;
-    @apply border-border outline-ring/50;
-    @apply border-border outline-ring/50;
-    @apply border-border outline-ring/50;
+
 
   }
 
   body {
-    @apply !bg-transparent text-foreground;
-    @apply font-sans bg-background text-foreground;
-    @apply font-sans bg-background text-foreground;
-    @apply font-sans bg-background text-foreground;
     @apply font-sans bg-background text-foreground;
     isolation: isolate;
   }
 
   html {
     @apply font-sans;
-    @apply font-sans;
-    @apply font-sans;
-    @apply font-sans;
-
   }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-
-  }
-
-  body {
-    @apply bg-background text-foreground;
-
-  }
-
 }
 
 /* 1. The entire scrollbar */

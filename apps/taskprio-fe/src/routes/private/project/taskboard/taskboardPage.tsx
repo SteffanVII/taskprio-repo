@@ -1,6 +1,5 @@
 import NoTaskboardsStage from "@/components/others/project/NoTaskboardsStage";
 import Taskboard from "@/components/others/taskboard/Taskboard";
-import TaskboardList from "@/components/others/taskboard/TaskboardList";
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_noTaskboards } from "@/stores/globals";
 
@@ -12,12 +11,8 @@ const TaskboardPage = () => {
         <div
             className={cn(
                 `relative size-full max-h-full min-h-0 overflow-hidden bg-background `,
-                ` flex flex-col grow `,
-                ` md`
+                ` flex grow `,
             )}
-            style={{
-                gridTemplateRows : "min-content 1fr"
-            }}
         >
             {
                 noTaskboards ?
@@ -27,7 +22,6 @@ const TaskboardPage = () => {
                 </>
                 :
                 <>
-                    <TaskboardList/>
                     <Taskboard/>
                 </>
             }

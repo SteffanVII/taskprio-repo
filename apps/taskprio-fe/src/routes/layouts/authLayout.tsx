@@ -1,8 +1,11 @@
 import { useLayoutEffect } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuthenticate } from "@/services/authentication";
 import { updateGlobalsStore, useGlobalsStore_authenticated } from "@/stores/globals";
+import { WebSocketProvider } from "@/components/others/websocket/WebsocketProvider";
+import ElectronCustomTitlebar from "@/components/others/shared/ElectronCustomTitlebar";
+import { useElectronStore_isElectron } from "@/stores/electron";
+import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from "@/stores/taskTodoPage";
 import StateManager_Electron from "@/stateManagers/StateManager_Electron";
 
 const AuthLayout = () => {
@@ -11,7 +14,10 @@ const AuthLayout = () => {
     const location = useLocation()
     const [ searchParams ] = useSearchParams()
     const authenticated = useGlobalsStore_authenticated()
-    
+
+	const isElectron = useElectronStore_isElectron()
+	const taskTodoPageUIMode = useTaskTodoPageStore_uIMode()
+
     const onAuthenticateSuccess = () => {
         updateGlobalsStore({
             authenticated : true
@@ -51,11 +57,15 @@ const AuthLayout = () => {
     ])
 
     return (
-        <StateManager_Electron>
-            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>
-                <Outlet/>   
-            </GoogleOAuthProvider>
-        </StateManager_Electron>
+        <WebSocketProvider>
+            <StateManager_Electron>
+                {
+                    (isElectron && (taskTodoPageUIMode !== ETaskTodoPageUIMode.OVERLAY && taskTodoPageUIMode !== ETaskTodoPageUIMode.WIDGET)) &&
+                    <ElectronCustomTitlebar/>
+                }
+                <Outlet/>
+            </StateManager_Electron>
+        </WebSocketProvider>
     )
 
 }

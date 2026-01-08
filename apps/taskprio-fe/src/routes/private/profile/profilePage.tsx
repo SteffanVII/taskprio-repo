@@ -19,7 +19,7 @@ const ProfilePage = () => {
     return (
         <div
             className={cn(
-                ` w-screen h-screen max-w-screen max-h-screen `,
+                ` w-screen h-screen max-w-screen max-h-screen mt-[3rem] `,
             )}
         >
             <Button

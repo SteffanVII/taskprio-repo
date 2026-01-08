@@ -4,7 +4,7 @@ import { useGlobalsStore_selectedTaskboard, useGlobalsStore_taskboardsIsLoading 
 import TaskboardSection from "./TaskboardSection";
 import { TTaskForCardView, TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
-import TaskboardSectionDrop from "./TaskboardSectionDrop";
+import TaskboardSectionDrop, { TTaskboardSectionDropProps } from "./TaskboardSectionDrop";
 import { TaskboardTaskDialog } from "../dialogs/taskboardTaskDialog/TaskboardTaskdialog";
 import React, { useMemo, useRef } from "react";
 import { useParams } from "react-router";
@@ -14,6 +14,7 @@ import { useArrangeTask } from "@/services/private/task/mutation";
 import { TTaskboardTaskDrop } from "./TaskboardTaskDrop";
 import TaskboardSkeleton from "./TaskboardSkeleton";
 import TaskboardTask from "./TaskboardTask";
+import { useUpdateTaskboardSection } from "@/services/private/tasksection/mutation";
 
 export enum ETaskboardDragDataType {
     TASK = "task",
@@ -70,6 +71,10 @@ export const Taskboard = () => {
     const {
         mutateAsync : arrangeTaskMutation
     } = useArrangeTask()
+
+    const {
+        mutateAsync : updateTaskboardSectionMutation,
+    } = useUpdateTaskboardSection()
 
     const taskboardSectionWithRenderInfo = useMemo<React.ReactNode[]>(() => {
 
@@ -179,6 +184,13 @@ export const Taskboard = () => {
                 }
             })
         }
+        if ( e.active.data.current && e.active.data.current.type === ETaskboardDragDataType.SECTION ) {
+            updateTaskboardDragStore({
+                taskboardSectionDrag : {
+                    taskboardSection : e.active.data.current.data as TTaskSection
+                }
+            })
+        }
     }
 
     const onDndContextDragEnd = ( e : DragEndEvent ) => {
@@ -194,19 +206,30 @@ export const Taskboard = () => {
 
         if (
             e.active.data.current &&
-            e.active.data.current.type === ETaskboardDragDataType.TASK &&
             e.over?.data.current
         ) {
             if ( !!e.active.data.current.data ) {
-                const task = e.active.data.current.data as TTaskForCardView
-                const dropData = e.over?.data.current as TTaskboardTaskDrop
-                arrangeTaskMutation({
-                    task_id : task.task_id,
-                    body : {
-                        task_section_id : dropData.task_section_id,
-                        display_order : dropData.display_order
-                    }
-                })
+                if ( e.active.data.current.type === ETaskboardDragDataType.TASK ) {
+                    const task = e.active.data.current.data as TTaskForCardView
+                    const dropData = e.over?.data.current as TTaskboardTaskDrop
+                    arrangeTaskMutation({
+                        task_id : task.task_id,
+                        body : {
+                            task_section_id : dropData.task_section_id,
+                            display_order : dropData.display_order
+                        }
+                    })
+                }
+                if ( e.active.data.current.type === ETaskboardDragDataType.SECTION ) {
+                    const section = e.active.data.current.data as TTaskSection
+                    const dropData = e.over?.data.current as TTaskboardSectionDropProps
+                    updateTaskboardSectionMutation({
+                        task_section_id : section.task_section_id,
+                        body : {
+                            display_order : dropData.displayOrder
+                        }
+                    })
+                }
             }
         }
 
@@ -216,7 +239,7 @@ export const Taskboard = () => {
 
         <div
             className={cn(
-                `relative grow grid h-full min-w-0 min-h-0 max-h-full`
+                `relative grow grid h-full min-w-0 min-h-0 max-h-full bg-background`
             )}
             style={{
                 gridTemplateColumns : "1fr"

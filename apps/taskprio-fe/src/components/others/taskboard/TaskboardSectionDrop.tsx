@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
-import { useUpdateTaskboardSection } from "@/services/private/tasksection/mutation"
-import { updateTaskboardDragStore, useTaskboardDragStore_taskboardSectionDrag } from "@/stores/taskboardDrag"
-import React, { useState } from "react"
+import { useTaskboardDragStore_taskboardSectionDrag } from "@/stores/taskboardDrag"
+import { useDroppable } from "@dnd-kit/core"
+import React from "react"
 
 export type TTaskboardSectionDropProps = {
     displayOrder : number,
@@ -9,63 +9,33 @@ export type TTaskboardSectionDropProps = {
     bottomTaskSectionId? : string
 }
 
-export const TaskboardSectionDrop : React.FC<TTaskboardSectionDropProps> = ({ displayOrder, topTaskSectionId, bottomTaskSectionId }) => {
+export const TaskboardSectionDrop : React.FC<TTaskboardSectionDropProps> = ( props ) => {
+
+    const { displayOrder, topTaskSectionId, bottomTaskSectionId } = props
 
     const { taskboardSection } = useTaskboardDragStore_taskboardSectionDrag()
 
     const {
-        mutateAsync : updateTaskboardSectionMutation,
-    } = useUpdateTaskboardSection()
-
-    const [ draggedOver, setDraggedOver ] = useState<boolean>( false )
-
-    const onDragOverHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        e.preventDefault()
-        if ( taskboardSection && taskboardSection.task_section_id !== topTaskSectionId && taskboardSection.task_section_id !== bottomTaskSectionId ) {
-            e.dataTransfer.setData( "displayOrder", displayOrder.toString() )
-            setDraggedOver( true )
-        }
-    }
-
-    const onDragLeaveHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        setDraggedOver( false )
-    }
-
-    const onDragDropHandler = () => {
-
-        if ( taskboardSection ) {
-            updateTaskboardSectionMutation({
-                task_section_id : taskboardSection.task_section_id,
-                body : {
-                    display_order : displayOrder
-                }
-            })
-        }
-
-        setDraggedOver( false )
-        updateTaskboardDragStore({
-            taskboardSectionDrag : {
-                taskboardSection : null
-            }
-        })
-    }
+        isOver,
+        setNodeRef
+    } = useDroppable({
+        id : `${displayOrder}_${topTaskSectionId}_${bottomTaskSectionId}`,
+        data : props,
+        disabled : !taskboardSection || taskboardSection.task_section_id === topTaskSectionId || taskboardSection.task_section_id === bottomTaskSectionId
+    })
 
     return (
         <div
+            ref={setNodeRef}
             className={cn(
                 ` flex-shrink-0 w-[1.6rem] h-full min-h-0 max-h-full transition-all duration-200 `,
-                draggedOver && ` w-[1.9rem] `
+                isOver && ` w-[1.9rem] `
             )}
-            onDragOver={ onDragOverHandler }
-            onDragLeave={ onDragLeaveHandler }
-            onDrop={ onDragDropHandler }
         >
             <div
                 className={cn(
                     ` w-[0rem] h-full mx-auto bg-blue-300 rounded-full transition-all duration-200 pointer-events-none `,
-                    draggedOver && ` w-[0.3rem] `
+                    isOver && ` w-[0.3rem] `
                 )}
             ></div>
         </div>

@@ -104,7 +104,7 @@ export const TaskboardSectionCreator = () => {
                     <Button
                         variant={"outline"}
                         className=" w-full ml-auto "
-                        disabled={isCreatingTaskboardSection}
+                        disabled={isCreatingTaskboardSection || sectionName.length === 0}
                         onClick={onSubmit}
                     >
                         {

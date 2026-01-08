@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import ContentEditor_TaskboardTaskDialog from "./ContentEditor_TaskboardTaskDialog"
 import { toast } from "sonner"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
+import { Badge } from "@/components/ui/badge"
 
 export const TaskboardTaskDialog = () => {
 
@@ -216,15 +217,25 @@ export const TaskboardTaskDialog = () => {
                             {/* Header */}
                             <div
                                 className={cn(
-                                    ` w-full h-fit p-2 border-b `,
+                                    ` w-full h-fit p-2 pl-4 border-b `,
                                     ` flex gap-2 items-center  `,
                                 )}
                             >
-                                <Button
-                                    variant={"ghost"}
-                                    size={"icon"}
-                                    onClick={closeHandler}
-                                ><X className=" size-4 " /></Button>
+                                <Badge
+                                    className={cn(
+                                        `w-fit`,
+                                        `bg-primary text-primary-foreground`
+                                    )}
+                                    style={{
+                                        backgroundColor : task?.project_color,
+                                    }}
+                                >
+                                    <p className={cn(
+                                        "font-semibold ",
+                                        task?.project_color && getHexLuminance(task.project_color ) > 0.4 ? "text-black" : "text-white"
+                                    )} >{task?.project_abbreviation.toUpperCase()}-{task?.task_depth}</p>
+                                </Badge>
+
                                 <Dialog
                                     open={moveToTrashReady}
                                     onOpenChange={ open => {
@@ -261,6 +272,12 @@ export const TaskboardTaskDialog = () => {
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
+
+                                <Button
+                                    variant={"ghost"}
+                                    size={"icon"}
+                                    onClick={closeHandler}
+                                ><X className=" size-4 " /></Button>
 
                                 {/* TODO : Create the task section switcher */}
 
@@ -322,21 +339,6 @@ export const TaskboardTaskDialog = () => {
                                                     `w-full flex gap-4 `
                                                 )}
                                             >
-                                                <div
-                                                    className={cn(
-                                                        `w-fit`,
-                                                        `p-4 py-2 rounded-md `,
-                                                        `bg-primary text-primary-foreground`
-                                                    )}
-                                                    style={{
-                                                        backgroundColor : task?.project_color,
-                                                    }}
-                                                >
-                                                    <p className={cn(
-                                                        " text-lg font-semibold ",
-                                                        task?.project_color && getHexLuminance(task.project_color ) > 0.4 ? "text-black" : "text-white"
-                                                    )} >{task?.project_abbreviation.toUpperCase()}-{task?.task_depth}</p>
-                                                </div>
                                                 <Input
                                                     className={cn(
                                                         ` h-fit !p-4 !py-2 `,

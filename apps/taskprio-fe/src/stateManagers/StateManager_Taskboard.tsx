@@ -61,6 +61,10 @@ const StateManager_Taskboard : React.FC<TStateManager_Taskboard> = ({ children }
                     // If it's not means the user might have switched project and the project data hasn't fetched yet
                     // This is to prevent fetching the taskboard data that doesn't belong to the selected project
                     if ( selectedProject?.project_id === project_id ) {
+                        updateGlobalsStore({
+                            selectedTaskboard : taskboards[0],
+                            noTaskboards : false
+                        })
                         navigate( `/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboards[0].task_board_id}` )
                     }
                 }

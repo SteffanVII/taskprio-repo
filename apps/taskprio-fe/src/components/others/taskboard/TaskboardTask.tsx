@@ -85,13 +85,12 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
     }, [task])
 
     useLayoutEffect(() => {
-        const timeout = setTimeout(() => {
-            setShowTaskAssigner(true)
-        }, 300)
-        return () => {
-            clearTimeout(timeout)
+        if (!showTaskAssigner) {
+            setTimeout(() => {
+                setShowTaskAssigner(true)
+            }, 500)
         }
-    }, [])
+    }, [showTaskAssigner])
 
     return (
         <div
@@ -153,14 +152,14 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                 >
                     {
                         (!preview || !dimensionFiller) && showTaskAssigner &&
-                        <div className=" animate-in fade-in duration-300" >
-                            <TaskAssigner
-                                task_id={task.task_id}
-                                assignees={assignees}
-                                onAssigneesChange={setAssignees}
-                                disabledHoverCard
-                            />
-                        </div>
+                            <div className=" animate-in fade-in duration-300" >
+                                <TaskAssigner
+                                    task_id={task.task_id}
+                                    assignees={assignees}
+                                    onAssigneesChange={setAssignees}
+                                    disabledHoverCard
+                                />
+                            </div>
                     }
                 </div>
                 {

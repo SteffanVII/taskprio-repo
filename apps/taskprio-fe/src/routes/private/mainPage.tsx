@@ -8,7 +8,6 @@ import WorkspaceInvitationDialog from "@/components/others/dialogs/WorkspaceInvi
 import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboardPane";
 import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStage";
 import Spinner from "@/components/others/Spinner";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_logoutIsPending, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 import { Outlet } from "react-router";
@@ -21,8 +20,7 @@ import NoWorkspaceStage from "@/components/others/mainPageComponents/NoWorkspace
 import TaskboardTaskAssignerDialog from "@/components/others/dialogs/TaskboardTaskAssignerDialog";
 import { useContext, useMemo } from "react";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
-import { Label } from "@/components/ui/label";
-import { Check } from "lucide-react";
+import { LockKeyhole, Rocket } from "lucide-react";
 import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
 import AcceptInvitationDialog from "@/components/others/dialogs/AcceptInvitationDialog";
 
@@ -30,7 +28,7 @@ const MainPage = () => {
 
     const {
         connected: webSocketConnected,
-        initialConnection : webSocketInitialConnection
+        initialConnection: webSocketInitialConnection
     } = useContext(WebSocketContext)
     const authenticated = useGlobalsStore_authenticated()
     const authenticateIsPending = useGlobalsStore_authenticateIsPending()
@@ -56,79 +54,86 @@ const MainPage = () => {
                     // Show loading screen when not authenticated
                     <div
                         className={cn(
+                            `fixed top-0 left-0 w-screen h-screen`,
                             ` size-full max-w-screen max-h-screen `,
                             ` flex flex-col gap-[4rem] items-center justify-center `,
-                            ` bg-background z-50 `
+                            ` bg-secondary/80 z-[49] `
                         )}
                     >
-                        <Spinner size="xl" />
-                        <div className="flex flex-col gap-2" >
-                            <div className="flex gap-4 items-center" >
-                                <Label>Authenticated</Label>
+                        <div className="flex gap-[4rem]" >
+                            <div className="relative flex gap-4 items-center" >
                                 {
-                                    authenticateIsPending ?
-                                        <Spinner /> : <Check className="text-green-400" />
+                                    authenticateIsPending &&
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" >
+                                        <Spinner size="7xl" />
+                                    </div>
                                 }
+                                <LockKeyhole
+                                    className={cn(
+                                        `size-[2rem]`,
+                                        authenticated && `text-green-400`
+                                    )}
+                                />
                             </div>
-                            <div className="flex gap-4 items-center" >
-                                <Label>Websocket</Label>
+                            <div className="relative flex flex-col gap-4 items-center" >
                                 {
-                                    !webSocketConnected ?
-                                        <Spinner /> : <Check className="text-green-400" />
+                                    !webSocketConnected &&
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" >
+                                            <Spinner size="7xl" />
+                                        </div>
                                 }
+                                <Rocket
+                                    className={cn(
+                                        `size-[2rem]`,
+                                        webSocketConnected && `text-green-400`
+                                    )}
+                                />
                             </div>
                         </div>
                     </div>
                     :
                     <>
-                        <SidebarProvider>
-                            <MainDashboardPane />
-                            <SidebarInset
-                                custom
-                                className="border-0 z-10 !shadow-none"
-                            >
-                                <div
-                                    className={cn(
-                                        `relative w-full min-w-0 min-h-0 max-h-full overflow-hidden `,
-                                        `flex flex-col grow`
-                                    )}
-                                >
-                                    {
-                                        (noWorkspaces && !workspacesIsLoading) ?
-                                            // Show no workspaces stage
-                                            <NoWorkspaceStage />
-                                            :
-                                            // Show main page
-                                            <>
-                                                {
-                                                    (noProjects && !projectsIsLoading) ?
-                                                        // Show no projects stage
-                                                        <NoProjectStage />
-                                                        :
-                                                        <>
-                                                            <Outlet />
-                                                        </>
-                                                }
-                                            </>
-                                    }
-                                </div>
-                            </SidebarInset>
-                            <CreateProjectDialog />
-                            <CreateWorkspaceDialog />
-                            <CreateTaskboardDialog />
-                            <RenameTaskboardDialog />
-                            <DropTaskboardDialog />
-                            <DeactivateTaskboardDialog />
-                            <ReactivateTaskboardDialog />
-                            <DropProjectDialog />
-                            <DeactivateProjectDialog />
-                            <ReactivateProjectDialog />
-                            <WorkspaceInvitationDialog />
-                            <TagDialog />
-                            <TaskboardTaskAssignerDialog />
-                            <TaskboardTrashSheet />
-                            <AcceptInvitationDialog />
-                        </SidebarProvider>
+                        <MainDashboardPane />
+                        <main
+                            className={cn(
+                                `relative w-full min-w-0 min-h-0 max-h-screen pt-[3rem] overflow-hidden `,
+                                `flex flex-col grow`
+                            )}
+                        >
+                            {
+                                (noWorkspaces && !workspacesIsLoading) ?
+                                    // Show no workspaces stage
+                                    <NoWorkspaceStage />
+                                    :
+                                    // Show main page
+                                    <>
+                                        {
+                                            (noProjects && !projectsIsLoading) ?
+                                                // Show no projects stage
+                                                <NoProjectStage />
+                                                :
+                                                <>
+                                                    <Outlet />
+                                                </>
+                                        }
+                                    </>
+                            }
+                        </main>
+                        <CreateProjectDialog />
+                        <CreateWorkspaceDialog />
+                        <CreateTaskboardDialog />
+                        <RenameTaskboardDialog />
+                        <DropTaskboardDialog />
+                        <DeactivateTaskboardDialog />
+                        <ReactivateTaskboardDialog />
+                        <DropProjectDialog />
+                        <DeactivateProjectDialog />
+                        <ReactivateProjectDialog />
+                        <WorkspaceInvitationDialog />
+                        <TagDialog />
+                        <TaskboardTaskAssignerDialog />
+                        <TaskboardTrashSheet />
+                        <AcceptInvitationDialog />
                     </>
             }
         </>

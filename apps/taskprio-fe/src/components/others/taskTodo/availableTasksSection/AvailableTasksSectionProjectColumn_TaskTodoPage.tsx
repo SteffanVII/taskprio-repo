@@ -72,7 +72,7 @@ const ProjectColumn = React.forwardRef<HTMLDivElement, TProjectColumnProps>( ({
             data-project-column-id={data.project_id}
             ref={ref}
             className={cn(
-                ` max-w-[27rem] min-h-0 grow shrink-0 `,
+                ` w-[27rem] min-h-0 grow shrink-0 `,
                 ` grid `,
                 ` p-4 pb-0 space-y-4 `,
                 ` rounded-md animate-in fade-in fill-mode-both duration-500 `,
@@ -87,7 +87,7 @@ const ProjectColumn = React.forwardRef<HTMLDivElement, TProjectColumnProps>( ({
                 <div>
                     <h3
                         className={cn(
-                            "flex justify-between items-center px-3 py-2 bg-primary rounded-md text-lg text-primary-foreground ",
+                            "flex justify-between items-center px-3 py-2 bg-primary rounded-md text-primary-foreground ",
                             data.project_color !== "#ffffff" && getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                         )}
                         style={{
@@ -95,7 +95,7 @@ const ProjectColumn = React.forwardRef<HTMLDivElement, TProjectColumnProps>( ({
                         }}
                     >
                         {data.project_name}
-                        <Badge variant={"secondary"} >
+                        <Badge variant={"secondary"} className="h-fit rounded-md" >
                             <NumberFlow
                                 prefix={(availableTasks?.tasks?.length || 0) > 99 ? "+" : undefined}
                                 value={Math.min(99, (availableTasks?.tasks?.length || 0))}

@@ -19,6 +19,7 @@ const NoProjectStage = () => {
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     const [ projectName, setProjectName ] = useState<string>("")
+    const [ projectCode, setProjectCode ] = useState<string>("")
 
     const {
         mutateAsync : createProject,
@@ -75,6 +76,12 @@ const NoProjectStage = () => {
                         placeholder="Project name"
                         value={projectName}
                         onChange={ ( e ) => setProjectName( e.target.value ) }
+                        disabled={isCreatingProject}
+                    />
+                    <Input
+                        placeholder="Project Code"
+                        value={projectCode}
+                        onChange={ ( e ) => setProjectCode( e.target.value ) }
                         disabled={isCreatingProject}
                     />
                     <Button

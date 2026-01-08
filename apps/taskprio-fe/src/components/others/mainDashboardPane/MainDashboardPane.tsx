@@ -24,19 +24,18 @@ const MainDashboardPane = () => {
     return (
         <>
             <Sidebar
-                variant="inset"
                 electron={isElectron}
-                className="z-10"
+                className="z-10 overflow-hidden"
             >
                 {
                     !noWorkspaces ?
                     <>
-                        <SidebarHeader className="p-2" >
+                        <SidebarHeader className="p-0" >
                             <WorkspaceDropdown_MainDashboardPane/>
                         </SidebarHeader>
                         <SidebarContent>
                             <GeneralButtons/>
-                            <div className="px-3 py-4" >
+                            <div className=" py-4" >
                                 <ProjectsList_MainDashboardPane/>
                             </div>
                         </SidebarContent>
@@ -49,7 +48,7 @@ const MainDashboardPane = () => {
                     <div
                         className={cn(
                             ` w-full p-2 `,
-                            ` flex items-center justify-between gap-2 z-20 `
+                            ` flex items-center justify-between gap-2 z-20 `,
                         )}
                     >
                         <UserPopoverMenu/>
@@ -65,63 +64,6 @@ const MainDashboardPane = () => {
                     </div>
                 </SidebarFooter>
             </Sidebar>
-            {/* <div
-                className={cn(
-                    ` w-[20rem] min-w-[20rem] h-full max-h-screen overflow-y-auto overflow-x-hidden `,
-                    ` flex flex-col justify-between `,
-                    ` border-r border-border `,
-                    ` bg-accent/25 `
-                )}
-            >
-                <div
-                    className={cn(
-                        ` p-4 `
-                    )}
-                >
-                    <WorkspaceDropdown_MainDashboardPane/>
-                </div>
-
-                Header
-                
-                <GeneralButtons/>
-
-                <div
-                    className={cn(
-                        ` flex flex-col grow gap-2 p-2 overflow-y-auto overflow-x-hidden `
-                    )}
-                >
-                    <ProjectsList_MainDashboardPane/>
-                </div>
-
-                Footer
-
-                <div
-                    className={cn(
-                        `w-full mt-auto`
-                    )}
-                >
-
-                    <TodoCard_MainDashboardPane/>
-
-                    <div
-                        className={cn(
-                            ` w-full p-4 `,
-                            ` flex items-center justify-between gap-2 `
-                        )}
-                    >
-                        <UserPopoverMenu/>
-                        <Button
-                            size={"icon"}
-                            variant={"outline"}
-                            onClick={() => {
-                                setTheme( theme === "dark" ? "light" : "dark" )
-                            }}
-                        >
-                            <Sun className=" size-4 "/>
-                        </Button>
-                    </div>
-                </div>
-            </div> */}
         </>
     )
 

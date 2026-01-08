@@ -43,6 +43,7 @@
     "@tailwindcss/vite": "^4.1.5",
     "@tanstack/react-query": "^5.75.2",
     "@tanstack/react-store": "^0.7.0",
+    "@tanstack/react-virtual": "^3.13.18",
     "@tiptap/extension-blockquote": "^3.11.1",
     "@tiptap/pm": "^3.4.3",
     "@tiptap/react": "^3.4.3",

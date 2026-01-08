@@ -1,6 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils"
-import { useGlobalsStore_selectedProject, useGlobalsStore_user } from "@/stores/globals";
+import { useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_user } from "@/stores/globals";
 import { Check, Plus } from "lucide-react"
 import React from "react";
 import UserAvatar from "../UserAvatar";
@@ -24,6 +24,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
 
     const user = useGlobalsStore_user()
     const selectedProject = useGlobalsStore_selectedProject()
+    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
 
     const {
         mutateAsync : addTaskAssignee
@@ -34,12 +35,14 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
     } = useRemoveTaskAssignee()
 
     const handleAssigning = ( projectMember : TProjectMember ) => {
+        console.log(task_id);
         if ( assignees.includes( projectMember.user_id ) ) {
             onAssigneesChange( assignees.filter( ( id ) => id !== projectMember.user_id ) )
             if ( task_id ) {
                 removeTaskAssignee( {
-                    task_id,
                     body : {
+                        task_id,
+                        taskboard_id : selectedTaskboard!.task_board_id,
                         user_id : projectMember.user_id
                     }
                 } )
@@ -48,13 +51,14 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
             onAssigneesChange( [ ...assignees, projectMember.user_id ] )
             if ( task_id ) {
                 addTaskAssignee( {
-                    task_id,
                     optimisticData : {
                         user_id : projectMember.user_id,
                         firstname : projectMember.firstname,
                         lastname : projectMember.lastname
                     },
                     body : {
+                        task_id,
+                        taskboard_id : selectedTaskboard!.task_board_id,
                         user_id : projectMember.user_id
                     }
                 } )

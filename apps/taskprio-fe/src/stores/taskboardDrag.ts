@@ -1,6 +1,11 @@
 import { Store, useStore } from "@tanstack/react-store"
 import { TTaskForCardView, TTaskSection, TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src"
 
+export enum ETaskTodoPageDragType {
+    TODO = "todo",
+    AVAILABLE = "available"
+}
+
 export type TTaskboardSectionDrag = {
     taskboardSection : TTaskSection | null
 }
@@ -10,7 +15,8 @@ export type TTaskboardTaskDrag = {
 }
 
 export type TTaskboardTaskTodoDrag = {
-    taskboardTaskTodo : TUserTaskTodoState | TUserAvailableTaskTodo | null
+    taskboardTaskTodo : TUserTaskTodoState | TUserAvailableTaskTodo | null,
+    type : ETaskTodoPageDragType
 }
 
 export type TTaskboardDragStore = {
@@ -27,7 +33,8 @@ const initialTaskboardDragStoreState : TTaskboardDragStore = {
         taskboardTask : null
     },
     taskboardTaskTodoDrag : {
-        taskboardTaskTodo : null
+        taskboardTaskTodo : null,
+        type : ETaskTodoPageDragType.TODO
     }
 }
 

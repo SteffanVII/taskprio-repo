@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCreateTaskboard } from "@/services/private/taskboard/mutation";
 import { updateDialogsStore, useDialogsStore_createTaskboardDialog } from "@/stores/dialogs";
@@ -12,7 +12,7 @@ import { z } from "zod";
 import Spinner from "../Spinner";
 
 const createTaskboardFormSchema = z.object({
-    taskboard_name : z.string().min(1, "Taskboard name is required")
+    taskboard_name: z.string().min(1, "Taskboard name is required")
 })
 
 const CreateTaskboardDialog = () => {
@@ -24,33 +24,33 @@ const CreateTaskboardDialog = () => {
     } = useDialogsStore_createTaskboardDialog()
 
     const form = useForm<z.infer<typeof createTaskboardFormSchema>>({
-        resolver : zodResolver(createTaskboardFormSchema),
-        defaultValues : {
-            taskboard_name : ""
+        resolver: zodResolver(createTaskboardFormSchema),
+        defaultValues: {
+            taskboard_name: ""
         }
     })
 
     const title = form.watch("taskboard_name")
 
     const {
-        mutateAsync : createTaskboardTrigger,
-        isPending : createTaskboardIsPending
+        mutateAsync: createTaskboardTrigger,
+        isPending: createTaskboardIsPending
     } = useCreateTaskboard({
-        onSuccess : () => {
+        onSuccess: () => {
             updateDialogsStore({
-                createTaskboardDialog : {
-                    open : false
+                createTaskboardDialog: {
+                    open: false
                 }
             })
             form.reset()
         }
     })
 
-    const onSubmit = async ( value : z.infer<typeof createTaskboardFormSchema> ) => {
-        if ( selectedProject ) {
+    const onSubmit = async (value: z.infer<typeof createTaskboardFormSchema>) => {
+        if (selectedProject) {
             await createTaskboardTrigger({
-                project_id : selectedProject.project_id,
-                taskboard_name : value.taskboard_name
+                project_id: selectedProject.project_id,
+                taskboard_name: value.taskboard_name
             })
         }
     }
@@ -58,13 +58,13 @@ const CreateTaskboardDialog = () => {
     return (
         <Dialog
             open={open}
-            onOpenChange={ () => {
+            onOpenChange={() => {
                 updateDialogsStore({
-                    createTaskboardDialog : {
-                        open : !open
+                    createTaskboardDialog: {
+                        open: !open
                     }
                 })
-            } }
+            }}
         >
             <DialogContent>
                 <DialogHeader>
@@ -81,11 +81,14 @@ const CreateTaskboardDialog = () => {
                                 <FormItem>
                                     <FormControl>
                                         <Input
-                                            placeholder="Taskboard Name"
+                                            placeholder="Name"
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormDescription>
+                                        This is the name of your new taskboard.
+                                    </FormDescription>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -98,7 +101,7 @@ const CreateTaskboardDialog = () => {
                             form.handleSubmit(onSubmit)()
                         }}
                     >
-                        {createTaskboardIsPending ? <Spinner/> : "Create"}
+                        {createTaskboardIsPending ? <Spinner /> : "Create"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

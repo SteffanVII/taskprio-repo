@@ -1,4 +1,4 @@
-import { TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRemoveTaskTagRequestBody, TRestoreTaskFromTrashRequestParams, TTask, TTaskAssignee, TTaskTimeLog } from "@repo/taskprio-types/src";
+import { TAddTaskAssigneeRequestBody, TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRemoveTaskTagRequestBody, TRestoreTaskFromTrashRequestParams, TTask, TTaskAssignee, TTaskTimeLog } from "@repo/taskprio-types/src";
 
 // Query
 export type TGetTaskResponse = TTask
@@ -39,11 +39,8 @@ export type TUpdateTaskPrimitiveFieldsPayload = {
 export type TArrangeTaskResponse = TTask;
 
 export type TAddTaskAssigneePayload = {
-    task_id : string,
     optimisticData? : TTaskAssignee,
-    body : {
-        user_id : string
-    }
+    body : TAddTaskAssigneeRequestBody
 }
 
 export type TRemoveTaskAssigneePayload = Omit<TAddTaskAssigneePayload, "optimisticData">

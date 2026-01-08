@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils"
-import { useMoveTaskToTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
 import { useTaskboardDragStore_taskboardTaskTodoDrag } from "@/stores/taskboardDrag"
 import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from "@/stores/taskTodoPage"
+import { useDroppable } from "@dnd-kit/core"
 
-import { useState } from "react"
+import TaskCard from "./TaskCard_TaskTodoPage"
+import { TUserTaskTodoState } from "@repo/taskprio-types/src"
 
 type TTaskCardDropProps = {
     displayOrder : number,
@@ -13,100 +14,112 @@ type TTaskCardDropProps = {
     noTodoMessage? : boolean;
 }
 
-const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
-    displayOrder,
-    fullSize,
-    topTaskId,
-    bottomTaskId,
-    noTodoMessage,
-}) => {
+const TaskCardDrop : React.FC<TTaskCardDropProps> = ( props ) => {
+
+    const {
+        displayOrder,
+        fullSize,
+        topTaskId,
+        bottomTaskId,
+        noTodoMessage
+    } = props
 
     const uIMode = useTaskTodoPageStore_uIMode()
 
     const { taskboardTaskTodo } = useTaskboardDragStore_taskboardTaskTodoDrag()
 
-    const [ draggedOver, setDraggedOver ] = useState(false)
+    // const [ draggedOver, setDraggedOver ] = useState(false)
 
     const {
-        mutateAsync : moveTaskToTodoTrigger
-    } = useMoveTaskToTodo()
+        setNodeRef,
+        isOver
+    } = useDroppable({
+        id : `${displayOrder}_${topTaskId}_${bottomTaskId}`,
+        data : props,
+        disabled : taskboardTaskTodo?.task_id === topTaskId || taskboardTaskTodo?.task_id === bottomTaskId
+    })
 
-    const {
-        mutateAsync : updateTaskTodoStateTrigger
-    } = useUpdateTaskTodoState()
+    // const {
+    //     mutateAsync : moveTaskToTodoTrigger
+    // } = useMoveTaskToTodo()
 
-    const onDragOverHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        e.preventDefault();
-        if ( taskboardTaskTodo && taskboardTaskTodo.task_id !== topTaskId && taskboardTaskTodo.task_id !== bottomTaskId ) {
-            e.dataTransfer.setData( "displayOrder", displayOrder.toString() )
-            setDraggedOver(true)
-        }
-    }
+    // const {
+    //     mutateAsync : updateTaskTodoStateTrigger
+    // } = useUpdateTaskTodoState()
 
-    const onDragLeaveHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
-        e.stopPropagation()
-        setDraggedOver(false)
-    }
+    // const onDragOverHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
+    //     e.stopPropagation()
+    //     e.preventDefault();
+    //     if ( taskboardTaskTodo && taskboardTaskTodo.task_id !== topTaskId && taskboardTaskTodo.task_id !== bottomTaskId ) {
+    //         e.dataTransfer.setData( "displayOrder", displayOrder.toString() )
+    //         setDraggedOver(true)
+    //     }
+    // }
 
-    const onDropHandler = () => {
+    // const onDragLeaveHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
+    //     e.stopPropagation()
+    //     setDraggedOver(false)
+    // }
 
-        console.log(displayOrder);
+    // const onDropHandler = () => {
 
-        if ( taskboardTaskTodo ) {
-            if ( !topTaskId && !bottomTaskId ) {
-                moveTaskToTodoTrigger({
-                    pathParameters : {
-                        task_id : taskboardTaskTodo.task_id
-                    },
-                    body : {
-                        display_order : displayOrder
-                    },
-                    optimisticHelpers : {
-                        task : taskboardTaskTodo
-                    }
-                })
-            } else {
-                if ( "active" in taskboardTaskTodo ) {
-                    if ( taskboardTaskTodo.active ) {
-                        updateTaskTodoStateTrigger({
-                            pathParameters : {
-                                task_id : taskboardTaskTodo.task_id
-                            },
-                            body : {
-                                display_order : displayOrder,
-                                active : true
-                            }
-                        })
-                    } else {
-                        moveTaskToTodoTrigger({
-                            pathParameters : {
-                                task_id : taskboardTaskTodo.task_id
-                            },
-                            body : {
-                                display_order : displayOrder
-                            },
-                            optimisticHelpers : {
-                                task : taskboardTaskTodo
-                            }
-                        })
-                    }
-                }
-            }
-        }
+    //     console.log(displayOrder);
 
-        setDraggedOver( false )
+    //     if ( taskboardTaskTodo ) {
+    //         if ( !topTaskId && !bottomTaskId ) {
+    //             moveTaskToTodoTrigger({
+    //                 pathParameters : {
+    //                     task_id : taskboardTaskTodo.task_id
+    //                 },
+    //                 body : {
+    //                     display_order : displayOrder
+    //                 },
+    //                 optimisticHelpers : {
+    //                     task : taskboardTaskTodo
+    //                 }
+    //             })
+    //         } else {
+    //             if ( "active" in taskboardTaskTodo ) {
+    //                 if ( taskboardTaskTodo.active ) {
+    //                     updateTaskTodoStateTrigger({
+    //                         pathParameters : {
+    //                             task_id : taskboardTaskTodo.task_id
+    //                         },
+    //                         body : {
+    //                             display_order : displayOrder,
+    //                             active : true
+    //                         }
+    //                     })
+    //                 } else {
+    //                     moveTaskToTodoTrigger({
+    //                         pathParameters : {
+    //                             task_id : taskboardTaskTodo.task_id
+    //                         },
+    //                         body : {
+    //                             display_order : displayOrder
+    //                         },
+    //                         optimisticHelpers : {
+    //                             task : taskboardTaskTodo
+    //                         }
+    //                     })
+    //                 }
+    //             }
+    //         }
+    //     }
 
-    }
+    //     setDraggedOver( false )
+
+    // }
 
     return (
         <div
+            ref={setNodeRef}
             className={cn(
                 `relative`,
-                `grow flex items-center`,
+                `flex items-center shrink-0`,
                 `h-[1rem] w-full`,
-                draggedOver && ` h-[6rem] `,
-                fullSize && ` h-[80rem] `
+                isOver && ` h-fit py-4`,
+                fullSize && `grow h-[80rem] `
             )}
         >
             {
@@ -119,25 +132,29 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ({
             }
             <div
                 className={cn(
-                    `absolute top-1/2 -translate-y-1/2`,
-                    ` h-[calc(100%+1rem)] w-full `,
+                    ` h-full w-full `,
                     ` pointer-events-none `,
                     taskboardTaskTodo && ` pointer-events-auto `
                 )}
-                onDragOver={onDragOverHandler}
-                onDragLeave={onDragLeaveHandler}
-                onDrop={onDropHandler}
-            ></div>
-            <div
-                className={cn(
-                    ` w-full h-[0rem] my-auto rounded-md `,
-                    ` border-blue-300 bg-blue-300/10 `,
-                    ` pointer-events-none `,
-                    fullSize && ` mt-auto `,
-                    draggedOver && !fullSize && ` border h-[3rem]  `,
-                    draggedOver && fullSize && ` border h-[14rem] mb-auto mt-[1rem] `
-                )}
-            ></div>
+            >
+                {
+                    (isOver && taskboardTaskTodo) && (
+                        <TaskCard
+                            data={ {
+                                ...taskboardTaskTodo,
+                                display_order : 0,
+                                active : false,
+                                completed : false,
+                                current_work_time : "0",
+                                work_time_goal : "0",
+                                timers : []
+                            } as TUserTaskTodoState }
+                            dimensionFiller
+                            preview
+                        />
+                    )
+                }
+            </div>
         </div>
     )
 

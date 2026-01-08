@@ -79,7 +79,8 @@ const TodoCard_MainDashboardPane = () => {
                 `flex flex-col gap-4`,
                 `w-[calc(100%-1rem)] h-fit `,
                 `p-4 mx-auto bg-card`,
-                `border border-primary/30 rounded-lg shadow-t-lg `,
+                `border border-border rounded-lg shadow-t-lg `,
+                `bg-gradient-to-t from-secondary/50 to-transparent `,
                 `animate-in fade-in-0 duration-300 `,
             )}
             >

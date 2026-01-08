@@ -2,7 +2,6 @@ import { Selectable } from "kysely"
 import { TTask } from "../task/types"
 import { ProjectProject, TaskboardTaskTodoSessionHistory, TaskboardTaskTodoState, TaskboardTaskTodoStateSnapshot, TaskboardTaskTodoStateSnapshotTimer, TaskboardTaskTodoTimer } from "../../db"
 import { TTaskTag } from "../tag/types"
-import { TTaskboard } from "../taskboard/types"
 import { TProject } from "../project/types"
 
 // Mutation

@@ -67,23 +67,24 @@ const AvailableTasksSection_TaskTodoPage = () => {
     return (
         <div
             className={cn(
-                ` w-full h-full min-h-0 bg-background `,
+                ` w-full h-full min-w-0 min-h-0 bg-secondary/30 border-l `,
                 ` flex flex-col grow `,
                 taskTodoPageCompactMode && `absolute bottom-0 left-0 translate-x-full w-full h-[calc(100%-3rem)] min-h-0 transition-transform duration-500 `,
                 (taskTodoPageShowAvailableTasks && taskTodoPageCompactMode) && `translate-x-0`
 
             )}
-            // style={{
-            //     gridTemplateRows : "min-content 1fr"
-            // }}
         >
             <div
                 className={cn(
-                    ` w-full h-full min-h-0 grow overflow-x-auto overflow-y-hidden `,
-                    ` flex grow flex-nowrap space-x-4 `,
+                    ` w-full h-full min-w-0 min-h-0 grow overflow-y-hidden overflow-x-auto `,
+                    ` grid flex-nowrap gap-4`,
                     ` p-4 pb-0 `,
                     ` cursor-grab active:cursor-grabbing select-none `
                 )}
+                style={{
+                    gridAutoFlow : "column",
+                    gridAutoColumns : "max-content"
+                }}
                 onMouseDown={ e => {
                 
                     const el = e.currentTarget

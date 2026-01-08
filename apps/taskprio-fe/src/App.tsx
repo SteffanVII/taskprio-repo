@@ -1,16 +1,14 @@
 import './App.css'
-import { RouteObject } from 'react-router'
+import { createHashRouter, RouteObject, RouterProvider } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AuthLayout from './routes/layouts/authLayout'
 import { ThemeProvider } from './lib/utils/themeProvider'
 import MousePositionProvider from './lib/utils/mousePositionProvider'
 import { Toaster } from './components/ui/sonner'
-import RouterProviderCustom from './components/others/shared/RouterProviderCustom'
-import ElectronCustomTitlebar from './components/others/shared/ElectronCustomTitlebar'
-import { useElectronStore_isElectron } from './stores/electron'
-import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from './stores/taskTodoPage'
 import { lazy, Suspense, useLayoutEffect } from 'react'
 import { v4 as uuidV4 } from "uuid";
+import { SidebarProvider } from './components/ui/sidebar'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 const LoginRoute = lazy(() => import('./routes/public/login'))
 const AcceptRoute = lazy(() => import('./routes/public/accept'))
@@ -46,11 +44,11 @@ const routeObjects : RouteObject[] = [
 				children : [
 					{
 						path : "w/:workspace_id?",
-						element : <Suspense><MainPage /></Suspense>,
+						element : <Suspense><MainPage/></Suspense>,
 						children : [
 							{
 								path : "d/:project_id?",
-								element : <Suspense><ProjectPage /></Suspense>,
+								element : <Suspense><ProjectPage/></Suspense>,
 								children : [
 									{
 										path : "t/:task_board_id?/:task_id?",
@@ -92,9 +90,6 @@ const routeObjects : RouteObject[] = [
 
 function App() {
 
-	const isElectron = useElectronStore_isElectron()
-	const taskTodoPageUIMode = useTaskTodoPageStore_uIMode()
-
 	useLayoutEffect(() => {
 		if ( !localStorage.getItem( import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME ) ) {
 			localStorage.setItem( import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME, uuidV4() )
@@ -102,20 +97,20 @@ function App() {
 	}, [])
 
 	return (
-		<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
-			{
-				(isElectron && (taskTodoPageUIMode !== ETaskTodoPageUIMode.OVERLAY && taskTodoPageUIMode !== ETaskTodoPageUIMode.WIDGET)) &&
-				<ElectronCustomTitlebar/>
-			}
-			<MousePositionProvider>
-				<QueryClientProvider client={queryClient}>
-					<RouterProviderCustom routeObjects={routeObjects} />
-				</QueryClientProvider>
-			</MousePositionProvider>
-			<Toaster
-				position="top-center"
-			/>
-		</ThemeProvider>
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme' >
+				<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>
+					<SidebarProvider>
+						<MousePositionProvider>
+							<RouterProvider router={ createHashRouter(routeObjects) }/>
+						</MousePositionProvider>
+					</SidebarProvider>
+				</GoogleOAuthProvider>
+				<Toaster
+					position="top-center"
+				/>
+			</ThemeProvider>
+		</QueryClientProvider>
 	)
 }
 

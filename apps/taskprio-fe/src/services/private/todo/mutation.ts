@@ -87,22 +87,21 @@ export const useUpdateTaskTodoState = (onSuccess?: () => void, invalidateQueries
                 queryClient.setQueryData(
                     [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id],
                     (oldData: TGetUserTaskTodoStateResponseData) => produce(oldData, draft => {
-                        draft.forEach(task => {
-                            if (task.task_id === variables.pathParameters.task_id) {
-                                if (variables.body.display_order) {
-                                    task.display_order = variables.body.display_order
-                                }
-                                if (variables.body.active) {
-                                    task.active = variables.body.active
-                                }
-                                if (variables.body.current_work_time) {
-                                    task.current_work_time = variables.body.current_work_time.toString()
-                                }
-                                if (variables.body.work_time_goal) {
-                                    task.work_time_goal = variables.body.work_time_goal.toString()
-                                }
+                        const taskIndex = draft.findIndex(task => task.task_id === variables.pathParameters.task_id)
+                        if (taskIndex > -1) {
+                            if (variables.body.display_order) {
+                                draft[taskIndex].display_order = variables.body.display_order
                             }
-                        })
+                            if (variables.body.active) {
+                                draft[taskIndex].active = variables.body.active
+                            }
+                            if (variables.body.current_work_time) {
+                                draft[taskIndex].current_work_time = variables.body.current_work_time.toString()
+                            }
+                            if (variables.body.work_time_goal) {
+                                draft[taskIndex].work_time_goal = variables.body.work_time_goal.toString()
+                            }
+                        }
                     })
                 )
             }
@@ -155,9 +154,8 @@ type TUseFinishTaskTodoSessionOptions = UseMutationOptions<any, Error, TFinishTa
 
 export const useFinishTaskTodoSession = (options?: TUseFinishTaskTodoSessionOptions) => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
-
     const queryClient = useQueryClient()
+    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
 
     return useMutation<any, Error, TFinishTaskTodoSessionPayload>({
         mutationFn: async (payload: TFinishTaskTodoSessionPayload) => {
@@ -171,9 +169,19 @@ export const useFinishTaskTodoSession = (options?: TUseFinishTaskTodoSessionOpti
             queryClient.setQueryData(
                 [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id],
                 ( oldData: TGetUserTaskTodoStateResponseData ) => {
-                    return oldData.filter( task => !task.completed).map(task => {
-                        task.timers = []
-                        return {...task}
+                    return [...(oldData || [])].filter( task => {
+
+                        if ( task.completed ) {
+                            queryClient.invalidateQueries({
+                                queryKey: [...QueryKeys.GET_AVAILABLE_TASKS_BY_PROJECT.split, task.project_id ]
+                            })
+                        }
+
+                        return !task.completed
+                    }).map(task => {
+                        const newTask = {...task}
+                        newTask.timers = []
+                        return newTask
                     })
                 }
             )

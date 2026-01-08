@@ -110,7 +110,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                     render={
                         <div
                             className={cn(
-                                `border border-primary/40 bg-background text-foreground rounded-md px-3 py-2 shadow`,
+                                ` bg-primary/10 text-sidebar-foreground px-3 py-2`,
                                 `cursor-pointer flex items-center justify-between`
                             )}
                         >
@@ -121,12 +121,12 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                                 <>
                                     {
                                         (workspaces && workspaces?.length === 0) &&
-                                        <p className="text-center font-bold" >No Workspaces Found</p>
+                                        <p className=" text-center text-muted-foreground" >No Workspaces Found</p>
                                     }
                                     <p
                                         className={cn(
                                             " max-w-[16rem] truncate ",
-                                            " text-xl font-bold "
+                                            " text-xl font-semibold "
                                         )}
                                         title={selectedWorkspace?.workspace_name}
                                     >{selectedWorkspace?.workspace_name}</p>
@@ -138,7 +138,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                 >
                 </PopoverTrigger>
                 <PopoverContent
-                    className="p-0"
+                    className=" w-[20rem] p-0 overflow-hidden"
                 >
                     <div
                         className={cn(
@@ -147,8 +147,8 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                     >
                         <div
                             className={cn(
-                                ` p-2 `,
-                                ` flex flex-col gap-2 `
+                                ` p-0`,
+                                ` flex flex-col overflow-hidden `
                             )}
                         >
                             {
@@ -160,11 +160,11 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                                     <Button
                                         key={workspace.workspace_id}
                                         variant={ selectedWorkspace?.workspace_id === workspace.workspace_id ? "default" : "ghost"}
-                                        className=" justify-between gap-2 "
+                                        className=" justify-between font-normal gap-2 border-0 rounded-none "
                                         onClick={() => handleWorkspaceOnClick(workspace)}
                                     >
                                         { workspace.workspace_name }
-                                        { selectedWorkspace?.workspace_id === workspace.workspace_id && <CheckCircle2Icon className="size-4" /> }
+                                        {/* { selectedWorkspace?.workspace_id === workspace.workspace_id && <CheckCircle2Icon className="size-4" /> } */}
                                     </Button>
                                 ) )
                             }

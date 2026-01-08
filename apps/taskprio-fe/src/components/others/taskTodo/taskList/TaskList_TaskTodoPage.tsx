@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
 
 import { Eye, Minimize2, Moon, PauseIcon, PlayIcon } from "lucide-react";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo, useRef, useState } from "react";
 import { 
     useTaskTodoPageStore_sessionActive,
     useTaskTodoPageStore_timerCount, 
@@ -15,7 +15,6 @@ import {
     updateTaskTodoPageStore,
 } from "@/stores/taskTodoPage";
 import TaskTodoFinishSessionDialog from "../../dialogs/TaskTodoFinishSessionDialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import TaskCard from "./TaskCard_TaskTodoPage";
 import TaskCardDrop from "./TaskCardDrop_TaskTodoPage";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,10 +44,11 @@ const TaskList_TaskTodoPage = () => {
     } = useContext(StateManager_ElectronContext)
 
     const sessionActive = useTaskTodoPageStore_sessionActive()
-    // const totalCurrentWorkTimeString = useTaskTodoPageStore_totalCurrentWorkTimeString()
     const totalCurrentWorkTimeNumber = useTaskTodoPageStore_totalCurrentWorkTimeNumber()
     const totalWorkTimeGoalNumber = useTaskTodoPageStore_totalWorkTimeGoalNumber()
     const timerCount = useTaskTodoPageStore_timerCount()
+
+    const taskListContainerRef = useRef<HTMLDivElement>(null)
 
     const [ finishSessionDialogOpen, setFinishSessionDialogOpen ] = useState(false)
     const [ loading, setLoading ] = useState<boolean>(false)
@@ -73,6 +73,12 @@ const TaskList_TaskTodoPage = () => {
             await handleStartSession()
         }
         setLoading(false)
+        if ( taskListContainerRef.current ) {
+            taskListContainerRef.current.scrollTo({
+                top : 0,
+                behavior : "smooth"
+            })
+        }
     }
 
     return (
@@ -84,13 +90,13 @@ const TaskList_TaskTodoPage = () => {
                 (taskTodoPageShowAvailableTasks && taskTodoPageCompactMode) && `-translate-x-full`
             )}
         >
-            <div
+            {/* <div
                 className={cn(
                     "absolute z-[1] w-[20rem] h-[5rem] scale-50 top-[18rem] left-1/2 translate-x-[-50%] shadow-[0_3rem_14rem_0.7rem] shadow-primary bg-transparent",
                     `opacity-0 transition-all duration-[3000ms]`,
                     sessionActive && `opacity-100 scale-100`
                 )}
-            ></div>
+            ></div> */}
             <TaskTodoFinishSessionDialog
                 open={finishSessionDialogOpen}
                 onOpenChange={setFinishSessionDialogOpen}
@@ -99,7 +105,7 @@ const TaskList_TaskTodoPage = () => {
                 className={cn(
                     ` relative `,
                     ` w-full h-full min-h-0 `,
-                    ` flex flex-col grow `,
+                    ` grid flex-col grow gap-4 `,
                 )}
                 style={{
                     gridTemplateRows : "min-content 1fr"
@@ -108,15 +114,9 @@ const TaskList_TaskTodoPage = () => {
                 <div
                     className={cn(
                         ` flex flex-col justify-between `,
-                        ` w-full max-w-[30rem] h-fit min-h-0 m-4 mx-auto p-4 pt-[4rem] z-[2] `,
+                        ` w-full max-w-[30rem] h-fit mx-auto pt-[3rem] z-[2] `,
                     )}
                 >
-                    <div
-                        className={cn(
-                            `flex`
-                        )}
-                    >
-                    </div>
                     <div
                         className=" flex items-center gap-4 "
                     >
@@ -169,7 +169,7 @@ const TaskList_TaskTodoPage = () => {
                         </Tooltip>
                     </div>
                     <div
-                        className=" w-full h-fit pb-[1rem] "
+                        className=" w-full h-fit "
                     >
                         <Slider
                             value={[totalCurrentWorkTimeNumber]}
@@ -237,10 +237,13 @@ const TaskList_TaskTodoPage = () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
-                <ScrollArea
-                    className="relative grow flex-col w-full h-full min-h-0 z-[2] "
+                <div
+                    ref={taskListContainerRef}
+                    className={cn(
+                        "relative grow flex-col w-full h-full min-h-0 z-[2] overflow-y-auto",
+                        sessionActive && `overflow-hidden`
+                    )}
                 >
                     <div
                         className={cn(
@@ -252,8 +255,9 @@ const TaskList_TaskTodoPage = () => {
                         <React.Fragment>
                             {
                                 userTaskTodoStateIsLoading &&
-                                Array.from({ length : 8 }).map( _ => (
+                                Array.from({ length : 8 }).map( (_, i) => (
                                     <Skeleton
+                                        key={i}
                                         className="w-full max-w-[30rem] mb-[1rem] h-[13rem]"
                                     />
                                 ) )
@@ -338,7 +342,7 @@ const TaskList_TaskTodoPage = () => {
                             }
                         </React.Fragment>
                     </div>
-                </ScrollArea>
+                </div>
 
             </div>
         </div>

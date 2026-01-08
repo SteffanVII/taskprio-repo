@@ -68,44 +68,62 @@ const GeneralButtons = () => {
     return (
         <div
             className={cn(
-                ` flex flex-col gap-1 px-2 py-4 `
+                ` flex flex-col `
             )}
         >
             <Button
-                size={"sm"}
-                variant={ pathname.includes("/statistics") ? "default" : "ghost" }
+                size={"lg"}
+                variant={ pathname.includes("/statistics") ? "secondary" : "ghost" }
                 className={cn(
-                    ` w-full justify-start gap-4 `,
+                    `relative border-0 w-full justify-start gap-4 rounded-none `
                 )}
                 onClick={statisticsOnClick}
                 disabled={!selectedWorkpace}
             >
                 <ChartSpline/>
-                Dashboard
+                Reports
+                {
+                    pathname.includes("/statistics") &&
+                    <div
+                        className="absolute top-0 right-0 w-2 h-full bg-primary"
+                    ></div>
+                }
             </Button>
             <Button
-                size={"sm"}
-                variant={ pathname.includes("/workspace_settings") ? "default" : "ghost" }
+                size={"lg"}
+                variant={ pathname.includes("/workspace_settings") ? "secondary" : "ghost" }
                 className={cn(
-                    ` w-full justify-start gap-4 `,
+                    `relative border-0 w-full justify-start gap-4 rounded-none `,
                 )}
                 onClick={workspaceSettingsOnClick}
                 disabled={!selectedWorkpace}
             >
                 <Settings2/>
                 Workspace Settings
+                {
+                    pathname.includes("/workspace_settings") &&
+                    <div
+                        className="absolute top-0 right-0 w-2 h-full bg-primary"
+                    ></div>
+                }
             </Button>
             <Button
-                size={"sm"}
-                variant={ pathname.includes("/tt") ? "default" : "ghost" }
+                size={"lg"}
+                variant={ pathname.includes("/tt") ? "secondary" : "ghost" }
                 className={cn(
-                    ` w-full justify-start gap-4 `,
+                    `relative border-0 w-full justify-start gap-4 rounded-none `,
                 )}
                 onClick={taskTodoOnClick}
                 disabled={!selectedWorkpace}
             >
                 <Notebook/>
                 Todo
+                {
+                    pathname.includes("/tt") &&
+                    <div
+                        className="absolute top-0 right-0 w-2 h-full bg-primary"
+                    ></div>
+                }
             </Button>
         </div>
     )

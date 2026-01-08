@@ -8,7 +8,7 @@ const StatisticsPage = () => {
         <Tabs
             defaultValue={"session_history"}
             className={cn(
-                `grow size-full min-h-0 gap-0`
+                `grow size-full min-h-0 gap-0 bg-background`
             )}
         >
             <div

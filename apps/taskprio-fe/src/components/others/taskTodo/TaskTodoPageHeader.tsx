@@ -1,40 +1,23 @@
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useSidebar } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { updateGlobalsStore, useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals";
-import { Menu } from "lucide-react";
-
 
 const TaskTodoPageHeader = () => {
 
-    const sidebar = useSidebar()
     const taskTodoPageShowAvailableTasks = useGlobalsStore_taskTodoPageShowAvailableTasks()
     
     return (
         <div
             className={cn(
-                `flex items-center gap-4`,
-                `p-4`
+                `size-full w-full grid items-center`,
+                `px-4`
             )}
             style={{
-                gridColumn : "1/3"
+                gridTemplateColumns : "min-content 1fr"
             }}
         >
-            {
-                sidebar.isMobile &&
-                <Button
-                    variant={"ghost"}
-                    size={"icon"}
-                    onClick={() => {
-                        sidebar.toggleSidebar()
-                    }}
-                >
-                    <Menu/>
-                </Button>
-            }
-            <div className=" flex items-center gap-4 " >
+            <div className="flex gap-4 items-center" >
                 <Switch
                     id="taskTodoPageShowAvailableTasks"
                     checked={taskTodoPageShowAvailableTasks}
@@ -44,8 +27,9 @@ const TaskTodoPageHeader = () => {
                         })
                     } }
                 />
-                <Label htmlFor="taskTodoPageShowAvailableTasks" >Show Available Tasks</Label>   
+                <Label htmlFor="taskTodoPageShowAvailableTasks" className="text-nowrap" >Show Available Tasks</Label>
             </div>
+            <div className="electron-custom-titlebar-drag-area size-full min-w-0" ></div>   
         </div>
     )
 

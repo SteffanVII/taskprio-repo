@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag"
+import { useTaskboardDragStore_taskboardSectionDrag, useTaskboardDragStore_taskboardTaskDrag } from "@/stores/taskboardDrag"
 import { useDroppable } from "@dnd-kit/core"
 
 import React from "react"
@@ -18,6 +18,7 @@ const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ( props ) => {
     const { task_section_id, display_order, topTaskId, bottomTaskId, fullSize } = props
 
     const { taskboardTask } = useTaskboardDragStore_taskboardTaskDrag()
+    const { taskboardSection } = useTaskboardDragStore_taskboardSectionDrag()
 
     const {
         isOver,
@@ -25,11 +26,12 @@ const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ( props ) => {
     } = useDroppable({
         id : `${display_order}_${task_section_id}${topTaskId ? `_${topTaskId}` : ""}${bottomTaskId ? `_${bottomTaskId}` : ""}`,
         data : props,
-        disabled : taskboardTask?.task_id === topTaskId || taskboardTask?.task_id === bottomTaskId
+        disabled : taskboardTask?.task_id === topTaskId || taskboardTask?.task_id === bottomTaskId || !!taskboardSection
     })
 
     return (
         <div
+            ref={setNodeRef}
             className={cn(
                 ` relative `,
                 ` flex items-center `,
@@ -39,7 +41,6 @@ const TaskboardTaskDrop : React.FC<TTaskboardTaskDrop> = ( props ) => {
             )}
         >
             <div
-                ref={setNodeRef}
                 className={cn(
                     ` h-full w-full `,
                     ` pointer-events-none `,
