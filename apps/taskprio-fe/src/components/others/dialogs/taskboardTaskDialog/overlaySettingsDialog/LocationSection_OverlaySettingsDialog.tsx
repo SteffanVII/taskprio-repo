@@ -17,7 +17,10 @@ const LocationSection_OverlaySettingsDialog = () => {
                 `flex flex-col justify-center gap-4`,
             )}
         >
-            <Label>Location</Label>
+            <div className="flex flex-col gap-2" >
+                <Label>Location</Label>
+                <p className="text-[0.8rem] text-muted-foreground" >Choose which corner of the screen you want the overlay to appear.</p>
+            </div>
             <div className="w-full h-fit flex items-center justify-center" >
                 <RadioGroup
                     className={cn(
@@ -26,13 +29,13 @@ const LocationSection_OverlaySettingsDialog = () => {
                         `border rounded-lg`
                     )}
                     style={{
-                        gridTemplateColumns : `repeat(2, 1fr)`,
-                        gridTemplateRows : `repeat(2, 1fr)`
+                        gridTemplateColumns: `repeat(2, 1fr)`,
+                        gridTemplateRows: `repeat(2, 1fr)`
                     }}
                     value={preferences?.overlay?.location}
-                    onValueChange={ ( value ) => {
+                    onValueChange={(value) => {
                         switchOverlayLocation(value as TElectronStorePreferencesOverlayLocation)
-                    } }
+                    }}
                 >
                     <Label
                         className="relative flex justify-start items-start p-4 border-r border-b"
@@ -46,7 +49,7 @@ const LocationSection_OverlaySettingsDialog = () => {
                                 )}
                             ></div>
                         }
-                        <RadioGroupItem value="top-left"/>
+                        <RadioGroupItem value="top-left" />
                     </Label>
                     <Label
                         className="relative flex justify-end items-start p-4 border-b"
@@ -60,7 +63,7 @@ const LocationSection_OverlaySettingsDialog = () => {
                                 )}
                             ></div>
                         }
-                        <RadioGroupItem value="top-right"/>
+                        <RadioGroupItem value="top-right" />
                     </Label>
                     <Label
                         className="relative flex justify-start items-end p-4 border-r"
@@ -74,7 +77,7 @@ const LocationSection_OverlaySettingsDialog = () => {
                                 )}
                             ></div>
                         }
-                        <RadioGroupItem value="bottom-left"/>
+                        <RadioGroupItem value="bottom-left" />
                     </Label>
                     <Label
                         className="relative flex justify-end items-end p-4"
@@ -88,7 +91,7 @@ const LocationSection_OverlaySettingsDialog = () => {
                                 )}
                             ></div>
                         }
-                        <RadioGroupItem value="bottom-right"/>
+                        <RadioGroupItem value="bottom-right" />
                     </Label>
                 </RadioGroup>
             </div>

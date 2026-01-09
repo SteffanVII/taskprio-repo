@@ -5,9 +5,9 @@ import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals
 
 import { Eye, Minimize2, Moon, PauseIcon, PlayIcon } from "lucide-react";
 import React, { useContext, useMemo, useRef, useState } from "react";
-import { 
+import {
     useTaskTodoPageStore_sessionActive,
-    useTaskTodoPageStore_timerCount, 
+    useTaskTodoPageStore_timerCount,
     useTaskTodoPageStore_userTaskTodoStateIsLoading,
     useTaskTodoPageStore_totalCurrentWorkTimeNumber,
     useTaskTodoPageStore_totalWorkTimeGoalNumber,
@@ -50,33 +50,33 @@ const TaskList_TaskTodoPage = () => {
 
     const taskListContainerRef = useRef<HTMLDivElement>(null)
 
-    const [ finishSessionDialogOpen, setFinishSessionDialogOpen ] = useState(false)
-    const [ loading, setLoading ] = useState<boolean>(false)
+    const [finishSessionDialogOpen, setFinishSessionDialogOpen] = useState(false)
+    const [loading, setLoading] = useState<boolean>(false)
 
     const sortedUserTaskTodoState = useMemo(() => {
-        const returnValue = [...(userTaskTodoState || [])!].filter( todo => !todo.completed ).sort( ( a, b ) => b.display_order - a.display_order )
+        const returnValue = [...(userTaskTodoState || [])!].filter(todo => !todo.completed).sort((a, b) => b.display_order - a.display_order)
         updateTaskTodoPageStore({
-            topTaskTodo : returnValue[0] ?? null
+            topTaskTodo: returnValue[0] ?? null
         })
         return returnValue
     }, [userTaskTodoState])
 
     const completedUseTaskTodoState = useMemo(() => {
-        return [...(userTaskTodoState || [])!].filter( todo => todo.completed )
+        return [...(userTaskTodoState || [])!].filter(todo => todo.completed)
     }, [userTaskTodoState])
 
     const handleSessionButtonOnClick = async () => {
         setLoading(true)
-        if ( sessionActive ) {
+        if (sessionActive) {
             await handlePauseSession()
         } else {
             await handleStartSession()
         }
         setLoading(false)
-        if ( taskListContainerRef.current ) {
+        if (taskListContainerRef.current) {
             taskListContainerRef.current.scrollTo({
-                top : 0,
-                behavior : "smooth"
+                top: 0,
+                behavior: "smooth"
             })
         }
     }
@@ -85,7 +85,8 @@ const TaskList_TaskTodoPage = () => {
         <div
             className={cn(
                 ` relative w-full max-w-[40rem] min-w-[40rem] min-h-0 h-full `,
-                ` flex flex-col grow transition-transform duration-500 `,
+                ` flex flex-col grow `,
+                taskTodoPageCompactMode && ` transition-transform duration-500 `,
                 (!taskTodoPageShowAvailableTasks || taskTodoPageCompactMode) && ` max-w-full `,
                 (taskTodoPageShowAvailableTasks && taskTodoPageCompactMode) && `-translate-x-full`
             )}
@@ -108,7 +109,7 @@ const TaskList_TaskTodoPage = () => {
                     ` grid flex-col grow gap-4 `,
                 )}
                 style={{
-                    gridTemplateRows : "min-content 1fr"
+                    gridTemplateRows: "min-content 1fr"
                 }}
             >
                 <div
@@ -126,14 +127,14 @@ const TaskList_TaskTodoPage = () => {
                                     <NumberFlowGroup>
                                         <div className="text-5xl font-bold" >
                                             <NumberFlow
-                                                value={ Math.floor( totalCurrentWorkTimeNumber / 3600 ) }
+                                                value={Math.floor(totalCurrentWorkTimeNumber / 3600)}
                                             />
                                             <NumberFlow
                                                 prefix=":"
                                                 value={Math.floor((totalCurrentWorkTimeNumber % 3600) / 60)}
                                                 digits={{ 1: { max: 5 } }}
                                                 format={{ minimumIntegerDigits: 2 }}
-                                                />
+                                            />
                                             <NumberFlow
                                                 prefix=":"
                                                 value={totalCurrentWorkTimeNumber % 60}
@@ -153,14 +154,14 @@ const TaskList_TaskTodoPage = () => {
                                     <NumberFlowGroup>
                                         <div className="text-5xl font-bold" >
                                             <NumberFlow
-                                                value={ Math.floor( totalWorkTimeGoalNumber / 3600 ) }
+                                                value={Math.floor(totalWorkTimeGoalNumber / 3600)}
                                             />
                                             <NumberFlow
                                                 prefix=":"
                                                 value={Math.floor((totalWorkTimeGoalNumber % 3600) / 60)}
                                                 digits={{ 1: { max: 5 } }}
                                                 format={{ minimumIntegerDigits: 2 }}
-                                                />
+                                            />
                                         </div>
                                     </NumberFlowGroup>
                                 }
@@ -198,13 +199,13 @@ const TaskList_TaskTodoPage = () => {
                                     (!loading && sessionActive) &&
                                     <div className="absolute top-0 left-0 size-full rounded-full bg-destructive/50 animate-ping" ></div>
                                 }
-                                { loading ? <Spinner/> : sessionActive ? <PauseIcon className=" size-[50%] " /> : <PlayIcon className=" size-[50%] " /> }   
+                                {loading ? <Spinner /> : sessionActive ? <PauseIcon className=" size-[50%] " /> : <PlayIcon className=" size-[50%] " />}
                             </Button>
                             <Button
                                 variant={"secondary"}
                                 onClick={() => setFinishSessionDialogOpen(true)}
                                 disabled={userTaskTodoStateIsLoading || sessionActive || (sortedUserTaskTodoState.length === 0 && userTaskTodoState?.length === 0)}
-                            ><Moon/> Finish Session</Button>
+                            ><Moon /> Finish Session</Button>
                             <div className="flex items-center ml-auto gap-2" >
                                 <Tooltip>
                                     <TooltipTrigger
@@ -214,7 +215,7 @@ const TaskList_TaskTodoPage = () => {
                                                 variant={"outline"}
                                                 onClick={switchToFocusModeFromFullMode}
                                             >
-                                                <Eye/>
+                                                <Eye />
                                             </Button>
                                         }
                                     />
@@ -228,7 +229,7 @@ const TaskList_TaskTodoPage = () => {
                                                 variant={"outline"}
                                                 onClick={switchToOverlayModeFromFullMode}
                                             >
-                                                <Minimize2/>
+                                                <Minimize2 />
                                             </Button>
                                         }
                                     />
@@ -255,12 +256,12 @@ const TaskList_TaskTodoPage = () => {
                         <React.Fragment>
                             {
                                 userTaskTodoStateIsLoading &&
-                                Array.from({ length : 8 }).map( (_, i) => (
+                                Array.from({ length: 8 }).map((_, i) => (
                                     <Skeleton
                                         key={i}
                                         className="w-full max-w-[30rem] mb-[1rem] h-[13rem]"
                                     />
-                                ) )
+                                ))
                             }
                             {
                                 userTaskTodoState &&
@@ -275,17 +276,17 @@ const TaskList_TaskTodoPage = () => {
                                 userTaskTodoState &&
                                 <>
                                     {
-                                        sortedUserTaskTodoState.map( ( task, taskIndex ) => {
+                                        sortedUserTaskTodoState.map((task, taskIndex) => {
 
                                             const singleTask = sortedUserTaskTodoState.length === 1;
                                             const firstTask = taskIndex === 0;
                                             const lastTask = taskIndex === sortedUserTaskTodoState.length - 1;
 
-                                            const adjacentTop = firstTask && !singleTask ? null : sortedUserTaskTodoState[ taskIndex - 1 ]
-                                            const adjacentBottom = lastTask && !singleTask ? null : sortedUserTaskTodoState[ taskIndex + 1 ]
+                                            const adjacentTop = firstTask && !singleTask ? null : sortedUserTaskTodoState[taskIndex - 1]
+                                            const adjacentBottom = lastTask && !singleTask ? null : sortedUserTaskTodoState[taskIndex + 1]
 
-                                            const displayOrderTop = firstTask ? task.display_order + 100 : ( adjacentTop!.display_order + task.display_order ) / 2
-                                            const displayOrderBottom = lastTask ? task.display_order - 100 : ( adjacentBottom!.display_order + task.display_order ) / 2
+                                            const displayOrderTop = firstTask ? task.display_order + 100 : (adjacentTop!.display_order + task.display_order) / 2
+                                            const displayOrderBottom = lastTask ? task.display_order - 100 : (adjacentBottom!.display_order + task.display_order) / 2
 
                                             return (
                                                 <React.Fragment key={task.task_id}>
@@ -298,9 +299,9 @@ const TaskList_TaskTodoPage = () => {
                                                     }
                                                     <TaskCard
                                                         // key={ taskIndex === 0 ? totalCurrentWorkTimeString + task.current_work_time : task.task_id + task.current_work_time}
-                                                        key={ task.task_id }
+                                                        key={task.task_id}
                                                         data={task}
-                                                        timerCount={ taskIndex === 0 ? timerCount : undefined }
+                                                        timerCount={taskIndex === 0 ? timerCount : undefined}
                                                         active={taskIndex === 0 && sessionActive}
                                                     />
                                                     {
@@ -309,13 +310,13 @@ const TaskList_TaskTodoPage = () => {
                                                             displayOrder={displayOrderBottom}
                                                             topTaskId={task?.task_id}
                                                             bottomTaskId={adjacentBottom?.task_id}
-                                                            fullSize={ completedUseTaskTodoState.length < 0 && lastTask}
+                                                            fullSize={completedUseTaskTodoState.length < 0 && lastTask}
                                                         />
                                                     }
                                                 </React.Fragment>
                                             )
 
-                                        } )
+                                        })
                                     }
                                     {
                                         (completedUseTaskTodoState.length > 0) &&
@@ -326,15 +327,15 @@ const TaskList_TaskTodoPage = () => {
                                                 !sessionActive && "opacity-100 pointer-events-auto"
                                             )}
                                         >
-                                            <Separator/>
+                                            <Separator />
                                             <Label>Completed</Label>
                                             {
-                                                completedUseTaskTodoState.map( task => (
+                                                completedUseTaskTodoState.map(task => (
                                                     <TaskCard
                                                         key={task.task_id}
                                                         data={task}
                                                     />
-                                                ) )
+                                                ))
                                             }
                                         </div>
                                     }

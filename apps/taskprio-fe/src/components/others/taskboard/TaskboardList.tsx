@@ -22,12 +22,12 @@ const TaskboardList = () => {
 
     const showSkeleton = useMemo(() => {
         return (taskboardsIsLoading || projectsIsLoading)
-    }, [ taskboardsIsLoading, projectsIsLoading ])
+    }, [taskboardsIsLoading, projectsIsLoading])
 
     const handleOpenCreateTaskboardDialog = () => {
         updateDialogsStore({
-            createTaskboardDialog : {
-                open : true
+            createTaskboardDialog: {
+                open: true
             }
         })
     }
@@ -36,7 +36,7 @@ const TaskboardList = () => {
         <div
             className="grow grid w-full h-full min-h-[2.55rem] ml-1 items-center mt-auto z-10 "
             style={{
-                gridTemplateColumns : "min-content 1fr"
+                gridTemplateColumns: "min-content 1fr"
             }}
         >
             {
@@ -50,7 +50,7 @@ const TaskboardList = () => {
                                 className={"my-auto"}
                                 onClick={handleOpenCreateTaskboardDialog}
                             >
-                                <Plus/>
+                                <Plus />
                             </Button>
                         }
                     />
@@ -63,16 +63,16 @@ const TaskboardList = () => {
                 >
                     {
                         (showSkeleton && !taskboards) &&
-                        <TaskboardListSkeleton/>
+                        <TaskboardListSkeleton />
                     }
                     {
                         (!showSkeleton && taskboards) &&
-                        taskboards?.map( taskboard => (
+                        taskboards?.map(taskboard => (
                             <TaskboardTabsTrigger
                                 key={taskboard.task_board_id}
                                 taskboard={taskboard}
                             />
-                        ) )
+                        ))
                     }
                     <div className="electron-custom-titlebar-drag-area flex w-full h-[2.7rem] grow" ></div>
                 </div>
@@ -87,10 +87,10 @@ const TaskboardList = () => {
 export default TaskboardList;
 
 type TTaskboardTabsTrigger = {
-    taskboard : TTaskboard
+    taskboard: TTaskboard
 }
 
-const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
+const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
     taskboard
 }) => {
 
@@ -105,53 +105,53 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
     const projectRole = useGlobalsStore_projectRole()
 
     const handleTaskboardTabOnClick = () => {
-        if ( selectedTaskboard?.task_board_id === taskboard.task_board_id ) return
+        if (selectedTaskboard?.task_board_id === taskboard.task_board_id) return
         updateGlobalsStore({
-            selectedTaskboard : taskboard,
-            noTaskboards : false
+            selectedTaskboard: taskboard,
+            noTaskboards: false
         })
-        navigate( `/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}` )
+        navigate(`/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}`)
         channelActions.joinTaskboardChannel(taskboard.task_board_id)
     }
 
-    const handleOpenRenameTaskboardDialog = ( e : React.MouseEvent ) => {
+    const handleOpenRenameTaskboardDialog = (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
         updateDialogsStore({
-            renameTaskboardDialog : {
-                open : true,
+            renameTaskboardDialog: {
+                open: true,
                 taskboard
             }
         })
     }
 
-    const handleOpenTrashTaskboardDialog = ( e : React.MouseEvent ) => {
+    const handleOpenTrashTaskboardDialog = (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
         updateDialogsStore({
-            taskboardTaskTrashSheet : {
-                open : true
+            taskboardTaskTrashSheet: {
+                open: true
             }
         })
     }
 
-    const handleOpenDropTaskboardDialog = ( e : React.MouseEvent ) => {
+    const handleOpenDropTaskboardDialog = (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
         updateDialogsStore({
-            dropTaskboardDialog : {
-                open : true,
+            dropTaskboardDialog: {
+                open: true,
                 taskboard
             }
         })
     }
 
-    const handleOpenDeactivateTaskboardDialog = ( e : React.MouseEvent ) => {
+    const handleOpenDeactivateTaskboardDialog = (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
         updateDialogsStore({
-            deactivateTaskboardDialog : {
-                open : true,
+            deactivateTaskboardDialog: {
+                open: true,
                 taskboard
             }
         })
@@ -165,7 +165,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
     ])
 
     const taskboardMenuVisible = useMemo(() => {
-        return selectedTaskboard?.task_board_id === taskboard.task_board_id && [ EProjectRole.ADMIN, EProjectRole.OWNER ].includes(projectRole || EProjectRole.GUEST)
+        return selectedTaskboard?.task_board_id === taskboard.task_board_id && [EProjectRole.ADMIN, EProjectRole.OWNER].includes(projectRole || EProjectRole.GUEST)
     }, [
         selectedTaskboard?.task_board_id,
         taskboard.task_board_id,
@@ -179,6 +179,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
                 "h-fit min-h-[2.55rem] mt-auto p-1 pl-5 rounded-t-md cursor-pointer",
                 `border border-b-0 border-transparent`,
                 `first:ml-2`,
+                !taskboardMenuVisible && `pr-5`,
                 !selected && `pr-5 transition-colors hover:bg-foreground/5 hover:z-5`,
                 selected && `bg-background border-foreground/15 z-10`,
             )}
@@ -213,7 +214,7 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
                                 size={"icon-sm"}
                                 className="mr-[0.1rem]"
                             >
-                                <EllipsisVertical/>
+                                <EllipsisVertical />
                             </Button>
                         }
                     />
@@ -222,15 +223,15 @@ const TaskboardTabsTrigger : React.FC<TTaskboardTabsTrigger> = ({
                             onClick={handleOpenRenameTaskboardDialog}
                         >
                             Rename
-                            <DropdownMenuShortcut><Pencil/></DropdownMenuShortcut>
+                            <DropdownMenuShortcut><Pencil /></DropdownMenuShortcut>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={handleOpenTrashTaskboardDialog}
                         >
                             Task Trash
-                            <DropdownMenuShortcut><Trash2/></DropdownMenuShortcut>
+                            <DropdownMenuShortcut><Trash2 /></DropdownMenuShortcut>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator/>
+                        <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                             <DropdownMenuLabel className="text-destructive" >Danger Zone</DropdownMenuLabel>
                             <DropdownMenuItem variant="destructive" onClick={handleOpenDeactivateTaskboardDialog} >

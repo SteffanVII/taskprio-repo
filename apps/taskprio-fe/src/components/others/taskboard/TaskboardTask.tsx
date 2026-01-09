@@ -16,7 +16,7 @@ import { ETaskboardDragDataType } from "./Taskboard"
 export type TTaskboardTaskProps = {
     task: TTaskForCardView,
     preview?: boolean,
-    dimensionFiller? : boolean
+    dimensionFiller?: boolean
 }
 
 export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
@@ -95,6 +95,7 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
     return (
         <div
             className={cn(
+                `group`,
                 `size-fit`,
                 `bg-muted rounded-md`
             )}
@@ -118,7 +119,7 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                 <div
                     className={cn(
                         `flex justify-between`,
-                        ` mx-2 mt-2 `,
+                        ` mx-2 mt-2 opacity-70 transition-opacity group-hover:opacity-100 `,
                     )}
                 >
                     <p
@@ -152,14 +153,14 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                 >
                     {
                         (!preview || !dimensionFiller) && showTaskAssigner &&
-                            <div className=" animate-in fade-in duration-300" >
-                                <TaskAssigner
-                                    task_id={task.task_id}
-                                    assignees={assignees}
-                                    onAssigneesChange={setAssignees}
-                                    disabledHoverCard
-                                />
-                            </div>
+                        <div className=" animate-in fade-in duration-300 opacity-50 transition-opacity group-hover:opacity-100" >
+                            <TaskAssigner
+                                task_id={task.task_id}
+                                assignees={assignees}
+                                onAssigneesChange={setAssignees}
+                                disabledHoverCard
+                            />
+                        </div>
                     }
                 </div>
                 {
@@ -167,7 +168,7 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                         <div
                             className={cn(
                                 ` flex flex-wrap gap-1 `,
-                                ` m-2 `
+                                ` m-2 opacity-40 transition-opacity group-hover:opacity-100 `
                             )}
                         >
                             {

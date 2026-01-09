@@ -1,28 +1,28 @@
-import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TGetProjectMemberRequestParams, TProject, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams } from "@repo/taskprio-types/src/index"
+import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TGetProjectMemberRequestParams, TProject, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams } from "@repo/taskprio-types/src/index"
 
 export type TCreateProjectPayload = {
-    body : TCreateProjectBody
+    body: TCreateProjectRequestBody
 }
 
 export type TCreateProjectBody = {
-    project_name : string,
-    workspace_id : string
+    project_name: string,
+    workspace_id: string
 }
 
 export type TCreateProjectResponse = TProject
 
 export type TUpdateProjectCustomizationPayload = {
-    params : TUpdateProjectCustomizationRequestParams,
-    body : TUpdateProjectCustomizationRequestBody
+    params: TUpdateProjectCustomizationRequestParams,
+    body: TUpdateProjectCustomizationRequestBody
 }
 
 export type TAddMembersToProjectPayload = {
-    params : TAddProjectMembersRequestParams,
-    body : TAddProjectMembersRequestBody
+    params: TAddProjectMembersRequestParams,
+    body: TAddProjectMembersRequestBody
 }
 
 export type TGetProjectMemberPayload = {
-    params : Partial<TGetProjectMemberRequestParams>
+    params: Partial<TGetProjectMemberRequestParams>
 }
 
 // Project

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router"
 import { z } from "zod"
 import Spinner from "../Spinner"
 import { Separator } from "@/components/ui/separator"
-import { GoogleLogin } from "@react-oauth/google"
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google"
 import { useElectronStore_isElectron } from "@/stores/electron"
 
 type TLoginFormProps = {
@@ -60,6 +60,11 @@ const LoginForm: React.FC<TLoginFormProps> = ({
         if (!dontNavigate) {
             navigate("/p/w")
         }
+    })
+
+    const googleLogin = useGoogleLogin({
+        flow: "auth-code",
+        redirect_uri: "https://taskprio-repo.onrender.com/redirect/google_login"
     })
 
     const inputsDisabled = useMemo(() => {
@@ -140,7 +145,14 @@ const LoginForm: React.FC<TLoginFormProps> = ({
 
                 <span className="text-xs text-center text-muted-foreground">Or</span>
 
-                <GoogleLogin
+                <Button
+                    onClick={() => {
+                        googleLogin[""]
+                    }}
+                >
+
+                </Button>
+                {/* <GoogleLogin
                     onSuccess={(credentialResponse) => {
                         if (!credentialResponse.clientId || !credentialResponse.credential) {
                             return
@@ -163,7 +175,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({
                     auto_select={true}
                     ux_mode={isElectron ? "redirect" : "popup"}
                     login_uri={isElectron ? "https://taskprio-repo.onrender.com/redirect/google_login" : undefined}
-                />
+                /> */}
             </form>
         </Form>
     )

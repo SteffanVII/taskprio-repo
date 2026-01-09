@@ -9,6 +9,8 @@ import dayjs from "dayjs";
 import MemberSelector_SessionHistoryTab from "./MemberSelector_SessionHistoryTab";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import DateRangePicker_SessionHistoryTab from "./DateRangePicker_SessionHistoryTab";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { History } from "lucide-react";
 
 const SessionHistoryTab = () => {
 
@@ -83,7 +85,15 @@ const SessionHistoryTab = () => {
             {
                 (sessionHistories && sessionHistories.length === 0) &&
                 <div className="size-full min-h-0 flex justify-center items-center" >
-                    <p className="font-bold text-2xl text-muted-foreground text-center" >No session history found</p>
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon" >
+                                <History />
+                            </EmptyMedia>
+                            <EmptyTitle>No session history found</EmptyTitle>
+                            <EmptyDescription>Start a session to see your history here.</EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
                 </div>
             }
             {

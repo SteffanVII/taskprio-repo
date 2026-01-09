@@ -18,60 +18,60 @@ import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 type TTaskCardProps = {
-    data : TUserTaskTodoState,
+    data: TUserTaskTodoState,
     // active would be true if the session is active and this todo is the top todo
-    active? : boolean,
-    timerCount? : number,
+    active?: boolean,
+    timerCount?: number,
 }
 
-const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
+const TaskCard: React.FC<TTaskCardProps> = React.memo(({
     data,
     active,
     timerCount,
 }) => {
 
     const sessionActive = useTaskTodoPageStore_sessionActive()
-    
+
     const {
-        mutateAsync : updateTaskTodoStateTrigger
+        mutateAsync: updateTaskTodoStateTrigger
     } = useUpdateTaskTodoState()
 
     const {
-        mutateAsync : removeTaskFromTodoTrigger
+        mutateAsync: removeTaskFromTodoTrigger
     } = useRemoveTaskFromTodo()
 
     const {
-        mutateAsync : commitTaskTodoTrigger
+        mutateAsync: commitTaskTodoTrigger
     } = useCommitTaskTodo()
 
     const {
-        mutateAsync : completeTaskTodoTrigger
+        mutateAsync: completeTaskTodoTrigger
     } = useCompleteTaskTodo()
 
-    const [ editMode, setEditMode ] = useState( false )
+    const [editMode, setEditMode] = useState(false)
 
-    const [ workTimeGoal, setWorkTimeGoal ] = useState<number>(Number(data.work_time_goal))
+    const [workTimeGoal, setWorkTimeGoal] = useState<number>(Number(data.work_time_goal))
     // const [ currentWorkTime, _setCurrentWorkTime ] = useState<number>(Number(data.current_work_time))
-    const [ deepWork, setDeepWork ] = useState<boolean>(Number(data.work_time_goal) >= 3600)
+    const [deepWork, setDeepWork] = useState<boolean>(Number(data.work_time_goal) >= 3600)
 
     const totalWorkTime = useMemo(() => {
-        if ( data.timers && data.timers.length > 0 ) {
-            const total = data.timers.reduce( (accu, curr) => {
+        if (data.timers && data.timers.length > 0) {
+            const total = data.timers.reduce((accu, curr) => {
                 let time = 0;
-                if ( curr.stop ) {           
+                if (curr.stop) {
                     const startDate = dayjs(curr.start)
                     const stopDate = dayjs(curr.stop)
-                    time = stopDate.diff( startDate, "seconds" )
+                    time = stopDate.diff(startDate, "seconds")
                 }
                 return accu + time
-            }, 0 )
+            }, 0)
             return total
         }
         return 0
     }, [data])
 
     const workTimeGoalExceeded = useMemo(() => {
-        return (totalWorkTime + ( active ? timerCount ?? 0 : 0 )) > workTimeGoal
+        return (totalWorkTime + (active ? timerCount ?? 0 : 0)) > workTimeGoal
     }, [
         totalWorkTime,
         workTimeGoal,
@@ -81,50 +81,50 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
 
     const handleEditModeOnClick = () => {
         setEditMode(!editMode)
-        if ( editMode ) {
+        if (editMode) {
             handleUpdateTaskTodoWorkTimeGoalState()
         }
     }
 
     const handleCommitOnClick = async () => {
         await commitTaskTodoTrigger({
-            pathParameters : {
-                task_id : data.task_id
+            pathParameters: {
+                task_id: data.task_id
             },
-            optimisticHelpers : {
-                task : data
+            optimisticHelpers: {
+                task: data
             }
         })
     }
 
     const handleRemoveOnClick = async () => {
         await removeTaskFromTodoTrigger({
-            pathParameters : {
-                task_id : data.task_id
+            pathParameters: {
+                task_id: data.task_id
             },
-            optimisticHelpers : {
-                task : data
+            optimisticHelpers: {
+                task: data
             }
         })
     }
 
     const handleCompleteOnClick = async () => {
         await completeTaskTodoTrigger({
-            pathParameters : {
-                task_id : data.task_id
+            pathParameters: {
+                task_id: data.task_id
             },
-            body : {
-                completed : !data.completed
+            body: {
+                completed: !data.completed
             }
         })
     }
 
-    const onDragStartHandler = ( e : React.DragEvent<HTMLDivElement> ) => {
+    const onDragStartHandler = (e: React.DragEvent<HTMLDivElement>) => {
         e.stopPropagation()
         updateTaskboardDragStore({
             taskboardTaskTodoDrag: {
                 taskboardTaskTodo: data,
-                type : ETaskTodoPageDragType.TODO
+                type: ETaskTodoPageDragType.TODO
             }
         })
     }
@@ -133,18 +133,18 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         updateTaskboardDragStore({
             taskboardTaskTodoDrag: {
                 taskboardTaskTodo: null,
-                type : ETaskTodoPageDragType.TODO
+                type: ETaskTodoPageDragType.TODO
             }
         })
     }
 
     const handleUpdateTaskTodoWorkTimeGoalState = async () => {
         await updateTaskTodoStateTrigger({
-            pathParameters : {
-                task_id : data.task_id
+            pathParameters: {
+                task_id: data.task_id
             },
-            body : {
-                work_time_goal : workTimeGoal
+            body: {
+                work_time_goal: workTimeGoal
             }
         })
     }
@@ -156,7 +156,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                 ` w-full max-w-[30rem] h-fit mx-auto `,
                 // ` bg-background border border-border rounded-2xl `,
                 ` bg-card border border-border`,
-                `rounded-2xl`,
+                `rounded-md`,
                 `transition-all duration-500`,
                 `origin-bottom`,
                 data.completed && `bg-green-300/10 border-green-400/30`,
@@ -187,7 +187,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                         getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                     )}
                     style={{
-                        backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
+                        backgroundColor: data.project_color === "#ffffff" ? undefined : data.project_color
                     }}
                 >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
                 <p
@@ -202,7 +202,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                 <div
                     className={cn(
                         "absolute top-2 right-2 flex items-center ",
-                        `p-1 px-2 rounded-lg border bg-muted shadow-lg`,
+                        `p-1 px-2 rounded border bg-muted shadow-lg`,
                         `opacity-0 transition-opacity`,
                         `group-hover/taskcard:opacity-100`,
                     )}
@@ -216,7 +216,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                     variant={"ghost"}
                                     className={cn(
                                         `cursor-pointer`,
-                                        `rounded-lg`,
+                                        `rounded`,
                                         `opacity-0 transition-opacity`,
                                         `group-hover:opacity-100`,
                                         editMode && `opacity-100`
@@ -224,11 +224,11 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                     onClick={handleEditModeOnClick}
                                 >
                                     {
-                                        editMode ? <CheckSquareIcon/> : <EditIcon />
+                                        editMode ? <CheckSquareIcon /> : <EditIcon />
                                     }
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{ editMode ? "Save" : "Edit" }</TooltipContent>
+                            <TooltipContent>{editMode ? "Save" : "Edit"}</TooltipContent>
                         </Tooltip>
                     }
                     {
@@ -240,14 +240,14 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                     variant={"ghost"}
                                     className={cn(
                                         `cursor-pointer`,
-                                        `rounded-lg`,
+                                        `rounded`,
                                         `opacity-0 transition-opacity`,
                                         `group-hover:opacity-100`,
                                         editMode && `opacity-100`
                                     )}
                                     onClick={handleCompleteOnClick}
                                 >
-                                    <XSquare/>
+                                    <XSquare />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>Mark Incomplete</TooltipContent>
@@ -263,13 +263,13 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                         variant={"ghost"}
                                         className={cn(
                                             `cursor-pointer`,
-                                            `rounded-lg`,
+                                            `rounded`,
                                             `opacity-0 transition-opacity`,
                                             `group-hover:opacity-100`
                                         )}
                                         onClick={handleCompleteOnClick}
                                     >
-                                        <CheckSquareIcon/>
+                                        <CheckSquareIcon />
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>Mark Complete</TooltipContent>
@@ -285,11 +285,11 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                                         variant={"ghost"}
                                                         className={cn(
                                                             `cursor-pointer`,
-                                                            `rounded-lg`,
+                                                            `rounded`,
                                                             `opacity-0 transition-opacity`,
                                                             `group-hover:opacity-100`
                                                         )}
-                                                    ><GitCommitVertical/></Button>
+                                                    ><GitCommitVertical /></Button>
                                                 }
                                             >
                                             </DialogTrigger>
@@ -322,7 +322,7 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                                                         variant={"ghost"}
                                                         className={cn(
                                                             `cursor-pointer`,
-                                                            `rounded-lg`,
+                                                            `rounded`,
                                                             `opacity-0 transition-opacity`,
                                                             `group-hover:opacity-100`
                                                         )}
@@ -365,13 +365,13 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                     <Progress
                         key={workTimeGoalExceeded.toString()}
                         destructive={workTimeGoalExceeded}
-                        value={totalWorkTime + (timerCount??0)}
+                        value={totalWorkTime + (timerCount ?? 0)}
                         max={workTimeGoal}
                     />
                     <div className=" flex gap-2 justify-end items-center text-nowrap text-muted-foreground " >
                         {/* <p className=" text-lg " >{ formatTaskTodoTimeSeconds(currentWorkTime + (timerCount ?? 0))} ⏱️</p>/ */}
-                        <p className=" text-sm " >{ formatTaskTodoTimeSeconds(totalWorkTime + (timerCount ?? 0))}</p>/
-                        <p className=" text-sm " >{ formatTaskTodoTimeSeconds(workTimeGoal) }</p>
+                        <p className=" text-sm " >{formatTaskTodoTimeSeconds(totalWorkTime + (timerCount ?? 0))}</p>/
+                        <p className=" text-sm " >{formatTaskTodoTimeSeconds(workTimeGoal)}</p>
                     </div>
                 </div>
                 {
@@ -384,24 +384,24 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
                             <Switch
                                 id="deepWork"
                                 checked={deepWork}
-                                onCheckedChange={ () => {
-                                    if ( deepWork ) {
+                                onCheckedChange={() => {
+                                    if (deepWork) {
                                         setWorkTimeGoal(900)
                                         setDeepWork(false)
                                     } else {
                                         setWorkTimeGoal(3600)
                                         setDeepWork(true)
                                     }
-                                } }
+                                }}
                             />
                             <Label htmlFor="deepWork" className="!text-xs" >Deep Work</Label>
                         </div>
                         <Slider
                             value={[workTimeGoal]}
-                            onValueChange={ value => setWorkTimeGoal(value[0]) }
-                            min={ deepWork ? 3600 : 900 }
-                            max={ deepWork ? 86400 : 3600 }
-                            step={ 300 }
+                            onValueChange={value => setWorkTimeGoal(value[0])}
+                            min={deepWork ? 3600 : 900}
+                            max={deepWork ? 86400 : 3600}
+                            step={300}
                         />
                     </>
                 }
@@ -409,6 +409,6 @@ const TaskCard : React.FC<TTaskCardProps> = React.memo( ({
         </div>
     )
 
-} )
+})
 
 export default TaskCard;

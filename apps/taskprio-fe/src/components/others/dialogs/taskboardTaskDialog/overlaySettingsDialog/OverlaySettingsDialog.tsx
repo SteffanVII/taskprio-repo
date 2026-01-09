@@ -3,7 +3,6 @@ import { cn } from "@/lib/utils";
 import { updateDialogsStore, useDialogsStore_overlayModePreferencesDialog } from "@/stores/dialogs";
 import ScreenSection_OverlaySettingsDialog from "./ScreenSection_OverlaySettingsDialog";
 import LocationSection_OverlaySettingsDialog from "./LocationSection_OverlaySettingsDialog";
-import { Separator } from "@/components/ui/separator";
 
 const OverlaySettingsDialog = () => {
 
@@ -12,9 +11,9 @@ const OverlaySettingsDialog = () => {
     return (
         <Dialog
             open={open}
-            onOpenChange={ open => {
+            onOpenChange={open => {
                 updateDialogsStore({
-                    overlayModePreferencesDialog : {
+                    overlayModePreferencesDialog: {
                         open
                     }
                 })
@@ -27,13 +26,13 @@ const OverlaySettingsDialog = () => {
                 )}
             >
                 <DialogHeader>
-                    <DialogTitle>Preferences</DialogTitle>
+                    <DialogTitle className={`text-xl`} >Preferences</DialogTitle>
                 </DialogHeader>
                 <div
                     className="size-full flex flex-col gap-4"
                 >
-                    <ScreenSection_OverlaySettingsDialog/>
-                    <LocationSection_OverlaySettingsDialog/>                 
+                    <ScreenSection_OverlaySettingsDialog />
+                    <LocationSection_OverlaySettingsDialog />
                 </div>
             </DialogContent>
         </Dialog>

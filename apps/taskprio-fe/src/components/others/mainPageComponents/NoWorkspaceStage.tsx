@@ -2,32 +2,47 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useCreateWorkspace } from "@/services/private/workspace/mutation"
-import { useState } from "react"
+
+import { z } from "zod"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useNavigate } from "react-router"
 import Spinner from "../Spinner"
 import { useSidebar } from "@/components/ui/sidebar"
 import { FolderClosed, Menu } from "lucide-react"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 
+const formSchema = z.object({
+    workspaceName: z.string().min(1, "Workspace Name is required")
+})
+
 const NoWorkspaceStage = () => {
 
     const navigate = useNavigate()
     const sidebar = useSidebar()
 
-    const [ workspaceName, setWorkspaceName ] = useState<string>("")
+
 
     const {
-        mutateAsync : createWorkspace,
-        isPending : isCreatingWorkspace,
+        mutateAsync: createWorkspace,
+        isPending: isCreatingWorkspace,
     } = useCreateWorkspace()
 
-    const onSubmitCreateWorkspace = async ( workspaceName : string ) => {
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            workspaceName: ""
+        }
+    })
+
+    const onSubmitCreateWorkspace = async (values: z.infer<typeof formSchema>) => {
         const response = await createWorkspace({
-            body : {
-                workspace_name : workspaceName
+            body: {
+                workspace_name: values.workspaceName
             }
         })
-        setWorkspaceName("")
+        form.reset()
         navigate(`/p/w/${response.workspace_id}`)
     }
 
@@ -51,37 +66,56 @@ const NoWorkspaceStage = () => {
                     onClick={() => {
                         sidebar.toggleSidebar()
                     }}
-                ><Menu/></Button>
+                ><Menu /></Button>
             }
             <Empty>
                 <EmptyHeader>
                     <EmptyMedia
                         variant={"icon"}
                     >
-                        <FolderClosed/>
+                        <FolderClosed />
                     </EmptyMedia>
                     <EmptyTitle>No Workspaces Yet</EmptyTitle>
                     <EmptyDescription>You're currently not a member of any workspace. Please create one or join a workspace.</EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
-                    <Input
-                        placeholder="Workspace name"
-                        value={workspaceName}
-                        onChange={ ( e ) => setWorkspaceName( e.target.value ) }
-                        disabled={isCreatingWorkspace}
-                    />
-                    <Button
-                        variant="outline"
-                        disabled={isCreatingWorkspace}
-                        onClick={ () => onSubmitCreateWorkspace( workspaceName ) }
-                    >
-                        {
-                            isCreatingWorkspace ?
-                            <Spinner size="sm" />
-                            :
-                            "Create workspace"
-                        }
-                    </Button>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmitCreateWorkspace)} className="flex flex-col gap-4" >
+                            <div className="flex flex-col gap-4 py-[2rem]" >
+                                <FormField
+                                    control={form.control}
+                                    name="workspaceName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Name"
+                                                    {...field}
+                                                    disabled={isCreatingWorkspace}
+                                                />
+                                            </FormControl>
+                                            <FormDescription className="text-left" >
+                                                This is your public display name.
+                                            </FormDescription>
+                                            <FormMessage className="text-left" />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <Button
+                                variant="outline"
+                                disabled={isCreatingWorkspace}
+                                type="submit"
+                            >
+                                {
+                                    isCreatingWorkspace ?
+                                        <Spinner size="sm" />
+                                        :
+                                        "Create workspace"
+                                }
+                            </Button>
+                        </form>
+                    </Form>
                 </EmptyContent>
             </Empty>
         </div>

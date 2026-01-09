@@ -25,62 +25,62 @@ const ProfilePage = lazy(() => import('./routes/private/profile/profilePage'))
 
 const queryClient = new QueryClient()
 
-const routeObjects : RouteObject[] = [
+const routeObjects: RouteObject[] = [
 	{
-		path : "/",
-		element : <AuthLayout/>,
-		children : [
+		path: "/",
+		element: <AuthLayout />,
+		children: [
 			{
-				path : "login",
-				element : <Suspense><LoginRoute /></Suspense>
+				path: "login",
+				element: <Suspense><LoginRoute /></Suspense>
 			},
 			{
-				path : "accept",
-				element : <Suspense><AcceptRoute /></Suspense>
+				path: "accept",
+				element: <Suspense><AcceptRoute /></Suspense>
 			},
 			{
-				path : "p",
-				element : <Suspense><PrivateLayout /></Suspense>,
-				children : [
+				path: "p",
+				element: <Suspense><PrivateLayout /></Suspense>,
+				children: [
 					{
-						path : "w/:workspace_id?",
-						element : <Suspense><MainPage/></Suspense>,
-						children : [
+						path: "w/:workspace_id?",
+						element: <Suspense><MainPage /></Suspense>,
+						children: [
 							{
-								path : "d/:project_id?",
-								element : <Suspense><ProjectPage/></Suspense>,
-								children : [
+								path: "d/:project_id?",
+								element: <Suspense><ProjectPage /></Suspense>,
+								children: [
 									{
-										path : "t/:task_board_id?/:task_id?",
-										element : <Suspense><TaskboardPage /></Suspense>
+										path: "t/:task_board_id?/:task_id?",
+										element: <Suspense><TaskboardPage /></Suspense>
 									},
 									{
-										path : "project_settings",
-										element : <Suspense><ProjectSettingsPage /></Suspense>
+										path: "project_settings",
+										element: <Suspense><ProjectSettingsPage /></Suspense>
 									}
 								]
 							},
 							{
-								path : "tt",
-								element : <Suspense><TaskTodoPage /></Suspense>
+								path: "tt",
+								element: <Suspense><TaskTodoPage /></Suspense>
 							},
 							{
-								path : "workspace_settings",
-								element : <Suspense><WorkspaceSettingsPage /></Suspense>
+								path: "workspace_settings",
+								element: <Suspense><WorkspaceSettingsPage /></Suspense>
 							},
 							{
-								path : "statistics",
-								element : <Suspense><StatisticsPage /></Suspense>
+								path: "statistics",
+								element: <Suspense><StatisticsPage /></Suspense>
 							}
 						]
 					},
 					{
-						path : "task_todo_overlay/:workspace_id?",
-						element : <Suspense><TaskTodoPageOverlay /></Suspense>
+						path: "task_todo_overlay/:workspace_id?",
+						element: <Suspense><TaskTodoPageOverlay /></Suspense>
 					},
 					{
-						path : "profile",
-						element : <Suspense><ProfilePage /></Suspense>
+						path: "profile",
+						element: <Suspense><ProfilePage /></Suspense>
 					}
 				]
 			}
@@ -91,8 +91,8 @@ const routeObjects : RouteObject[] = [
 function App() {
 
 	useLayoutEffect(() => {
-		if ( !localStorage.getItem( import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME ) ) {
-			localStorage.setItem( import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME, uuidV4() )
+		if (!localStorage.getItem(import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME)) {
+			localStorage.setItem(import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME, uuidV4())
 		}
 	}, [])
 
@@ -102,7 +102,7 @@ function App() {
 				<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>
 					<SidebarProvider>
 						<MousePositionProvider>
-							<RouterProvider router={ createHashRouter(routeObjects) }/>
+							<RouterProvider router={createHashRouter(routeObjects)} />
 						</MousePositionProvider>
 					</SidebarProvider>
 				</GoogleOAuthProvider>

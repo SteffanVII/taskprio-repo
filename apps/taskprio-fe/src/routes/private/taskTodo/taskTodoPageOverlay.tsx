@@ -13,25 +13,25 @@ const TaskTodoPageOverlay = () => {
         <div
             className={cn(
                 `group`,
-                ` size-full min-w-0 min-h-0 rounded-lg overflow-hidden `,
+                ` w-screen h-screen min-w-0 min-h-0 rounded-lg overflow-hidden `,
                 ` grid bg-background `,
             )}
             style={{
-                gridTemplateRows : "min-content 1fr"
+                gridTemplateRows: "min-content 1fr"
             }}
         >
             {
                 uIMode === ETaskTodoPageUIMode.OVERLAY &&
                 <>
-                    <Header_TaskTodoPageOverlay/>
-                    <TodoList_TaskTodoPageOverlay/>
+                    <Header_TaskTodoPageOverlay />
+                    <TodoList_TaskTodoPageOverlay />
                 </>
             }
             {
                 uIMode === ETaskTodoPageUIMode.WIDGET &&
-                <FocusMode_TaskTodoPageOverlay/>
+                <FocusMode_TaskTodoPageOverlay />
             }
-            <OverlaySettingsDialog/>
+            <OverlaySettingsDialog />
         </div>
     )
 

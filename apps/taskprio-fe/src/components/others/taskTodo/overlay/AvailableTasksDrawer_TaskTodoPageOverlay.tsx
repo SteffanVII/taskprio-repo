@@ -56,7 +56,7 @@ const AvailableTasksDrawer_TaskTodoPageOverlay: React.FC<TAvailableTasksDrawer_T
                 className={cn(
                     `flex flex-col`,
                     `h-[60%] min-h-0 `,
-                    `!top-full !-translate-y-full rounded-b-none max-w-full`,
+                    `!top-full !-translate-y-full rounded-none max-w-full`,
                     `overflow-hidden`
                 )}
             >

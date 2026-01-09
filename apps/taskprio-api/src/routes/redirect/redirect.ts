@@ -6,6 +6,11 @@ function registerRedirectRoutes(router: Router) {
         `/google_login`,
         async (req: Request, res: Response) => {
             const { credential, client_id } = req.body;
+            const query = req.query
+            const params = req.params
+            console.log(query)
+            console.log(params)
+            console.log(req.body)
             const redirectUrl = new URL('taskprio-app://googlelogin');
             if (credential) redirectUrl.searchParams.append('credential', credential);
             if (client_id) redirectUrl.searchParams.append('clientId', client_id);
@@ -17,6 +22,11 @@ function registerRedirectRoutes(router: Router) {
         `/google_login`,
         async (req: Request, res: Response) => {
             const { credential, client_id } = req.body;
+            const query = req.query
+            const params = req.params
+            console.log(query)
+            console.log(params)
+            console.log(req.body)
             const redirectUrl = new URL('taskprio-app://googlelogin');
             if (credential) redirectUrl.searchParams.append('credential', credential);
             if (client_id) redirectUrl.searchParams.append('clientId', client_id);

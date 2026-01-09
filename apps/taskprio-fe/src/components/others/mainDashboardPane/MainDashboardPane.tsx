@@ -25,41 +25,41 @@ const MainDashboardPane = () => {
         <>
             <Sidebar
                 electron={isElectron}
-                className="z-10 overflow-hidden"
+                className=" z-10 overflow-hidden"
             >
                 {
                     !noWorkspaces ?
-                    <>
-                        <SidebarHeader className="p-0" >
-                            <WorkspaceDropdown_MainDashboardPane/>
-                        </SidebarHeader>
-                        <SidebarContent>
-                            <GeneralButtons/>
-                            <div className=" py-4" >
-                                <ProjectsList_MainDashboardPane/>
-                            </div>
-                        </SidebarContent>
-                    </>
-                    :
-                    <p className="font-semibold text-lg m-auto" >No Workspaces Found</p>
+                        <>
+                            <SidebarHeader className="p-0" >
+                                <WorkspaceDropdown_MainDashboardPane />
+                            </SidebarHeader>
+                            <SidebarContent>
+                                <GeneralButtons />
+                                <div className=" py-4" >
+                                    <ProjectsList_MainDashboardPane />
+                                </div>
+                            </SidebarContent>
+                        </>
+                        :
+                        <p className="font-semibold text-lg m-auto" >No Workspaces Found</p>
                 }
                 <SidebarFooter className="mt-auto" >
-                    <TodoCard_MainDashboardPane/>
+                    <TodoCard_MainDashboardPane />
                     <div
                         className={cn(
                             ` w-full p-2 `,
                             ` flex items-center justify-between gap-2 z-20 `,
                         )}
                     >
-                        <UserPopoverMenu/>
+                        <UserPopoverMenu />
                         <Button
                             size={"icon"}
                             variant={"outline"}
                             onClick={() => {
-                                setTheme( theme === "dark" ? "light" : "dark" )
+                                setTheme(theme === "dark" ? "light" : "dark")
                             }}
                         >
-                            <Sun className=" size-4 "/>
+                            <Sun className=" size-4 " />
                         </Button>
                     </div>
                 </SidebarFooter>

@@ -6,16 +6,18 @@ import { EProjectRole } from "./enums"
 import { TTaskboard } from "../taskboard/types"
 
 export type TCreateProjectRequestBody = {
-    project_name : string,
-    workspace_id : string,
+    project_name: string,
+    project_abbreviation?: string,
+    project_color?: string,
+    workspace_id: string,
 }
 
 export type TGetUserWorkspaceProjectsParams = {
-    workspace_id : string
+    workspace_id: string
 }
 
 export type TUpdateProjectCustomizationRequestParams = {
-    project_id : string
+    project_id: string
 }
 
 export type TUpdateProjectCustomizationRequestBody = Pick<Updateable<ProjectProject>, "project_name" | "project_abbreviation" | "project_color">
@@ -23,62 +25,62 @@ export type TUpdateProjectCustomizationRequestBody = Pick<Updateable<ProjectProj
 export type TUpdateProjectCustomizationResponseData = TProjectPrimitive;
 
 export type TGetProjectMembersRequestParams = {
-    project_id : string
+    project_id: string
 }
 
 export type TGetProjectMembersResponseData = TProjectMember[]
 
 export type TAddProjectMembersRequestParams = {
-    project_id : string
+    project_id: string
 }
 
 export type TAddProjectMembersRequestBody = {
-    members : {
-        user_id : string,
-        role : EProjectRole
+    members: {
+        user_id: string,
+        role: EProjectRole
     }[]
 }
 
 export type TAddProjectMembersResponseData = TProjectMember[]
 
 export type TUpdateProjectMemberRoleRequestParams = {
-    project_id : string,
-    member_id : string
+    project_id: string,
+    member_id: string
 }
 
 export type TUpdateProjectMemberRoleRequestBody = {
-    role : EProjectRole
+    role: EProjectRole
 }
 
 export type TGetProjectMemberRequestParams = {
-    project_id : string,
-    member_id : string
+    project_id: string,
+    member_id: string
 }
 
 export type TDeactivateProjectRequestBody = {
-    workspace_id : string,
-    project_id : string
+    workspace_id: string,
+    project_id: string
 }
 
 export type TDropProjectRequestQueryParams = {
-    workspace_id : string,
-    project_id : string,
-    project_name : string
+    workspace_id: string,
+    project_id: string,
+    project_name: string
 }
 
 export type TReactivateProjectRequestBody = {
-    workspace_id : string,
-    project_id : string
+    workspace_id: string,
+    project_id: string
 }
 
 export type TGetDeactivatedProjectsRequestParams = {
-    workspace_id : string
+    workspace_id: string
 }
 
 export type TGetDeactivatedprojectsResponseData = TProjectInactiveForTable[]
 
 export type TGetProjectListWithUserAssignedTasksRequestPathParams = {
-    workspace_id : string
+    workspace_id: string
 }
 
 export type TGetProjectListWithUserAssignedTasksResponseData = TProjectWithUserAssignedTasks[]
@@ -86,8 +88,8 @@ export type TGetProjectListWithUserAssignedTasksResponseData = TProjectWithUserA
 // Project
 
 export type TProject = Selectable<ProjectProject> & {
-    project_members : TProjectMember[]
-    project_tags : TTag[]
+    project_members: TProjectMember[]
+    project_tags: TTag[]
 }
 
 export type TProjectPrimitive = Selectable<ProjectProject>
@@ -95,8 +97,8 @@ export type TProjectPrimitive = Selectable<ProjectProject>
 export type TProjectMember = Selectable<ProjectProjectMembers> & Pick<TUser, "firstname" | "lastname" | "email">
 
 export type TProjectInactiveForTable = TProjectPrimitive & {
-    taskboards : number,
-    members : number   
+    taskboards: number,
+    members: number
 }
 
 export type TProjectWithUserAssignedTasks = Pick<
@@ -108,5 +110,5 @@ export type TProjectWithUserAssignedTasks = Pick<
     "project_abbreviation" |
     "project_color"
 > & {
-    taskboards : Pick<TTaskboard, "task_board_id" | "task_board_name">[]
+    taskboards: Pick<TTaskboard, "task_board_id" | "task_board_name">[]
 }

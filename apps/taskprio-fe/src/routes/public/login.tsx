@@ -7,7 +7,7 @@ const LoginRoute = () => {
     const [registerFormOpen, setRegisterFormOpen] = useState<boolean>(false)
 
     return (
-        <div className="size-full flex items-center justify-center">
+        <div className="w-screen flex items-center justify-center">
             <div className={`${registerFormOpen ? 'hidden' : 'block'}`}>
                 <LoginForm
                     setRegisterFormOpen={setRegisterFormOpen}
