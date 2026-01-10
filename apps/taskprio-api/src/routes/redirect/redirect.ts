@@ -13,7 +13,8 @@ function registerRedirectRoutes(router: Router) {
             const {
                 client_id
             } = req.body;
-            const { tokens } = await googleAuthClient.getToken(code as string)
+            const { tokens, res: response } = await googleAuthClient.getToken(code as string)
+            console.log(response.data);
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
             const redirectUrl = new URL('taskprio-app://googlelogin');
@@ -32,7 +33,8 @@ function registerRedirectRoutes(router: Router) {
             const {
                 client_id
             } = req.body;
-            const { tokens } = await googleAuthClient.getToken(code as string)
+            const { tokens, res: response } = await googleAuthClient.getToken(code as string)
+            console.log(response.data);
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
             const redirectUrl = new URL('taskprio-app://googlelogin');
