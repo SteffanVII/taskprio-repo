@@ -21,6 +21,8 @@ function registerRedirectRoutes(router: Router) {
             console.log(prompt)
             console.log(scope)
             console.log(state)
+            const payload = await googleAuthClient.getToken(code as string)
+            console.log(payload)
             // const redirectUrl = new URL('taskprio-app://googlelogin');
             // if (credential) redirectUrl.searchParams.append('credential', credential);
             // if (client_id) redirectUrl.searchParams.append('clientId', client_id);
@@ -46,6 +48,8 @@ function registerRedirectRoutes(router: Router) {
             console.log(prompt)
             console.log(scope)
             console.log(state)
+            const payload = await googleAuthClient.getToken(code as string)
+            console.log(payload)
             // const { credential, client_id } = req.body;
             // const redirectUrl = new URL('taskprio-app://googlelogin');
             // if (credential) redirectUrl.searchParams.append('credential', credential);
