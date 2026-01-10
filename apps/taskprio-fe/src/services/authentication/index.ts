@@ -9,32 +9,32 @@ import { updateGlobalsStore } from "@/stores/globals"
  * @param successCallback - Callback function to handle successful login
  * @returns A mutation object with the login mutation function
  */
-export const useLogin = ( successCallback : ( data : TLoginResponse ) => void ) => {
+export const useLogin = (successCallback: (data: TLoginResponse) => void) => {
 
     return useMutation<TLoginResponse, any, TLoginPayload>({
-        mutationFn: async ( payload ) => {
+        mutationFn: async (payload) => {
 
-            const response : AxiosResponse<TLoginResponse> = await axiosInstance.post(
+            const response: AxiosResponse<TLoginResponse> = await axiosInstance.post(
                 `/login`,
                 payload.body,
             )
 
-            if ( response.status === 200 && successCallback ) {
-                successCallback( response.data )
+            if (response.status === 200 && successCallback) {
+                successCallback(response.data)
             }
 
             return response.data
-            
+
         },
-        onSuccess : ( data, variables ) => {
-            if ( !variables.body.for_invitation_purpose ) {
+        onSuccess: (data, variables) => {
+            if (!variables.body.for_invitation_purpose) {
                 updateGlobalsStore({
-                    authenticated : true,
-                    user : data.user
+                    authenticated: true,
+                    user: data.user
                 })
             } else {
                 updateGlobalsStore({
-                    invitationRecipient : data.user
+                    invitationRecipient: data.user
                 })
             }
         }
@@ -47,29 +47,29 @@ export const useLogin = ( successCallback : ( data : TLoginResponse ) => void ) 
  * @param successCallback - Callback function to handle successful login
  * @returns A mutation object with the google login mutation function
  */
-export const useGoogleLoginT = ( successCallback : ( data : TLoginResponse ) => void ) => {
-    return useMutation<TLoginResponse, any, { clientId : string, credential : string, for_invitation_purpose? : boolean }>({
-        mutationFn : async ( payload : { clientId : string, credential : string, for_invitation_purpose? : boolean } ) => {
+export const useGoogleLoginT = (successCallback: (data: TLoginResponse) => void) => {
+    return useMutation<TLoginResponse, any, { proofKey: string, clientId: string, for_invitation_purpose?: boolean }>({
+        mutationFn: async (payload: { proofKey: string, clientId: string, for_invitation_purpose?: boolean }) => {
             const response = await axiosInstance.post<TLoginResponse>(
                 `/login/google`,
                 {
-                    client_id : payload.clientId,
-                    credential : payload.credential,
-                    for_invitation_purpose : payload.for_invitation_purpose
+                    client_id: payload.clientId,
+                    proof_key: payload.proofKey,
+                    for_invitation_purpose: payload.for_invitation_purpose
                 }
             )
             return response.data
         },
-        onSuccess : ( data, variables ) => {
-            successCallback( data )
-            if ( !variables.for_invitation_purpose ) {
+        onSuccess: (data, variables) => {
+            successCallback(data)
+            if (!variables.for_invitation_purpose) {
                 updateGlobalsStore({
-                    authenticated : true,
-                    user : data.user
+                    authenticated: true,
+                    user: data.user
                 })
             } else {
                 updateGlobalsStore({
-                    invitationRecipient : data.user
+                    invitationRecipient: data.user
                 })
             }
         }
@@ -81,36 +81,36 @@ export const useGoogleLoginT = ( successCallback : ( data : TLoginResponse ) => 
  * @param successCallback - Callback function to handle successful register
  * @returns A mutation object with the register mutation function
  */
-export const useRegister = ( successCallback : ( data : TRegisterResponse ) => void ) => {
+export const useRegister = (successCallback: (data: TRegisterResponse) => void) => {
 
     return useMutation<TRegisterResponse, any, TRegisterPayload>({
-        mutationFn: async ( payload ) => {
+        mutationFn: async (payload) => {
 
-            const response : AxiosResponse<TRegisterResponse> = await axiosInstance.post(
+            const response: AxiosResponse<TRegisterResponse> = await axiosInstance.post(
                 `/register`,
                 payload.body
             )
 
-            if ( response.status === 201 && successCallback ) {
-                successCallback( response.data )
+            if (response.status === 201 && successCallback) {
+                successCallback(response.data)
             }
 
             return response.data
         },
-        onSuccess : ( data, variables ) => {
-            if ( !variables.body.for_invitation_purpose ) {
+        onSuccess: (data, variables) => {
+            if (!variables.body.for_invitation_purpose) {
                 updateGlobalsStore({
-                    authenticated : true,
-                    user : data.user
+                    authenticated: true,
+                    user: data.user
                 })
             } else {
                 updateGlobalsStore({
-                    invitationRecipient : data.user
+                    invitationRecipient: data.user
                 })
             }
         }
     })
-    
+
 }
 
 /**
@@ -120,27 +120,27 @@ export const useRegister = ( successCallback : ( data : TRegisterResponse ) => v
  * @returns A mutation object with the authenticate mutation function
  */
 export const useAuthenticate = (
-    successCallback? : () => void,
-    errorCallback? : () => void
+    successCallback?: () => void,
+    errorCallback?: () => void
 ) => {
 
     return useMutation<TAuthenticateResponse>({
-        mutationFn : async () => {
+        mutationFn: async () => {
             const response = await axiosInstance.post(
                 `/auth`
             )
             return response.data
         },
-        onSuccess : ( data ) => {
-            if ( successCallback ) {
+        onSuccess: (data) => {
+            if (successCallback) {
                 updateGlobalsStore({
-                    user : data.user
+                    user: data.user
                 })
                 successCallback()
             }
         },
-        onError : () => {
-            if ( errorCallback ) {
+        onError: () => {
+            if (errorCallback) {
                 errorCallback()
             }
         }
@@ -154,9 +154,9 @@ type TUseLogoutRequestOptions = Partial<UseMutationOptions>
  * @description Logout mutation.
  * @returns A mutation object with the logout mutation function
  */
-export const useLogoutRequest = ( options? : TUseLogoutRequestOptions ) => {
+export const useLogoutRequest = (options?: TUseLogoutRequestOptions) => {
     return useMutation({
-        mutationFn : async () => {
+        mutationFn: async () => {
             const response = await axiosInstance.post(
                 `/logout`
             )

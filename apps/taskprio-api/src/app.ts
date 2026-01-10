@@ -29,6 +29,17 @@ import registerRedirectRoutes from "./routes/redirect/redirect.js";
 
 dotenv.config();
 
+export type TGoogleTokens = {
+    access_token: string,
+    refresh_token: string,
+    scope: string,
+    token_type: string,
+    id_token: string,
+    expiry_date: number
+}
+
+export const googleTokensStore = new Map<string, TGoogleTokens>()
+
 const resendApiKey = process.env.RESEND_API_KEY
 const PORT = process.env.PORT || 5000;
 

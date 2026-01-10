@@ -32,9 +32,9 @@ const handler = (url: string) => {
     if (url.includes("taskprio-app://googlelogin")) {
         const urlObj = new URL(url)
         const searchParams = urlObj.searchParams
-        const credential = searchParams.get("credential")
-        const clientId = searchParams.get("clientId")
-        mainWindow.webContents.send(EEventListeners.GOOGLE_LOGIN_SUCCESS, credential, clientId)
+        const proofKey = searchParams.get("proof_key")
+        const clientId = searchParams.get("client_id")
+        mainWindow.webContents.send(EEventListeners.GOOGLE_LOGIN_SUCCESS, proofKey, clientId)
     }
 
     if (url.includes("taskprio-app://accept_invitation")) {

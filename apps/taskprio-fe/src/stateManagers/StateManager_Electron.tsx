@@ -66,10 +66,10 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
                     windowMaximize: value
                 })
             })
-            window.electronAPI.onGoogleLoginSuccess((credential, clientId) => {
+            window.electronAPI.onGoogleLoginSuccess((proofKey, clientId) => {
                 googleLoginT({
-                    clientId: clientId,
-                    credential: credential
+                    proofKey: proofKey,
+                    clientId: clientId
                 })
             })
             window.electronAPI.onAcceptInvitation((inviteToken) => {
