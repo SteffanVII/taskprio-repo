@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import { googleAuthClient } from "../../app.js";
 
 function registerRedirectRoutes(router: Router) {
 
