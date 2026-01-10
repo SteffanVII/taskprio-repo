@@ -8,19 +8,9 @@ function registerRedirectRoutes(router: Router) {
         async (req: Request, res: Response) => {
             // const { credential, client_id } = req.body;
             const {
-                authuser,
                 code,
-                hd,
-                prompt,
-                scope,
-                state
             } = req.query;
-            console.log(authuser)
-            console.log(code)
-            console.log(hd)
-            console.log(prompt)
-            console.log(scope)
-            console.log(state)
+            console.log(req.query)
             const payload = await googleAuthClient.getToken(code as string)
             console.log(payload)
             // const redirectUrl = new URL('taskprio-app://googlelogin');
@@ -35,19 +25,9 @@ function registerRedirectRoutes(router: Router) {
         `/google_login`,
         async (req: Request, res: Response) => {
             const {
-                authuser,
                 code,
-                hd,
-                prompt,
-                scope,
-                state
             } = req.query;
-            console.log(authuser)
-            console.log(code)
-            console.log(hd)
-            console.log(prompt)
-            console.log(scope)
-            console.log(state)
+            console.log(req.query)
             const payload = await googleAuthClient.getToken(code as string)
             console.log(payload)
             // const { credential, client_id } = req.body;
