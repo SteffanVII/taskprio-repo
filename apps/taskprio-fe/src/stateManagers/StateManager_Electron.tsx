@@ -67,6 +67,7 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
                 })
             })
             window.electronAPI.onGoogleLoginSuccess((proofKey, clientId) => {
+                console.log(clientId);
                 googleLoginT({
                     proofKey: proofKey,
                     clientId: clientId
