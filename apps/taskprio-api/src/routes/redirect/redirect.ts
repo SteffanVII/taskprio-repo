@@ -10,16 +10,13 @@ function registerRedirectRoutes(router: Router) {
             const {
                 code,
             } = req.query;
-            const {
-                client_id
-            } = req.body;
             const { tokens, res: response } = await googleAuthClient.getToken(code as string)
             console.log(response.data);
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
             const redirectUrl = new URL('taskprio-app://googlelogin');
             redirectUrl.searchParams.append('proof_key', proofKey);
-            redirectUrl.searchParams.append('client_id', client_id);
+            redirectUrl.searchParams.append('client_id', response.data.client_id);
             res.redirect(302, redirectUrl.toString())
         }
     )
@@ -30,16 +27,13 @@ function registerRedirectRoutes(router: Router) {
             const {
                 code,
             } = req.query;
-            const {
-                client_id
-            } = req.body;
             const { tokens, res: response } = await googleAuthClient.getToken(code as string)
             console.log(response.data);
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
             const redirectUrl = new URL('taskprio-app://googlelogin');
             redirectUrl.searchParams.append('proof_key', proofKey);
-            redirectUrl.searchParams.append('client_id', client_id);
+            redirectUrl.searchParams.append('client_id', response.data.client_id);
             res.redirect(302, redirectUrl.toString())
         }
     )
