@@ -28,21 +28,31 @@ function registerRedirectRoutes(router: Router) {
         }
     )
 
-    // router.post(
-    //     `/google_login`,
-    //     async (req: Request, res: Response) => {
-    //         const { credential, client_id } = req.body;
-    //         const query = req.query
-    //         const params = req.params
-    //         console.log(query)
-    //         console.log(params)
-    //         console.log(req.body)
-    //         const redirectUrl = new URL('taskprio-app://googlelogin');
-    //         if (credential) redirectUrl.searchParams.append('credential', credential);
-    //         if (client_id) redirectUrl.searchParams.append('clientId', client_id);
-    //         res.redirect(302, redirectUrl.toString())
-    //     }
-    // )
+    router.post(
+        `/google_login`,
+        async (req: Request, res: Response) => {
+            const {
+                authuser,
+                code,
+                hd,
+                prompt,
+                scope,
+                state
+            } = req.query;
+            console.log(authuser)
+            console.log(code)
+            console.log(hd)
+            console.log(prompt)
+            console.log(scope)
+            console.log(state)
+            // const { credential, client_id } = req.body;
+            // const redirectUrl = new URL('taskprio-app://googlelogin');
+            // if (credential) redirectUrl.searchParams.append('credential', credential);
+            // if (client_id) redirectUrl.searchParams.append('clientId', client_id);
+            // res.redirect(302, redirectUrl.toString())
+            res.status(200)
+        }
+    )
 
     router.get(
         `/accept_invitation`,
