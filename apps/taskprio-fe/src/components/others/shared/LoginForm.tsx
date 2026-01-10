@@ -64,7 +64,8 @@ const LoginForm: React.FC<TLoginFormProps> = ({
 
     const googleLogin = useGoogleLogin({
         flow: "auth-code",
-        redirect_uri: "https://taskprio-repo.onrender.com/redirect/google_login"
+        redirect_uri: "https://taskprio-repo.onrender.com/redirect/google_login",
+        ux_mode: "redirect"
     })
 
     const inputsDisabled = useMemo(() => {
@@ -146,11 +147,12 @@ const LoginForm: React.FC<TLoginFormProps> = ({
                 <span className="text-xs text-center text-muted-foreground">Or</span>
 
                 <Button
+                    variant={"outline"}
                     onClick={() => {
-                        googleLogin[""]
+                        googleLogin()
                     }}
                 >
-
+                    Sign In with Google
                 </Button>
                 {/* <GoogleLogin
                     onSuccess={(credentialResponse) => {
