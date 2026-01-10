@@ -20,6 +20,7 @@ function registerRedirectRoutes(router: Router) {
                 const params = new URLSearchParams(response.config.data);
                 clientId = params.get("client_id") || "";
             }
+            console.log(clientId)
 
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
@@ -46,6 +47,7 @@ function registerRedirectRoutes(router: Router) {
                 const params = new URLSearchParams(response.config.data);
                 clientId = params.get("client_id") || "";
             }
+            console.log(clientId)
 
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
