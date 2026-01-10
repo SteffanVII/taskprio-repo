@@ -38,7 +38,8 @@ export const resend = new Resend(resendApiKey)
 // Google auth client
 export const googleAuthClient = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET
+    process.env.GOOGLE_CLIENT_SECRET,
+    "https://taskprio-repo.onrender.com/redirect/google_login"
 )
 
 // Middleware for cors
