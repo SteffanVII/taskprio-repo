@@ -10,13 +10,22 @@ function registerRedirectRoutes(router: Router) {
             const {
                 code,
             } = req.query;
+            console.log(req.query)
             const { tokens, res: response } = await googleAuthClient.getToken(code as string)
-            console.log(response.config.data);
+            let clientId = "";
+            try {
+                const data = JSON.parse(response.config.data);
+                clientId = data.client_id;
+            } catch {
+                const params = new URLSearchParams(response.config.data);
+                clientId = params.get("client_id") || "";
+            }
+
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
             const redirectUrl = new URL('taskprio-app://googlelogin');
             redirectUrl.searchParams.append('proof_key', proofKey);
-            redirectUrl.searchParams.append('client_id', response.config.data.client_id);
+            redirectUrl.searchParams.append('client_id', clientId);
             res.redirect(302, redirectUrl.toString())
         }
     )
@@ -27,13 +36,22 @@ function registerRedirectRoutes(router: Router) {
             const {
                 code,
             } = req.query;
+            console.log(req.query)
             const { tokens, res: response } = await googleAuthClient.getToken(code as string)
-            console.log(response.config.data);
+            let clientId = "";
+            try {
+                const data = JSON.parse(response.config.data);
+                clientId = data.client_id;
+            } catch {
+                const params = new URLSearchParams(response.config.data);
+                clientId = params.get("client_id") || "";
+            }
+
             const proofKey = uuidV4()
             googleTokensStore.set(proofKey, tokens as TGoogleTokens)
             const redirectUrl = new URL('taskprio-app://googlelogin');
             redirectUrl.searchParams.append('proof_key', proofKey);
-            redirectUrl.searchParams.append('client_id', response.config.data.client_id);
+            redirectUrl.searchParams.append('client_id', clientId);
             res.redirect(302, redirectUrl.toString())
         }
     )
