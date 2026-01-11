@@ -159,6 +159,7 @@ export const getTaskboardSectionsWithTasksForCardView = async (
                     "taskboard.task.task_depth",
                     "project.project.project_abbreviation",
                     "project.project.project_color",
+                    "project.project.project_id"
                 ])
                 .orderBy( "taskboard.task.display_order", "asc" )
         } )
