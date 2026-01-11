@@ -124,7 +124,7 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                 >
                     <p
                         className={cn(
-                            `w-fit text-xs font-semibold px-2 py-1 rounded-md `,
+                            `w-fit text-xs font-semibold px-2 py-1 rounded `,
                             `bg-primary text-primary-foreground`,
                             getHexLuminance(task.project_color) > 0.4 ? `text-black` : `text-white`
                         )}
@@ -167,7 +167,7 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                     task.tags.length > 0 && (
                         <div
                             className={cn(
-                                ` flex flex-wrap gap-1 `,
+                                ` flex flex-wrap gap-2 `,
                                 ` m-2 opacity-40 transition-opacity group-hover:opacity-100 `
                             )}
                         >

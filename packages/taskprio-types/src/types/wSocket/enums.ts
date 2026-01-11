@@ -27,7 +27,9 @@ export enum EWebSocketEventType {
     PROJECT_REACTIVATED = "project_reactivated",
     PROJECT_MEMBERS_ADDED = "project_members_added",
     PROJECT_CUSTOMIZATION_UPDATED = "project_customization_updated",
-    PROJECT_MEMBER_ROLE_UPDATED = "project_member_role_updated"
+    PROJECT_MEMBER_ROLE_UPDATED = "project_member_role_updated",
+    PROJECT_MEMBER_DEACTIVATED = "project_member_deactivated",
+    PROJECT_MEMBER_REACTIVATED = "project_member_reactivated"
 
 }
 

@@ -40,44 +40,44 @@ const ProjectsList_MainDashboardPane = () => {
         return (!projectsIsLoading && !workspacesIsLoading && !!projects)
     }, [projectsIsLoading, workspacesIsLoading, projects])
 
-    const handleProjectButtonOnClick = ( project : TProject ) => {
-        const projectRole : EProjectRole | null = project.project_members.find( member => member.user_id === user?.user_id )?.project_role ?? null
+    const handleProjectButtonOnClick = (project: TProject) => {
+        const projectRole: EProjectRole | null = project.project_members.find(member => member.user_id === user?.user_id)?.project_role ?? null
         updateGlobalsStore({
-            selectedProject : project,
-            selectedTaskboard : null,
-            selectedTask : null,
+            selectedProject: project,
+            selectedTaskboard: null,
+            selectedTask: null,
             projectRole,
-            noTaskboards : false,
-            noProjects : false
+            noTaskboards: false,
+            noProjects: false
         })
         // if ( pathname.includes("/project_settings") ) {
         //     navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
         // } else {
         // }
         navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
-        localStorage.setItem( import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id )
+        localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id)
         channelActions.joinProjectChannel(project.project_id)
 
     }
 
-    const handleProjectSettingsButtonOnClick = ( project : TProject ) => {
+    const handleProjectSettingsButtonOnClick = (project: TProject) => {
         navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
         updateGlobalsStore({
-            selectedTaskboard : null,
-            selectedTask : null
+            selectedTaskboard: null,
+            selectedTask: null
         })
     }
 
     return (
         <div
             className={cn(
-                ` w-full h-fit `,
+                ` w-full h-fit p-2 py-0 `,
                 ` overflow-hidden`,
             )}
         >
             <div
                 className={cn(
-                    ` w-full h-fit p-2 pl-3 `,
+                    ` w-full h-fit py-2 pl-2 `,
                     ` flex items-center justify-between `
                 )}
             >
@@ -90,22 +90,22 @@ const ProjectsList_MainDashboardPane = () => {
                         variant={"outline"}
                         onClick={() => {
                             updateDialogsStore({
-                                createProjectDialog : {
-                                    open : true
+                                createProjectDialog: {
+                                    open: true
                                 }
                             })
                         }}
                         className={cn(
                             `opacity-0 pointer-events-none`,
-                            (workspaceRole === EWorkspaceRole.OWNER || workspaceRole === EWorkspaceRole.ADMIN)  && `opacity-100 pointer-events-auto`
+                            (workspaceRole === EWorkspaceRole.OWNER || workspaceRole === EWorkspaceRole.ADMIN) && `opacity-100 pointer-events-auto`
                         )}
                     >
-                        <Plus/>
+                        <Plus />
                     </Button>
                 </div>
             </div>
             <Separator
-                // className="mb-2"
+            // className="mb-2"
             />
             <div
                 className={cn(
@@ -115,24 +115,24 @@ const ProjectsList_MainDashboardPane = () => {
             >
                 {
                     showSkeleton &&
-                    Array.from({ length : 5 }).map((_, index) => (
+                    Array.from({ length: 5 }).map((_, index) => (
                         <Skeleton key={index} className={cn(
                             ` w-full h-[1rem] !rounded-none `
                         )} />
                     ))
                 }
                 {
-                    showNoProjectsState && 
+                    showNoProjectsState &&
                     <p className="font-bold text-center py-[1rem]" >No Projects Found</p>
                 }
                 {
                     showProjectsButtons &&
-                    projects!.map((project) => 
+                    projects!.map((project) =>
                         <div
                             role="button"
                             key={project.project_id}
                             className={cn(
-                                ` relative w-full h-8 pl-4 pr-2 py-5 `,
+                                ` relative w-full h-8 pl-2 pr-2 py-5 `,
                                 ` flex justify-between items-center`,
                                 ` transition-all `,
                                 ` border-r-[0.6rem] `,
@@ -141,7 +141,7 @@ const ProjectsList_MainDashboardPane = () => {
                                 selectedProject?.project_id === project.project_id && ` bg-border overflow-hidden `,
                             )}
                             style={{
-                                borderColor : project.project_color
+                                borderColor: project.project_color
                             }}
                             onClick={() => handleProjectButtonOnClick(project)}
                         >
@@ -150,16 +150,16 @@ const ProjectsList_MainDashboardPane = () => {
                                 selectedProject?.project_id === project.project_id &&
                                 <Button
                                     size={"icon-sm"}
-                                    variant={ selectedProject?.project_id === project.project_id && pathname.includes("/project_settings") ? "default" : "ghost" }
+                                    variant={selectedProject?.project_id === project.project_id && pathname.includes("/project_settings") ? "default" : "ghost"}
                                     className={cn(
                                         `pointer-events-auto cursor-pointer`
                                     )}
-                                    onClick={ e => {
+                                    onClick={e => {
                                         e.stopPropagation()
                                         handleProjectSettingsButtonOnClick(project)
-                                    } }
+                                    }}
                                 >
-                                    <Settings2/>
+                                    <Settings2 />
                                 </Button>
                             }
                         </div>

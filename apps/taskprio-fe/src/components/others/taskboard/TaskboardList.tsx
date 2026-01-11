@@ -185,24 +185,21 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
             )}
             onClick={handleTaskboardTabOnClick}
         >
-            {
+            {/* {
                 selected &&
                 <>
-                    {/* Left Wing */}
                     <svg className="absolute -left-2 bottom-0 w-2 h-2" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                         <path d="M 10 0 Q 10 10 0 10 L 10 10 Z" className="fill-background" />
                         <path d="M 10 0 Q 10 10 0 10 L 10 10 Z" className="fill-background" />
                         <path d="M 10 0 Q 10 10 0 10" className="stroke-[var(--border)] fill-none" strokeWidth="1" />
                     </svg>
-
-                    {/* Right Wing */}
                     <svg className="absolute -right-2 bottom-0 w-2 h-2" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
                         <path d="M 0 0 Q 0 10 10 10 L 0 10 Z" className="fill-background" />
                         <path d="M 0 0 Q 0 10 10 10 L 0 10 Z" className="fill-background" />
                         <path d="M 0 0 Q 0 10 10 10" className="stroke-[var(--border)] fill-none" strokeWidth="1" />
                     </svg>
                 </>
-            }
+            } */}
             <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
             {
                 taskboardMenuVisible &&

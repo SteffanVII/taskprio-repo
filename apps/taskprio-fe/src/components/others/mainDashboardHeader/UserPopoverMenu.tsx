@@ -6,12 +6,12 @@ import LogoutTrigger from "../shared/LogoutTrigger";
 import { useGlobalsStore_user } from "@/stores/globals";
 
 import { Separator } from "@/components/ui/separator";
-import { useNavigate } from "react-router";
 import UserAvatar from "../shared/UserAvatar";
+import { updateDialogsStore } from "@/stores/dialogs";
 
 const UserPopoverMenu = () => {
 
-    const navigate = useNavigate()
+    // const navigate = useNavigate()
 
     const user = useGlobalsStore_user()
 
@@ -39,14 +39,19 @@ const UserPopoverMenu = () => {
                             ` transition-colors cursor-pointer `,
                             ` hover:bg-muted `
                         )}
-                        onClick={ () => {
-                            navigate( "/p/profile" )
-                        } }
+                        onClick={() => {
+                            // navigate("/p/profile")
+                            updateDialogsStore({
+                                profileDialog: {
+                                    open: true
+                                }
+                            })
+                        }}
                     >
                         <p className=" font-medium " >{user?.firstname} {user?.lastname}</p>
                         <p className=" text-sm text-muted-foreground " >{user?.email}</p>
                     </div>
-                    <Separator/>
+                    <Separator />
                     <LogoutTrigger>
                         <Button
                             variant={"ghost"}

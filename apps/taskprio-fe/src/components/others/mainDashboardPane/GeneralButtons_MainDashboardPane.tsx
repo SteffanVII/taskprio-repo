@@ -20,47 +20,47 @@ const GeneralButtons = () => {
     const taskTodoOnClick = () => {
         navigate(`/p/w/${workspace_id}/tt`)
         updateGlobalsStore({
-            noProjects : false,
-            selectedProject : null,
-            selectedTaskboard : null,
-            selectedTask : null
+            noProjects: false,
+            selectedProject: null,
+            selectedTaskboard: null,
+            selectedTask: null
         })
-        if ( project_id ) {
+        if (project_id) {
             channelActions.leaveProjectChannel(project_id)
         }
-        if ( task_board_id ) {
+        if (task_board_id) {
             channelActions.leaveTaskboardChannel(task_board_id)
         }
     }
-    
+
     const workspaceSettingsOnClick = () => {
         navigate(`/p/w/${workspace_id}/workspace_settings`)
         updateGlobalsStore({
-            noProjects : false,
-            selectedProject : null,
-            selectedTaskboard : null,
-            selectedTask : null
+            noProjects: false,
+            selectedProject: null,
+            selectedTaskboard: null,
+            selectedTask: null
         })
-        if ( project_id ) {
+        if (project_id) {
             channelActions.leaveProjectChannel(project_id)
         }
-        if ( task_board_id ) {
+        if (task_board_id) {
             channelActions.leaveTaskboardChannel(task_board_id)
         }
     }
-    
+
     const statisticsOnClick = () => {
         navigate(`/p/w/${workspace_id}/statistics`)
         updateGlobalsStore({
-            noProjects : false,
-            selectedProject : null,
-            selectedTaskboard : null,
-            selectedTask : null
+            noProjects: false,
+            selectedProject: null,
+            selectedTaskboard: null,
+            selectedTask: null
         })
-        if ( project_id ) {
+        if (project_id) {
             channelActions.leaveProjectChannel(project_id)
         }
-        if ( task_board_id ) {
+        if (task_board_id) {
             channelActions.leaveTaskboardChannel(task_board_id)
         }
     }
@@ -68,19 +68,19 @@ const GeneralButtons = () => {
     return (
         <div
             className={cn(
-                ` flex flex-col `
+                ` flex flex-col p-2 `
             )}
         >
             <Button
                 size={"lg"}
-                variant={ pathname.includes("/statistics") ? "secondary" : "ghost" }
+                variant={pathname.includes("/statistics") ? "secondary" : "ghost"}
                 className={cn(
                     `relative border-0 w-full justify-start gap-4 rounded-none `
                 )}
                 onClick={statisticsOnClick}
                 disabled={!selectedWorkpace}
             >
-                <ChartSpline/>
+                <ChartSpline />
                 Reports
                 {
                     pathname.includes("/statistics") &&
@@ -91,14 +91,14 @@ const GeneralButtons = () => {
             </Button>
             <Button
                 size={"lg"}
-                variant={ pathname.includes("/workspace_settings") ? "secondary" : "ghost" }
+                variant={pathname.includes("/workspace_settings") ? "secondary" : "ghost"}
                 className={cn(
                     `relative border-0 w-full justify-start gap-4 rounded-none `,
                 )}
                 onClick={workspaceSettingsOnClick}
                 disabled={!selectedWorkpace}
             >
-                <Settings2/>
+                <Settings2 />
                 Workspace Settings
                 {
                     pathname.includes("/workspace_settings") &&
@@ -109,14 +109,14 @@ const GeneralButtons = () => {
             </Button>
             <Button
                 size={"lg"}
-                variant={ pathname.includes("/tt") ? "secondary" : "ghost" }
+                variant={pathname.includes("/tt") ? "secondary" : "ghost"}
                 className={cn(
                     `relative border-0 w-full justify-start gap-4 rounded-none `,
                 )}
                 onClick={taskTodoOnClick}
                 disabled={!selectedWorkpace}
             >
-                <Notebook/>
+                <Notebook />
                 Todo
                 {
                     pathname.includes("/tt") &&

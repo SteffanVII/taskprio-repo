@@ -59,6 +59,9 @@ export type TDialogStore = {
     acceptInvitationDialog: {
         open: boolean,
         token: string | null
+    },
+    profileDialog: {
+        open: boolean
     }
 }
 
@@ -120,6 +123,9 @@ const initialState: TDialogStore = {
     acceptInvitationDialog: {
         open: false,
         token: null
+    },
+    profileDialog: {
+        open: false
     }
 }
 
@@ -198,5 +204,6 @@ export const useDialogsStore_taskboardTaskTrashSheet = () => {
 
 export const useDialogsStore_overlayModePreferencesDialog = () => useStore(DialogsStore, store => store.overlayModePreferencesDialog)
 export const useDialogsStore_acceptInvitationDialog = () => useStore(DialogsStore, store => store.acceptInvitationDialog)
+export const useDialogsStore_profileDialog = () => useStore(DialogsStore, store => store.profileDialog)
 
 export default DialogsStore;

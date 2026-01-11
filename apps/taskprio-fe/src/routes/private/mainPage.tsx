@@ -23,6 +23,7 @@ import { WebSocketContext } from "@/components/others/websocket/WebsocketProvide
 import { LockKeyhole, Rocket } from "lucide-react";
 import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
 import AcceptInvitationDialog from "@/components/others/dialogs/AcceptInvitationDialog";
+import ProfileDialog from "@/components/others/dialogs/profileDialog/profileDialog";
 
 const MainPage = () => {
 
@@ -78,9 +79,9 @@ const MainPage = () => {
                             <div className="relative flex flex-col gap-4 items-center" >
                                 {
                                     !webSocketConnected &&
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" >
-                                            <Spinner size="7xl" />
-                                        </div>
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" >
+                                        <Spinner size="7xl" />
+                                    </div>
                                 }
                                 <Rocket
                                     className={cn(
@@ -130,6 +131,7 @@ const MainPage = () => {
                         <DeactivateProjectDialog />
                         <ReactivateProjectDialog />
                         <WorkspaceInvitationDialog />
+                        <ProfileDialog />
                         <TagDialog />
                         <TaskboardTaskAssignerDialog />
                         <TaskboardTrashSheet />

@@ -30,14 +30,12 @@ const MainDashboardPane = () => {
                 {
                     !noWorkspaces ?
                         <>
-                            <SidebarHeader className="p-0" >
+                            <SidebarHeader className="p-2 pb-0" >
                                 <WorkspaceDropdown_MainDashboardPane />
                             </SidebarHeader>
                             <SidebarContent>
                                 <GeneralButtons />
-                                <div className=" py-4" >
-                                    <ProjectsList_MainDashboardPane />
-                                </div>
+                                <ProjectsList_MainDashboardPane />
                             </SidebarContent>
                         </>
                         :

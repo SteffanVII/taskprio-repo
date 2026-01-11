@@ -17,11 +17,11 @@ const StatisticsPage = () => {
                 )}
             >
                 <TabsList variant={"line"} >
-                    <TabsTrigger value={"time_report"}>Time Report</TabsTrigger>
+                    {/* <TabsTrigger value={"time_report"}>Time Report</TabsTrigger> */}
                     <TabsTrigger value={"session_history"}>Session History</TabsTrigger>
                 </TabsList>
             </div>
-            <SessionHistoryTab/>
+            <SessionHistoryTab />
         </Tabs>
     )
 

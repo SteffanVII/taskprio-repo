@@ -52,6 +52,16 @@ export type TUpdateProjectMemberRoleRequestBody = {
     role: EProjectRole
 }
 
+export type TDeactivateProjectMemberRequestBody = {
+    project_id: string,
+    member_id: string
+}
+
+export type TReactivateProjectMemberRequestBody = {
+    project_id: string,
+    member_id: string
+}
+
 export type TGetProjectMemberRequestParams = {
     project_id: string,
     member_id: string

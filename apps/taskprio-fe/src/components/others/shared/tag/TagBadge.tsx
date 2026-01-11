@@ -4,11 +4,11 @@ import { TTag, TTaskTag } from "@repo/taskprio-types/src"
 import React from "react"
 
 type TTagBadgeProps = {
-    tag : TTag | TTaskTag,
-    size? : "sm" | "xs" | "default"
+    tag: TTag | TTaskTag,
+    size?: "sm" | "xs" | "default"
 } & React.ComponentProps<"div">
 
-const TagBadge : React.FC<TTagBadgeProps> = ({
+const TagBadge: React.FC<TTagBadgeProps> = ({
     tag,
     className,
     size = "default",
@@ -19,7 +19,7 @@ const TagBadge : React.FC<TTagBadgeProps> = ({
         <div
             className={cn(
                 ` flex items-center `,
-                ` px-3 py-1 rounded-md `,
+                ` px-3 py-1 rounded `,
                 ` cursor-pointer transition-shadow `,
                 ` hover:shadow-lg hover:shadow-foreground/30 hover:z-10 `,
                 size === "sm" && ` text-xs font-extralight px-2 py-0.5 `,
@@ -27,8 +27,8 @@ const TagBadge : React.FC<TTagBadgeProps> = ({
                 className
             )}
             style={{
-                backgroundColor : tag.tag_color,
-                color : getHexLuminance(tag.tag_color) > 0.5 ? "black" : "white"
+                backgroundColor: tag.tag_color,
+                color: getHexLuminance(tag.tag_color) > 0.5 ? "black" : "white"
             }}
             {...props}
         >
