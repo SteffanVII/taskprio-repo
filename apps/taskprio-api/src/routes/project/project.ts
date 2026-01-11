@@ -442,7 +442,7 @@ const registerProjectRoutes = (router: Router) => {
 
                 const projectMembers = await getProjectMembers(project_id);
 
-                await deactivateProjectMember(project_id, member_id)
+                await deactivateProjectMember(member_id, project_id)
 
                 const wsMessage: TProjectMemberDeactivatedWebSocketMessage = {
                     workspace_id: workspaceId,
@@ -489,7 +489,7 @@ const registerProjectRoutes = (router: Router) => {
 
                 const projectMembers = await getProjectMembers(project_id);
 
-                await reactivateProjectMember(project_id, member_id)
+                await reactivateProjectMember(member_id, project_id)
 
                 const wsMessage: TProjectMemberReactivatedWebSocketMessage = {
                     workspace_id: workspaceId,

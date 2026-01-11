@@ -389,7 +389,12 @@ const MemberDialog = () => {
     }
 
     const handleReactivateMember = () => {
-
+        if (selectedMember && projectMember) {
+            reactivateProjectMemberTrigger({
+                project_id : selectedMember.project_id,
+                member_id : selectedMember.user_id
+            })
+        }
     }
 
     return (
