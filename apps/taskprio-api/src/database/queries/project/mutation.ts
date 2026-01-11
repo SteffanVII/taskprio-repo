@@ -339,13 +339,22 @@ export const reactivateProjectMember = async (
     trx?: Transaction<DB>
 ): Promise<void> => {
 
-    await trx.updateTable("project.project_members")
-        .set({
-            is_active: true
-        })
-        .where("project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
-        .where("project.project_members.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`)
-        .executeTakeFirstOrThrow()
+    const query = async (trx: Transaction<DB>) => {
+        await trx.updateTable("project.project_members")
+            .set({
+                is_active: true
+            })
+            .where("project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
+            .where("project.project_members.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`)
+            .executeTakeFirstOrThrow()
+    }
+
+    if (trx) {
+        await query(trx)
+    } else {
+        await taskprioKysely.transaction().execute(async trx => await query(trx))
+    }
+
 
 }
 

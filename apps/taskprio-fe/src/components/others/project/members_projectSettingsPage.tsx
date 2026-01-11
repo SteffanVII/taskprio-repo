@@ -289,6 +289,7 @@ const AvailableMemberCard: React.FC<TAvailableMemberCardProps> = ({
             <UserAvatar
                 user_id_or_email={data.user_id}
                 size="lg"
+                disableHoverCard
             />
             <div
                 className={cn(
