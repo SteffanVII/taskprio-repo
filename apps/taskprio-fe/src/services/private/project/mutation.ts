@@ -4,10 +4,11 @@ import { TCreateProjectPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals"
 
-import { TAddProjectMembersResponseData, TDeactivateProjectMemberRequestBody, TDeactivateProjectRequestBody, TDropProjectRequestQueryParams, TProject, TReactivateProjectMemberRequestBody, TReactivateProjectRequestBody, TUpdateProjectCustomizationResponseData } from "@repo/taskprio-types/src/index"
+import { TAddProjectMembersResponseData, TDeactivateProjectMemberRequestBody, TDeactivateProjectRequestBody, TDropProjectRequestQueryParams, TProject, TProjectMember, TReactivateProjectMemberRequestBody, TReactivateProjectRequestBody, TUpdateProjectCustomizationResponseData } from "@repo/taskprio-types/src/index"
 import { QueryKeys } from "@/services/enum"
 import { AxiosError } from "axios"
 import { useNavigate, useParams } from "react-router"
+import { produce } from "immer"
 
 
 export const useCreateProject = (successCallback?: (project: TCreateProjectResponse) => void) => {
@@ -240,6 +241,8 @@ type TUseDeactivateProjectMemberOptions = UseMutationOptions<any, AxiosError, TD
 
 export const useDeactivateProjectMember = (options?: TUseDeactivateProjectMemberOptions) => {
 
+    const queryClient = useQueryClient()
+
     return useMutation<any, AxiosError, TDeactivateProjectMemberRequestBody>({
         mutationFn: async (payload) => {
             const response = await axiosInstance.patch(
@@ -250,6 +253,15 @@ export const useDeactivateProjectMember = (options?: TUseDeactivateProjectMember
         },
         ...options,
         onSuccess(data, variables, context) {
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id]
+            })
+            queryClient.setQueryData(
+                [ ...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id ],
+                (oldData: TProjectMember) => produce(oldData, (draft) => {
+                    draft.is_active = false
+                })
+            )
             options?.onSuccess?.(data, variables, context)
         }
     })
@@ -259,6 +271,8 @@ export const useDeactivateProjectMember = (options?: TUseDeactivateProjectMember
 type TUseReactivateProjectMemberOptions = UseMutationOptions<any, AxiosError, TReactivateProjectMemberRequestBody>
 
 export const useReactivateProjectMember = (options?: TUseReactivateProjectMemberOptions) => {
+
+    const queryClient = useQueryClient()
 
     return useMutation<any, AxiosError, TReactivateProjectMemberRequestBody>({
         mutationFn: async (payload) => {
@@ -270,6 +284,15 @@ export const useReactivateProjectMember = (options?: TUseReactivateProjectMember
         },
         ...options,
         onSuccess(data, variables, context) {
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id]
+            })
+            queryClient.setQueryData(
+                [ ...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id ],
+                (oldData: TProjectMember) => produce(oldData, (draft) => {
+                    draft.is_active = true
+                })
+            )
             options?.onSuccess?.(data, variables, context)
         }
     })

@@ -120,6 +120,7 @@ export const getTaskboardSectionsWithTasksForCardView = async (
                     jsonArrayFrom(
                         qb.selectFrom( "taskboard.task_assignee" )
                             .innerJoin( "tp_user.user", "tp_user.user.user_id", "taskboard.task_assignee.user_id" )
+                            .innerJoin( "project.project_members", "project.project_members.user_id", "tp_user.user.user_id" )
                             .select([
                                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(taskboard.task_assignee.user_id)`.as( "user_id" ),
                                 "tp_user.user.firstname",
@@ -127,6 +128,8 @@ export const getTaskboardSectionsWithTasksForCardView = async (
                             ])
                             .where( "taskboard.task_assignee.task_id", "=", eb.ref( "taskboard.task.task_id" ) )
                             .where( "tp_user.user.user_id", "is not", null )
+                            .where( "project.project_members.is_active", "=", true )
+                            .where( "project.project_members.project_id", "=", eb.ref( "project.project.project_id" ) )
                     ).as( "assignees" ),
                     jsonArrayFrom(
                         eb.selectFrom( "taskboard.task_tag" )

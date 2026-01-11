@@ -448,7 +448,7 @@ const MemberDialog = () => {
                                             onValueChange={value => {
                                                 setRole(Number(value) as EProjectRole)
                                             }}
-                                            disabled={updateProjectMemberRoleIsPending || !selectedMember?.is_active}
+                                            disabled={updateProjectMemberRoleIsPending || !projectMember?.is_active}
                                         >
                                             <SelectTrigger id="workspace-role" className="w-full" >
                                                 <SelectValue className={`capitalize`} />
@@ -468,10 +468,10 @@ const MemberDialog = () => {
                                             </SelectContent>
                                         </Select>
                                         <Button
-                                            variant={ selectedMember?.is_active ? "destructive" : "secondary"}
+                                            variant={ projectMember?.is_active ? "destructive" : "secondary"}
                                             disabled={updateProjectMemberRoleIsPending || deactivateProjectMemberIsPending || reactivateProjectMemberIsPending}
                                             onClick={() => {
-                                                if (selectedMember?.is_active) {
+                                                if (projectMember?.is_active) {
                                                     handleDeactivateMember()
                                                 } else {
                                                     handleReactivateMember()
@@ -483,7 +483,7 @@ const MemberDialog = () => {
                                                 <>
                                                     <AlertCircle />
                                                     {
-                                                        selectedMember?.is_active ? "Deactivate member from project" : "Reactivate member from project"
+                                                        projectMember?.is_active ? "Deactivate member from project" : "Reactivate member from project"
                                                     }
                                                 </>
                                             }

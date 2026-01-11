@@ -111,7 +111,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                     )}
                 >
                     {
-                        selectedProject?.project_members.map( ( member ) => (
+                        selectedProject?.project_members.filter( ( member ) => member.is_active ).map( ( member ) => (
                             <Button
                                 key={member.user_id}
                                 role="button"
