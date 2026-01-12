@@ -1,6 +1,7 @@
 import { QueryKeys } from "@/services/enum";
-import { updateGlobalsStore, useGlobalsStore_projects, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
-import { TProject, TProjectCreatedWebSocketMessage, TProjectCustomizationUpdatedWebSocketMessage, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectMemberDeactivatedWebSocketMessage, TProjectMemberRoleUpdatedWebSocketMessage, TProjectMembersAddedWebSocketMessage, TProjectReactivatedSocketMessage, TWebSocketMessage } from "@repo/taskprio-types/src";
+import { TGetUserWorkspacesResponse } from "@/services/private/workspace/types";
+import { updateGlobalsStore, useGlobalsStore_projects, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces } from "@/stores/globals";
+import { TProject, TProjectCreatedWebSocketMessage, TProjectCustomizationUpdatedWebSocketMessage, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectMemberDeactivatedWebSocketMessage, TProjectMemberReactivatedWebSocketMessage, TProjectMemberRoleUpdatedWebSocketMessage, TProjectMembersAddedWebSocketMessage, TProjectReactivatedSocketMessage, TWebSocketMessage } from "@repo/taskprio-types/src";
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 import { useCallback, useMemo } from "react";
@@ -17,6 +18,7 @@ const useProjectEventHandlers = () => {
     } = useParams()
 
     const user = useGlobalsStore_user()
+    const workspaces = useGlobalsStore_workspaces()
     const projects = useGlobalsStore_projects()
     const selectedWorkspace = useGlobalsStore_selectedWorkspace()
     const selectedProject = useGlobalsStore_selectedProject()
@@ -292,6 +294,20 @@ const useProjectEventHandlers = () => {
         projects
     ])
 
+    const projectMemberReactivatedWebSocketMessageHandler = useCallback((message : TWebSocketMessage<TProjectMemberReactivatedWebSocketMessage>) => {
+        queryClient.invalidateQueries({
+            queryKey  : [ ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, message.message.workspace_id ]
+        })
+        if ( message.message.member_id === user?.user_id ) {
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, message.message.workspace_id]
+            })
+        }
+    }, [
+        user,
+        workspace_id
+    ])
+
     return useMemo(() => ({
         projectDeactivatedWebSocketMessageHandler,
         projectDroppedWebSocketMessageHandler,
@@ -300,7 +316,8 @@ const useProjectEventHandlers = () => {
         projectCreatedWebSocketMessageHandler,
         projectMembersAddedwebSocketMessage,
         projectMemberRoleUpdatedWebSocketMessage,
-        projectMemberDeactivatedWebSocketMessageHandler
+        projectMemberDeactivatedWebSocketMessageHandler,
+        projectMemberReactivatedWebSocketMessageHandler
     }), [
         projectDeactivatedWebSocketMessageHandler,
         projectDroppedWebSocketMessageHandler,
@@ -309,7 +326,8 @@ const useProjectEventHandlers = () => {
         projectCreatedWebSocketMessageHandler,
         projectMembersAddedwebSocketMessage,
         projectMemberRoleUpdatedWebSocketMessage,
-        projectMemberDeactivatedWebSocketMessageHandler
+        projectMemberDeactivatedWebSocketMessageHandler,
+        projectMemberReactivatedWebSocketMessageHandler
     ])
 
 }

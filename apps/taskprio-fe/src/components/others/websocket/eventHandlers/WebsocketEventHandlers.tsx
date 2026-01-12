@@ -55,6 +55,12 @@ export const useWebSocketEventHandlers = () => {
             case EWebSocketEventType.PROJECT_CREATED:
                 projectEventHandlers.projectCreatedWebSocketMessageHandler( message )
                 break;
+            case EWebSocketEventType.PROJECT_MEMBER_DEACTIVATED:
+                projectEventHandlers.projectMemberDeactivatedWebSocketMessageHandler( message )
+                break;
+            case EWebSocketEventType.PROJECT_MEMBER_REACTIVATED:
+                projectEventHandlers.projectMemberDeactivatedWebSocketMessageHandler( message )
+                break;
             
             default:
                 break;

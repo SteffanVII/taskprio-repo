@@ -107,7 +107,6 @@ export const getUserWorkspaceProjects = async (
                     sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project_tags.project_id)`.as( "project_id" )
                 ])
                 .whereRef( "project.project_tags.project_id", "=", "project.project.project_id" )
-                // .where( "project.project_tags.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(project_id)` )
             ).as( "project_tags" )
         ] )
         .where( eb => eb.and([
