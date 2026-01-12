@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS workspace."workspace_members" (
 	workspace_role INTEGER NOT NULL REFERENCES workspace."workspace_role"(id),
 	joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	invited_by UUID NOT NULL REFERENCES tp_user."user"(user_id),
+	is_active BOOLEAN DEFAULT TRUE,
 
 	PRIMARY KEY (workspace_id, user_id)
 );

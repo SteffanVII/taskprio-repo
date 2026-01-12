@@ -21,6 +21,16 @@ export type TGetWorkspaceMemberParams = {
     member_id : string
 }
 
+export type TDeactivateWorkspaceMemberRequestBody = {
+    workspace_id : string,
+    member_id : string
+}
+
+export type TReactivateWorkspaceMemberRequestBody = {
+    workspace_id : string,
+    member_id : string
+}
+
 // Workspace
 
 export type TWorkspace = Selectable<WorkspaceWorkspace> & {

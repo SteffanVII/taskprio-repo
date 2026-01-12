@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { updateDialogsStore } from "@/stores/dialogs";
 import { updateGlobalsStore, useGlobalsStore_authenticateIsPending, useGlobalsStore_selectedWorkspace, useGlobalsStore_user, useGlobalsStore_workspaces, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
 
-import { CheckCircle2Icon, ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
+import { ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
 import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";

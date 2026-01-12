@@ -128,6 +128,7 @@ export const addWorkspaceMember = async (
                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.user_id)`.as( "user_id" ),
                 sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.invited_by)`.as( "invited_by" ),
                 "workspace.workspace_members.workspace_role",
+                "workspace.workspace_members.is_active",
                 "workspace.workspace_members.joined_at",
                 "tp_user.user.email",
                 "tp_user.user.firstname",
@@ -226,6 +227,56 @@ export const updateWorkspaceMemberRole = async (
             })
             .where( "workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
             .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${memberId})` )
+            .executeTakeFirstOrThrow()
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
+    }
+
+}
+
+export const deactivateWorkspaceMember = async (
+    userId : string,
+    workspaceId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+
+        await trx.updateTable( "workspace.workspace_members" )
+            .set({
+                is_active : false
+            })
+            .where( "workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+            .executeTakeFirstOrThrow()
+
+    }
+
+    if ( trx ) {
+        await query( trx )
+    } else {
+        await taskprioKysely.transaction().execute( async trx => await query( trx ) )
+    }
+
+}
+
+export const reactivateWorkspaceMember = async (
+    userId : string,
+    workspaceId : string,
+    trx? : Transaction<DB>
+) : Promise<void> => {
+
+    const query = async ( trx : Transaction<DB> ) => {
+        await trx.updateTable( "workspace.workspace_members" )
+            .set({
+                is_active : true
+            })
+            .where( "workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
             .executeTakeFirstOrThrow()
     }
 

@@ -339,6 +339,7 @@ export interface WorkspaceWorkspaceBase64 {
 
 export interface WorkspaceWorkspaceMembers {
   invited_by: string;
+  is_active: Generated<boolean | null>;
   joined_at: Generated<ColumnType<string, string | string, Date | string> | null>;
   user_id: string;
   workspace_id: string;

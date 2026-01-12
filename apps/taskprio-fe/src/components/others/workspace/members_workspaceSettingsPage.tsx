@@ -244,6 +244,10 @@ const MemberDialog = () => {
                                     <>
                                         <Label className="mt-[1rem]" htmlFor="workspace-role" >Workspace Role</Label>
                                         <Select
+                                            items={Object.entries(EWorkspaceRole).map( ([key, value]) => ({
+                                                value : value.toString(),
+                                                label : key.toLowerCase()
+                                            }))}
                                             value={role?.toString()}
                                             onValueChange={value => {
                                                 setRole(Number(value) as EWorkspaceRole)
@@ -251,7 +255,7 @@ const MemberDialog = () => {
                                             disabled={updateWorkspaceMemberRoleIsPending}
                                         >
                                             <SelectTrigger id="workspace-role" className="w-full" >
-                                                <SelectValue/>
+                                                <SelectValue className={`capitalize`} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {
@@ -259,8 +263,9 @@ const MemberDialog = () => {
                                                         <SelectItem
                                                             key={key}
                                                             value={value.toString()}
+                                                            className={`capitalize`}
                                                         >
-                                                            {key}
+                                                            {key.toLowerCase()}
                                                         </SelectItem>
                                                     ) )
                                                 }

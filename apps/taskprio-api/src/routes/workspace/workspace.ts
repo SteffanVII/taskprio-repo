@@ -1,10 +1,12 @@
 import { Request, Response, Router } from "express"
-import { ICreateWorkspaceRequest, IGetWorkspaceMemberRequest, IGetWorkspaceRequest, IUpdateWorkspaceMemberRoleRequest } from "./interfaces.js"
+import { ICreateWorkspaceRequest, IDeactivateWorkspaceMemberRequest, IGetWorkspaceMemberRequest, IGetWorkspaceRequest, IReactivateWorkspaceMemberRequest, IUpdateWorkspaceMemberRoleRequest } from "./interfaces.js"
 import { getPoolClient, getPostgrePool } from "../../database/postgresql.js";
 import { getUserWorkspace, getUserWorkspaces, getWorkspaceMember } from "../../database/queries/workspace/query.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
-import { createWorkspace, updateWorkspaceMemberRole } from "../../database/queries/workspace/mutation.js";
-import { verifyWorkspaceMemberMiddleware } from "../../middlewares/authentication.js";
+import { createWorkspace, deactivateWorkspaceMember, reactivateWorkspaceMember, updateWorkspaceMemberRole } from "../../database/queries/workspace/mutation.js";
+import { verifyWorkspaceMemberMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
+import { EWebSocketEventType, TWorkspaceMemberDeactivatedWebSocketMessage } from "@repo/taskprio-types";
+import { wsConnectionsManager } from "../../app.js";
 
 export const registerWorkspaceRoutes = ( router : Router ) => {
 
@@ -114,6 +116,78 @@ export const registerWorkspaceRoutes = ( router : Router ) => {
                     role
                 )
                 res.status(200).json({ message : "Workspace member role updated" })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    router.patch(
+        `/member/deactivate`,
+        verifyWorkspaceOwnerOrAdminMiddleware,
+        async ( req : IDeactivateWorkspaceMemberRequest, res : Response ) => {
+
+            const { workspace_id, member_id } = req.body
+            const { user_id } = req.user
+
+            try {
+                await deactivateWorkspaceMember(workspace_id, member_id)
+
+                const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
+                    workspace_id,
+                    member_id
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "workspace",
+                    workspace_id,
+                    {
+                        type : EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
+                        message : wsMessage
+                    },
+                    undefined,
+                    [user_id]
+                )
+
+                res.status(200).json({ message : "Workspace member deactivated" })
+            } catch (error) {
+                console.log(error)
+                res.status(500).json({ message : "Internal server error" })
+            }
+
+        }
+    )
+
+    router.patch(
+        `/member/reactivate`,
+        verifyWorkspaceOwnerOrAdminMiddleware,
+        async ( req : IReactivateWorkspaceMemberRequest, res : Response ) => {
+            
+            const { workspace_id, member_id } = req.body
+            const { user_id } = req.user
+
+            try {
+                await reactivateWorkspaceMember(workspace_id, member_id)
+
+                const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
+                    workspace_id,
+                    member_id
+                }
+
+                wsConnectionsManager.broadcastToChannel(
+                    "workspace",
+                    workspace_id,
+                    {
+                        type : EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
+                        message : wsMessage
+                    },
+                    undefined,
+                    [user_id]
+                )
+
+                res.status(200).json({ message : "Workspace member reactivated" })
             } catch (error) {
                 console.log(error)
                 res.status(500).json({ message : "Internal server error" })

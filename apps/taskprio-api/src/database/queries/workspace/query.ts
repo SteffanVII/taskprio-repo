@@ -45,6 +45,7 @@ export const getUserWorkspace = async (
                             "workspace.workspace_members.workspace_role",
                             sql<Date>`workspace.workspace_members.joined_at::timestamp`.as("joined_at"),
                             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.invited_by)`.as("invited_by"),
+                            "workspace.workspace_members.is_active",
                             eb.case()
                                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                                 .then(jsonBuildObject({
@@ -109,6 +110,7 @@ export const getUserWorkspaces = async (
                         "tp_user.user.firstname",
                         "tp_user.user.lastname",
                         "workspace.workspace_members.workspace_role",
+                        "workspace.workspace_members.is_active",
                         sql<Date>`workspace.workspace_members.joined_at::timestamp`.as("joined_at"),
                         sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(workspace.workspace_members.invited_by)`.as("invited_by"),
                         eb2.case()
@@ -160,6 +162,7 @@ export const getWorkspaceMember = async (
             "tp_user.user.email",
             "tp_user.user.firstname",
             "tp_user.user.lastname",
+            "workspace.workspace_members.is_active",
             eb.case()
                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                 .then(jsonBuildObject({
@@ -208,6 +211,7 @@ export const getWorkspaceMemberByProjectId = async (
             "tp_user.user.email",
             "tp_user.user.firstname",
             "tp_user.user.lastname",
+            "workspace.workspace_members.is_active",
             eb.case()
                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                 .then(jsonBuildObject({
@@ -255,6 +259,7 @@ export const getWorkspaceMemberByTaskboardId = async (
             "tp_user.user.email",
             "tp_user.user.firstname",
             "tp_user.user.lastname",
+            "workspace.workspace_members.is_active",
             eb.case()
                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                 .then(jsonBuildObject({
@@ -302,6 +307,7 @@ export const getWorkspaceMemberByTaskSectionId = async (
             "tp_user.user.email",
             "tp_user.user.firstname",
             "tp_user.user.lastname",
+            "workspace.workspace_members.is_active",
             eb.case()
                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                 .then(jsonBuildObject({
@@ -350,6 +356,7 @@ export const getWorkspaceMemberByTaskId = async (
             "tp_user.user.email",
             "tp_user.user.firstname",
             "tp_user.user.lastname",
+            "workspace.workspace_members.is_active",
             eb.case()
                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                 .then(jsonBuildObject({
@@ -425,6 +432,7 @@ export const getWorkspaceMembers = async (
             "tp_user.user.email",
             "tp_user.user.firstname",
             "tp_user.user.lastname",
+            "workspace.workspace_members.is_active",
             eb.case()
                 .when("tp_user.user_profile_photo.photo_file_name", "is not", null)
                 .then(jsonBuildObject({

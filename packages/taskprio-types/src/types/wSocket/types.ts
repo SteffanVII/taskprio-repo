@@ -155,3 +155,14 @@ export type TProjectMemberReactivatedWebSocketMessage = {
     project_id: string,
     member_id: string
 }
+
+// Workspace messages
+export type TWorkspaceMemberDeactivatedWebSocketMessage = {
+    workspace_id: string,
+    member_id: string
+}
+
+export type TWorkspaceMemberReactivatedWebSocketMessage = {
+    workspace_id: string,
+    member_id: string
+}

@@ -1,5 +1,5 @@
 import { IAuthenticatedRequest, IAuthenticatedWorkspaceMemberRequest } from "../../middlewares/interfaces.js";
-import { TCreateWorkspaceBody, TGetWorkspaceMemberParams, TUpdateWorkspaceMemberRoleBody, TUpdateWorkspaceMemberRoleParams } from "@repo/taskprio-types";
+import { TCreateWorkspaceBody, TDeactivateWorkspaceMemberRequestBody, TGetWorkspaceMemberParams, TReactivateWorkspaceMemberRequestBody, TUpdateWorkspaceMemberRoleBody, TUpdateWorkspaceMemberRoleParams } from "@repo/taskprio-types";
 
 export interface IGetWorkspaceRequest extends IAuthenticatedRequest {
     params : {
@@ -18,4 +18,12 @@ export interface IUpdateWorkspaceMemberRoleRequest extends IAuthenticatedWorkspa
 
 export interface IGetWorkspaceMemberRequest extends IAuthenticatedWorkspaceMemberRequest {
     params : TGetWorkspaceMemberParams
+}
+
+export interface IDeactivateWorkspaceMemberRequest extends IAuthenticatedWorkspaceMemberRequest {
+    body : TDeactivateWorkspaceMemberRequestBody
+}
+
+export interface IReactivateWorkspaceMemberRequest extends IAuthenticatedWorkspaceMemberRequest {
+    body : TReactivateWorkspaceMemberRequestBody
 }
