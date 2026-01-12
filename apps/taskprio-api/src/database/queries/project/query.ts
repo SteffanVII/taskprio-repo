@@ -121,6 +121,7 @@ export const getUserWorkspaceProjects = async (
             eb("tp_user.user.user_id", "is not", null)
         ]) )
         .where( "project.project.active", "=", true )
+        .where( "project.project_members.is_active", "=", true )
         .groupBy([
             "project.project.created_by",
             "project.project.workspace_id",

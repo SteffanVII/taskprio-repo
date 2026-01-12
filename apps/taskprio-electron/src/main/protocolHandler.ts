@@ -1,8 +1,14 @@
 import { app } from "electron"
 import { mainWindow } from "./main"
 import { EEventListeners } from "src/lib/enums"
+import path from "node:path";
 
-const gotTheLock = app.requestSingleInstanceLock()
+if ( app.isPackaged ) {
+    const devPath = path.join( app.getPath("appData"), "taskprio-electron-dev" )
+    app.setPath("userData", devPath)
+}
+
+const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
     app.quit()
