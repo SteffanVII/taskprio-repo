@@ -113,15 +113,16 @@ export const getUserWorkspaceProjects = async (
         .where( eb => eb.and([
             eb("project.project.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})`),
             // If the requesting user exists in the project members table, then the project is returned
+            // And the requesting user needs to be an active member
             eb.exists(
                 eb.selectFrom( "project.project_members" )
                 .whereRef( "project.project_members.project_id", "=", "project.project.project_id" )
                 .where( "project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                .where( "project.project_members.is_active", "=", true )
             ),
             eb("tp_user.user.user_id", "is not", null)
         ]) )
         .where( "project.project.active", "=", true )
-        .where( "project.project_members.is_active", "=", true )
         .groupBy([
             "project.project.created_by",
             "project.project.workspace_id",
