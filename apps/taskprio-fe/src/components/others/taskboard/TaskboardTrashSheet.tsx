@@ -1,6 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import React, { useState } from "react";
-import { useGlobalsStore_selectedTaskboard } from "@/stores/globals";
+import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
 
 import { ArchiveRestore, Trash2, Undo2 } from "lucide-react";
 import { useGetTaskboardTrashTasks } from "@/services/private/taskboard/query";
@@ -18,44 +18,44 @@ import { updateDialogsStore, useDialogsStore_taskboardTaskTrashSheet } from "@/s
 
 const TaskboardTrashSheet = () => {
 
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
 
     const {
         open
     } = useDialogsStore_taskboardTaskTrashSheet()
 
     const {
-        data : taskboardTrashTasks,
-        isLoading : taskboardTrashTasksIsLoading
+        data: taskboardTrashTasks,
+        isLoading: taskboardTrashTasksIsLoading
     } = useGetTaskboardTrashTasks({
-        payload : {
-            params : {
-                taskboard_id : selectedTaskboard?.task_board_id
+        payload: {
+            params: {
+                taskboard_id: selectedTaskboard?.task_board_id
             }
         },
-        options : {
-            enabled : open
+        options: {
+            enabled: open
         }
     })
 
     const {
-        mutateAsync : restoreTaskFromTrash,
-        isPending : restoreTaskFromTrashIsPending
+        mutateAsync: restoreTaskFromTrash,
+        isPending: restoreTaskFromTrashIsPending
     } = useRestoreTaskFromTrash({
-        onSuccess : () => {
+        onSuccess: () => {
             toast.success("Task restored")
             setTrashToRestore(null)
         }
     })
 
-    const [ trashToRestore, setTrashToRestore ] = useState<TTaskPrimitive | null>(null)
+    const [trashToRestore, setTrashToRestore] = useState<TTaskPrimitive | null>(null)
 
     const handleRestoreTask = async () => {
-        if ( !trashToRestore || !selectedTaskboard ) return
+        if (!trashToRestore || !selectedTaskboard) return
         await restoreTaskFromTrash({
-            params : {
-                task_id : trashToRestore.task_id,
-                taskboard_id : selectedTaskboard.task_board_id
+            params: {
+                task_id: trashToRestore.task_id,
+                taskboard_id: selectedTaskboard.task_board_id
             }
         })
     }
@@ -66,7 +66,7 @@ const TaskboardTrashSheet = () => {
                 open={open}
                 onOpenChange={(open) => {
                     updateDialogsStore({
-                        taskboardTaskTrashSheet : {
+                        taskboardTaskTrashSheet: {
                             open
                         }
                     })
@@ -75,7 +75,7 @@ const TaskboardTrashSheet = () => {
                 <SheetContent
                     className="grid min-h-0"
                     style={{
-                        gridTemplateRows : "min-content 1fr"
+                        gridTemplateRows: "min-content 1fr"
                     }}
                 >
                     <SheetHeader>
@@ -84,7 +84,7 @@ const TaskboardTrashSheet = () => {
                     {
                         taskboardTrashTasksIsLoading &&
                         <div className="w-full py-[4rem] flex items-center justify-center" >
-                            <Spinner size="xl"/>
+                            <Spinner size="xl" />
                         </div>
                     }
                     {
@@ -101,25 +101,25 @@ const TaskboardTrashSheet = () => {
                                 )}
                             >
                                 {
-                                    taskboardTrashTasks.map( task => <TrashTaskCard key={task.task_id} data={task} setTrashToRestore={setTrashToRestore} /> )
+                                    taskboardTrashTasks.map(task => <TrashTaskCard key={task.task_id} data={task} setTrashToRestore={setTrashToRestore} />)
                                 }
                             </div>
                         </ScrollArea>
                     }
-                </SheetContent>   
+                </SheetContent>
             </Sheet>
 
             <Dialog
                 open={!!trashToRestore}
-                onOpenChange={ open => {
-                    if ( !open ) {
+                onOpenChange={open => {
+                    if (!open) {
                         setTrashToRestore(null)
                     }
-                } }
+                }}
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2" ><Undo2/> Restore task?</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2" ><Undo2 /> Restore task?</DialogTitle>
                         <DialogDescription>Are you sure you want to restore this task?</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -132,7 +132,7 @@ const TaskboardTrashSheet = () => {
                             disabled={restoreTaskFromTrashIsPending}
                         >
                             {
-                                restoreTaskFromTrashIsPending ? <Spinner/> : "I'm sure"
+                                restoreTaskFromTrashIsPending ? <Spinner /> : "I'm sure"
                             }
                         </Button>
                     </DialogFooter>
@@ -146,11 +146,11 @@ const TaskboardTrashSheet = () => {
 export default TaskboardTrashSheet;
 
 type TTrashTaskCardProps = {
-    data : TTaskPrimitive,
-    setTrashToRestore : ( value : TTaskPrimitive | null ) => void
+    data: TTaskPrimitive,
+    setTrashToRestore: (value: TTaskPrimitive | null) => void
 }
 
-const TrashTaskCard : React.FC<TTrashTaskCardProps> = ({
+const TrashTaskCard: React.FC<TTrashTaskCardProps> = ({
     data,
     setTrashToRestore
 }) => {
@@ -176,7 +176,7 @@ const TrashTaskCard : React.FC<TTrashTaskCardProps> = ({
                         getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                     )}
                     style={{
-                        backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
+                        backgroundColor: data.project_color === "#ffffff" ? undefined : data.project_color
                     }}
                 >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
                 <Tooltip>

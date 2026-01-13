@@ -8,7 +8,8 @@ import UserAvatar from "../shared/UserAvatar";
 import WorkspaceMemberBadge from "../shared/WorkspaceMemberBadge";
 import ProjectMemberBadge from "../shared/ProjectMemberBadge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import { AlertCircle, PlusIcon, SaveIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,6 +22,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useUpdateProjectMemberRole } from "@/services/private/profile/mutation";
 import useIsUserProjectOwnerOrAdmin from "@/lib/hooks/useIsUserProjectOwnerOrAdmin";
 import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerOrAdmin";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 
 type TMembersSectionContext = {
     selectedMember: TProjectMember | null,
@@ -46,6 +50,15 @@ const Members_ProjectSettingsPage = () => {
     const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
 
     const [selectedMember, setSelectedMember] = useState<TProjectMember | null>(null)
+    const [showDeactivated, setShowDeactivated] = useState<boolean>(false)
+
+    const activeMembers = useMemo(() => {
+        return projectMembers?.filter(member => member.is_active === true)
+    }, [projectMembers])
+
+    const deactivatedMembers = useMemo(() => {
+        return projectMembers?.filter(member => member.is_active === false)
+    }, [projectMembers])
 
     return (
         <>
@@ -77,17 +90,49 @@ const Members_ProjectSettingsPage = () => {
                         </div>
                     }
                     <div
-                        className={cn(
-                            `flex gap-4 flex-wrap`
-                        )}
+                        className="flex flex-col gap-8"
                     >
-                        {
-                            projectMembers?.map(member => (
-                                <MemberCard
-                                    key={member.user_id}
-                                    data={member}
+                        <div
+                            className={cn(
+                                `flex gap-4 flex-wrap`
+                            )}
+                        >
+                            {
+                                activeMembers?.map(member => (
+                                    <MemberCard
+                                        key={member.user_id}
+                                        data={member}
+                                    />
+                                ))
+                            }
+                        </div>
+                        <div className="max-w-full flex items-center gap-4" >
+                            <Badge variant={"outline"} className="flex items-center gap-2 h-fit py-2 px-3" >
+                                <Switch
+                                    id="show-deactivated"
+                                    checked={showDeactivated}
+                                    onCheckedChange={setShowDeactivated}
                                 />
-                            ))
+                                <Label htmlFor="show-deactivated" className=" text-muted-foreground text-nowrap " >Show deactivated {deactivatedMembers?.length}</Label>
+                            </Badge>
+                            <Separator className="flex-1" />
+                        </div>
+                        {
+                            showDeactivated &&
+                            <div
+                                className={cn(
+                                    `flex gap-4 flex-wrap`
+                                )}
+                            >
+                                {
+                                    deactivatedMembers?.map(member => (
+                                        <MemberCard
+                                            key={member.user_id}
+                                            data={member}
+                                        />
+                                    ))
+                                }
+                            </div>
                         }
                     </div>
                 </div>
@@ -118,7 +163,8 @@ const MemberCard: React.FC<TMemberCardProps> = ({
                 `flex gap-4 items-center`,
                 `p-2 pr-4 bg-background border rounded-xl`,
                 `cursor-pointer transition-all`,
-                `hover:shadow-lg`
+                `hover:shadow-lg`,
+                data.is_active === false && `bg-destructive/10 border-destructive/20`
             )}
             onClick={() => {
                 setSelectedMember(data)
@@ -127,6 +173,7 @@ const MemberCard: React.FC<TMemberCardProps> = ({
             <UserAvatar
                 user_id_or_email={data.user_id}
                 size="lg"
+                disableHoverCard
             />
             <div
                 className={cn(
@@ -135,9 +182,15 @@ const MemberCard: React.FC<TMemberCardProps> = ({
             >
                 <p className="text-sm font-medium" >{data.firstname} {data.lastname}</p>
                 <p className="text-sm text-muted-foreground mb-1" >{data.email}</p>
-                <ProjectMemberBadge
-                    role={data.project_role}
-                />
+                <div className="flex items-center gap-2" >
+                    <ProjectMemberBadge
+                        role={data.project_role}
+                    />
+                    {
+                        data.is_active === false &&
+                        <p className="text-xs text-destructive" >Deactivated</p>
+                    }
+                </div>
             </div>
         </div>
     )
@@ -157,8 +210,8 @@ const AddProjectMemberDialog: React.FC<TAddProjectMemberDialogProps> = ({
     members
 }) => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const selectedProject = useProjectStore_selectedProject()
 
     const [selectedMembers, setSelectedMembers] = useState<TSelectedMember[]>([])
 
@@ -340,19 +393,19 @@ const MemberDialog = () => {
     })
 
     const {
-        mutate : deactivateProjectMemberTrigger,
-        isPending : deactivateProjectMemberIsPending
+        mutate: deactivateProjectMemberTrigger,
+        isPending: deactivateProjectMemberIsPending
     } = useDeactivateProjectMember({
-        onSuccess : () => {
+        onSuccess: () => {
             toast.success("Project member deactivated successfully")
         }
     })
 
     const {
-        mutate : reactivateProjectMemberTrigger,
-        isPending : reactivateProjectMemberIsPending
+        mutate: reactivateProjectMemberTrigger,
+        isPending: reactivateProjectMemberIsPending
     } = useReactivateProjectMember({
-        onSuccess : () => {
+        onSuccess: () => {
             toast.success("Project member reactivated successfully")
         }
     })
@@ -383,8 +436,8 @@ const MemberDialog = () => {
     const handleDeactivateMember = () => {
         if (selectedMember && projectMember) {
             deactivateProjectMemberTrigger({
-                project_id : selectedMember.project_id,
-                member_id : selectedMember.user_id
+                project_id: selectedMember.project_id,
+                member_id: selectedMember.user_id
             })
         }
     }
@@ -392,8 +445,8 @@ const MemberDialog = () => {
     const handleReactivateMember = () => {
         if (selectedMember && projectMember) {
             reactivateProjectMemberTrigger({
-                project_id : selectedMember.project_id,
-                member_id : selectedMember.user_id
+                project_id: selectedMember.project_id,
+                member_id: selectedMember.user_id
             })
         }
     }
@@ -468,7 +521,7 @@ const MemberDialog = () => {
                                             </SelectContent>
                                         </Select>
                                         <Button
-                                            variant={ projectMember?.is_active ? "destructive" : "secondary"}
+                                            variant={projectMember?.is_active ? "destructive" : "secondary"}
                                             disabled={updateProjectMemberRoleIsPending || deactivateProjectMemberIsPending || reactivateProjectMemberIsPending}
                                             onClick={() => {
                                                 if (projectMember?.is_active) {
@@ -480,12 +533,12 @@ const MemberDialog = () => {
                                         >
                                             {
                                                 (deactivateProjectMemberIsPending || reactivateProjectMemberIsPending) ? <Spinner /> :
-                                                <>
-                                                    <AlertCircle />
-                                                    {
-                                                        projectMember?.is_active ? "Deactivate member from project" : "Reactivate member from project"
-                                                    }
-                                                </>
+                                                    <>
+                                                        <AlertCircle />
+                                                        {
+                                                            projectMember?.is_active ? "Deactivate member from project" : "Reactivate member from project"
+                                                        }
+                                                    </>
                                             }
                                         </Button>
                                     </>

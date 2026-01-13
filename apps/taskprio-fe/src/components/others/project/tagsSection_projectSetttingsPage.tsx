@@ -6,17 +6,17 @@ import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerO
 import { cn } from "@/lib/utils";
 import { useGetProjectTags } from "@/services/private/tag/query";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import { Plus } from "lucide-react";
 
 const TagsSection_ProjectSettingsPage = () => {
 
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedProject = useProjectStore_selectedProject()
 
     const {
         data,
         isLoading
-    } = useGetProjectTags( selectedProject?.project_id )
+    } = useGetProjectTags(selectedProject?.project_id)
 
     const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
     const isUserProjectOwnerOrAdmin = useIsUserProjectOwnerOrAdmin()
@@ -34,33 +34,33 @@ const TagsSection_ProjectSettingsPage = () => {
                     `SettingsSectionContent`,
                 )}
             >
-                    {
-                        (isUserProjectOwnerOrAdmin || isUserWorkspaceOwnerOrAdmin) &&
-                        <div
-                            className={cn(
-                                ` flex gap-4 `
-                            )}
-                        >
-                            <Button
-                                onClick={ () => {
-                                    updateDialogsStore({
-                                        tagDialog : {
-                                            open : true,
-                                            tag : null
-                                        }
-                                    })
-                                } }
-                            ><Plus/> Create Tag</Button>
-                        </div>
-                    }
+                {
+                    (isUserProjectOwnerOrAdmin || isUserWorkspaceOwnerOrAdmin) &&
+                    <div
+                        className={cn(
+                            ` flex gap-4 `
+                        )}
+                    >
+                        <Button
+                            onClick={() => {
+                                updateDialogsStore({
+                                    tagDialog: {
+                                        open: true,
+                                        tag: null
+                                    }
+                                })
+                            }}
+                        ><Plus /> Create Tag</Button>
+                    </div>
+                }
                 <div
                     className={cn(
                         ` flex flex-wrap gap-2 `
                     )}
                 >
                     {
-                        isLoading && 
-                        <Spinner/>
+                        isLoading &&
+                        <Spinner />
                     }
                     {
                         (!isLoading && data && data.length < 1) &&
@@ -68,22 +68,22 @@ const TagsSection_ProjectSettingsPage = () => {
                     }
                     {
                         (!isLoading && data) &&
-                        data.map( tag => (
+                        data.map(tag => (
                             <TagBadge
                                 key={tag.tag_id}
                                 tag={tag}
                                 onClick={() => {
-                                    if ( isUserProjectOwnerOrAdmin || isUserWorkspaceOwnerOrAdmin ) {
+                                    if (isUserProjectOwnerOrAdmin || isUserWorkspaceOwnerOrAdmin) {
                                         updateDialogsStore({
-                                            tagDialog : {
-                                                open : true,
+                                            tagDialog: {
+                                                open: true,
                                                 tag
                                             }
                                         })
                                     }
                                 }}
                             />
-                        ) )
+                        ))
                     }
                 </div>
             </div>

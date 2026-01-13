@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { useCreateProject } from "@/services/private/project/mutation";
 import { updateDialogsStore, useDialogsStore_createProjectDialog } from "@/stores/dialogs";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import Spinner from "../Spinner";
 import { z } from "zod"
 import { useForm } from "react-hook-form";
@@ -25,7 +25,7 @@ const CreateProjectDialog = () => {
         open
     } = useDialogsStore_createProjectDialog()
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),

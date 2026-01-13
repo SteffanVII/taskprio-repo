@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCreateTaskboard } from "@/services/private/taskboard/mutation"
-import { updateGlobalsStore, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { updateTaskboardStore } from "@/stores/taskboard"
+import { useProjectStore_selectedProject } from "@/stores/project"
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -19,8 +21,8 @@ const NoTaskboardsStage = () => {
 
     const navigate = useNavigate()
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const selectedProject = useProjectStore_selectedProject()
 
     const {
         mutateAsync: createTaskboardTrigger,
@@ -28,7 +30,7 @@ const NoTaskboardsStage = () => {
     } = useCreateTaskboard({
         onSuccess: (data) => {
             if (!selectedWorkspace) return
-            updateGlobalsStore({
+            updateTaskboardStore({
                 noTaskboards: false
             })
             navigate(`/p/w/${selectedWorkspace.workspace_id}/d/${data.project_id}/t/${data.task_board_id}`)

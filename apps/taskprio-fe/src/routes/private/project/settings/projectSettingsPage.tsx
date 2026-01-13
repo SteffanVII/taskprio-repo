@@ -5,14 +5,14 @@ import Customization_ProjectSettingsPage from "@/components/others/project/custo
 import Members_ProjectSettingsPage from "@/components/others/project/members_projectSettingsPage";
 import useIsUserProjectOwnerOrAdmin from "@/lib/hooks/useIsUserProjectOwnerOrAdmin";
 import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerOrAdmin";
-import { useGlobalsStore_workspaceRole } from "@/stores/globals";
+import { useWorkspaceStore_workspaceRole } from "@/stores/workspace";
 
 import { EWorkspaceRole } from "@repo/taskprio-types/src";
 import DeactivatedTaskboards_ProjectSettingsPage from "@/components/others/project/DeactivatedTaskboards_ProjectSettingsPage";
 
 const ProjectSettingsPage = () => {
 
-    const workspaceRole = useGlobalsStore_workspaceRole()
+    const workspaceRole = useWorkspaceStore_workspaceRole()
 
     const isUserProjectOwnerOrAdmin = useIsUserProjectOwnerOrAdmin()
     const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
@@ -34,18 +34,18 @@ const ProjectSettingsPage = () => {
                         `SettingsSectionsContainer`
                     )}
                 >
-                    <TagsSection_ProjectSettingsPage/>
+                    <TagsSection_ProjectSettingsPage />
                     {
                         (isUserProjectOwnerOrAdmin || isUserWorkspaceOwnerOrAdmin) &&
                         <>
-                            <Customization_ProjectSettingsPage/>
-                            <DeactivatedTaskboards_ProjectSettingsPage/>
+                            <Customization_ProjectSettingsPage />
+                            <DeactivatedTaskboards_ProjectSettingsPage />
                         </>
                     }
-                    <Members_ProjectSettingsPage/>
+                    <Members_ProjectSettingsPage />
                     {
                         workspaceRole === EWorkspaceRole.OWNER &&
-                        <DangerZone_ProjectSettingsPage/>
+                        <DangerZone_ProjectSettingsPage />
                     }
                 </div>
             </div>

@@ -1,8 +1,8 @@
 import { useCallback } from "react"
 import { useTaskboardEventHandlers } from "./incoming/taskboardEventHandlers"
 import { useTaskEventHandlers } from "./incoming/taskEventHandlers"
-import { EWebSocketEventType, TWebSocketMessage } from "@repo/taskprio-types/src"
 import useProjectEventHandlers from "./incoming/projectEventHandlers"
+import { EWebSocketEventType, TWebSocketMessage } from "@repo/taskprio-types/src"
 
 export const useWebSocketEventHandlers = () => {
 
@@ -11,7 +11,6 @@ export const useWebSocketEventHandlers = () => {
     const projectEventHandlers = useProjectEventHandlers()
 
     const eventHandlers = useCallback(( message : TWebSocketMessage ) => {
-
         switch ( message.type ) {
             // Task events
             case EWebSocketEventType.TASK_UPDATED:
@@ -26,9 +25,9 @@ export const useWebSocketEventHandlers = () => {
             case EWebSocketEventType.TASK_TAG_ADDED:
                 taskEventHandlers.taskTagAddedWebSocketMessageHandler( message )
                 break;
-                case EWebSocketEventType.TASK_TAG_REMOVED:
-                    taskEventHandlers.taskTagRemovedWebSocketMessageHandler( message )
-                break;
+            case EWebSocketEventType.TASK_TAG_REMOVED:
+                taskEventHandlers.taskTagRemovedWebSocketMessageHandler( message )
+            break;
             // Taskboard events
             case EWebSocketEventType.TASKBOARD_DEACTIVATED:
                 taskboardEventHandlers.taskboardDeactivatedWebSocketMessageHandler( message )
@@ -59,7 +58,7 @@ export const useWebSocketEventHandlers = () => {
                 projectEventHandlers.projectMemberDeactivatedWebSocketMessageHandler( message )
                 break;
             case EWebSocketEventType.PROJECT_MEMBER_REACTIVATED:
-                projectEventHandlers.projectMemberDeactivatedWebSocketMessageHandler( message )
+                projectEventHandlers.projectMemberReactivatedWebSocketMessageHandler( message )
                 break;
             
             default:
@@ -67,7 +66,8 @@ export const useWebSocketEventHandlers = () => {
         }
     }, [
         taskboardEventHandlers,
-        taskEventHandlers
+        taskEventHandlers,
+        projectEventHandlers
     ])
 
     return eventHandlers

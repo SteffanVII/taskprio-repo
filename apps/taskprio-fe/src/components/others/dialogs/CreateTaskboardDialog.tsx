@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useCreateTaskboard } from "@/services/private/taskboard/mutation";
 import { updateDialogsStore, useDialogsStore_createTaskboardDialog } from "@/stores/dialogs";
 
-import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,7 +17,7 @@ const createTaskboardFormSchema = z.object({
 
 const CreateTaskboardDialog = () => {
 
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedProject = useProjectStore_selectedProject()
 
     const {
         open

@@ -1,7 +1,7 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useGetWorkspaceSessionHistories } from "@/services/private/todo/query";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import SessionHistoryCard_SessionHistoryTab from "./SessionHistoryCard_SessionHistoryTab";
 import { Accordion } from "@/components/ui/accordion";
 import { updateSessionHistoryTabStore, useSessionHistoryTabStore_dateRange, useSessionHistoryTabStore_dateRangeState, useSessionHistoryTabStore_selectedMembers } from "@/stores/sessionHistoryTab";
@@ -14,7 +14,7 @@ import { History } from "lucide-react";
 
 const SessionHistoryTab = () => {
 
-    const selectedworkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
     const dateRangeState = useSessionHistoryTabStore_dateRangeState()
     const dateRange = useSessionHistoryTabStore_dateRange()
     const selectedMembers = useSessionHistoryTabStore_selectedMembers()
@@ -24,13 +24,13 @@ const SessionHistoryTab = () => {
     } = useGetWorkspaceSessionHistories(
         {
             query: {
-                workspace_id: selectedworkspace?.workspace_id,
+                workspace_id: selectedWorkspace?.workspace_id,
                 user_ids: selectedMembers,
                 date_range: dateRange
             }
         },
         {
-            enabled: !!selectedworkspace?.workspace_id
+            enabled: !!selectedWorkspace?.workspace_id
         }
     )
 

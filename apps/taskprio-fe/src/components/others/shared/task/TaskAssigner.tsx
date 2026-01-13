@@ -1,6 +1,8 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils"
-import { useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_user } from "@/stores/globals";
+import { useGlobalsStore_user } from "@/stores/globals";
+import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import { Check, Plus } from "lucide-react"
 import React from "react";
 import UserAvatar from "../UserAvatar";
@@ -9,59 +11,59 @@ import { TProjectMember } from "@repo/taskprio-types/src";
 import { Button } from "@/components/ui/button";
 
 export type TTaskAssignerProps = {
-    task_id? : string,
-    assignees : string[],
-    disabledHoverCard? : boolean,
-    onAssigneesChange : ( assignees : string[] ) => void
+    task_id?: string,
+    assignees: string[],
+    disabledHoverCard?: boolean,
+    onAssigneesChange: (assignees: string[]) => void
 }
 
-const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
+const TaskAssigner: React.FC<TTaskAssignerProps> = ({
     task_id,
     assignees,
     disabledHoverCard,
     onAssigneesChange
-} ) => {
+}) => {
 
     const user = useGlobalsStore_user()
-    const selectedProject = useGlobalsStore_selectedProject()
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedProject = useProjectStore_selectedProject()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
 
     const {
-        mutateAsync : addTaskAssignee
+        mutateAsync: addTaskAssignee
     } = useAddTaskAssignee()
 
     const {
-        mutateAsync : removeTaskAssignee
+        mutateAsync: removeTaskAssignee
     } = useRemoveTaskAssignee()
 
-    const handleAssigning = ( projectMember : TProjectMember ) => {
+    const handleAssigning = (projectMember: TProjectMember) => {
         console.log(task_id);
-        if ( assignees.includes( projectMember.user_id ) ) {
-            onAssigneesChange( assignees.filter( ( id ) => id !== projectMember.user_id ) )
-            if ( task_id ) {
-                removeTaskAssignee( {
-                    body : {
+        if (assignees.includes(projectMember.user_id)) {
+            onAssigneesChange(assignees.filter((id) => id !== projectMember.user_id))
+            if (task_id) {
+                removeTaskAssignee({
+                    body: {
                         task_id,
-                        taskboard_id : selectedTaskboard!.task_board_id,
-                        user_id : projectMember.user_id
+                        taskboard_id: selectedTaskboard!.task_board_id,
+                        user_id: projectMember.user_id
                     }
-                } )
+                })
             }
         } else {
-            onAssigneesChange( [ ...assignees, projectMember.user_id ] )
-            if ( task_id ) {
-                addTaskAssignee( {
-                    optimisticData : {
-                        user_id : projectMember.user_id,
-                        firstname : projectMember.firstname,
-                        lastname : projectMember.lastname
+            onAssigneesChange([...assignees, projectMember.user_id])
+            if (task_id) {
+                addTaskAssignee({
+                    optimisticData: {
+                        user_id: projectMember.user_id,
+                        firstname: projectMember.firstname,
+                        lastname: projectMember.lastname
                     },
-                    body : {
+                    body: {
                         task_id,
-                        taskboard_id : selectedTaskboard!.task_board_id,
-                        user_id : projectMember.user_id
+                        taskboard_id: selectedTaskboard!.task_board_id,
+                        user_id: projectMember.user_id
                     }
-                } )
+                })
             }
         }
     }
@@ -69,9 +71,9 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
     return (
         <Popover>
             <PopoverTrigger
-                onClick={ e => {
+                onClick={e => {
                     e.stopPropagation()
-                } }
+                }}
                 render={
                     <div
                         className={cn(
@@ -83,14 +85,14 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                             assignees.length < 1 && <span className="text-primary" >Assign</span>
                         }
                         {
-                            assignees.map( ( assignee ) => (
+                            assignees.map((assignee) => (
                                 <UserAvatar
                                     key={assignee}
                                     user_id_or_email={assignee}
                                     size="sm"
                                     disableHoverCard={disabledHoverCard}
                                 />
-                            ) )
+                            ))
                         }
                     </div>
                 }
@@ -99,10 +101,10 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                 className={cn(
                     ` p-0 `
                 )}
-                onClick={ e => {
+                onClick={e => {
                     e.preventDefault()
                     e.stopPropagation()
-                } }
+                }}
             >
                 <div
                     className={cn(
@@ -111,7 +113,7 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                     )}
                 >
                     {
-                        selectedProject?.project_members.filter( ( member ) => member.is_active ).map( ( member ) => (
+                        selectedProject?.project_members.filter((member) => member.is_active).map((member) => (
                             <Button
                                 key={member.user_id}
                                 role="button"
@@ -122,28 +124,28 @@ const TaskAssigner : React.FC<TTaskAssignerProps> = ( {
                                     // ` hover:bg-blue-200 `,
                                     // assignees.includes( member.user_id ) && ` bg-blue-400 `
                                 )}
-                                variant={assignees.includes( member.user_id ) ? "default" : "outline"}
+                                variant={assignees.includes(member.user_id) ? "default" : "outline"}
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    handleAssigning( member )
+                                    handleAssigning(member)
                                 }}
                             >
                                 <UserAvatar user_id_or_email={member.user_id} size="sm" disableHoverCard />
                                 {
                                     member.user_id === user?.user_id ?
-                                    <>
-                                        <p>You</p> <p>{`(${ member.firstname } ${member.lastname})`}</p>
-                                    </>
-                                    :
-                                    <p>{member.firstname} {member.lastname}</p>
+                                        <>
+                                            <p>You</p> <p>{`(${member.firstname} ${member.lastname})`}</p>
+                                        </>
+                                        :
+                                        <p>{member.firstname} {member.lastname}</p>
                                 }
                                 {
-                                    assignees.includes( member.user_id ) &&
+                                    assignees.includes(member.user_id) &&
                                     <Check className=" text-background size-4 ml-auto mr-2 " />
                                 }
                             </Button>
-                        ) )
+                        ))
                     }
                 </div>
             </PopoverContent>

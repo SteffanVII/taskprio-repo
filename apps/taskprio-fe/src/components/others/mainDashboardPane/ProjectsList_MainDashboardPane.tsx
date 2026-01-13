@@ -3,7 +3,10 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { updateDialogsStore } from "@/stores/dialogs"
-import { updateGlobalsStore, useGlobalsStore_noProjects, useGlobalsStore_projects, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_user, useGlobalsStore_workspaceRole, useGlobalsStore_workspacesIsLoading } from "@/stores/globals"
+import { updateGlobalsStore, useGlobalsStore_user } from "@/stores/globals"
+import { updateTaskboardStore } from "@/stores/taskboard"
+import { updateProjectStore, useProjectStore_noProjects, useProjectStore_projects, useProjectStore_projectsIsLoading, useProjectStore_selectedProject } from "@/stores/project"
+import { useWorkspaceStore_workspaceRole, useWorkspaceStore_workspacesIsLoading } from "@/stores/workspace"
 
 import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
 import { Plus, Settings2 } from "lucide-react"
@@ -21,12 +24,12 @@ const ProjectsList_MainDashboardPane = () => {
     } = useContext(WebSocketContext)
 
     const user = useGlobalsStore_user()
-    const workspaceRole = useGlobalsStore_workspaceRole()
-    const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
-    const projectsIsLoading = useGlobalsStore_projectsIsLoading()
-    const selectedProject = useGlobalsStore_selectedProject()
-    const projects = useGlobalsStore_projects()
-    const noProjects = useGlobalsStore_noProjects()
+    const workspaceRole = useWorkspaceStore_workspaceRole()
+    const workspacesIsLoading = useWorkspaceStore_workspacesIsLoading()
+    const projectsIsLoading = useProjectStore_projectsIsLoading()
+    const selectedProject = useProjectStore_selectedProject()
+    const projects = useProjectStore_projects()
+    const noProjects = useProjectStore_noProjects()
 
     const showSkeleton = useMemo(() => {
         return (projectsIsLoading || workspacesIsLoading)
@@ -42,19 +45,23 @@ const ProjectsList_MainDashboardPane = () => {
 
     const handleProjectButtonOnClick = (project: TProject) => {
         const projectRole: EProjectRole | null = project.project_members.find(member => member.user_id === user?.user_id)?.project_role ?? null
-        updateGlobalsStore({
+        updateProjectStore({
             selectedProject: project,
-            selectedTaskboard: null,
-            selectedTask: null,
             projectRole,
-            noTaskboards: false,
             noProjects: false
         })
-        // if ( pathname.includes("/project_settings") ) {
-        //     navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
-        // } else {
-        // }
-        navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
+        updateGlobalsStore({
+            selectedTask: null,
+        })
+        updateTaskboardStore({
+            selectedTaskboard: null,
+            noTaskboards: false,
+        })
+        if (pathname.includes("/project_settings")) {
+            navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
+        } else {
+            navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
+        }
         localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id)
         channelActions.joinProjectChannel(project.project_id)
 
@@ -63,8 +70,10 @@ const ProjectsList_MainDashboardPane = () => {
     const handleProjectSettingsButtonOnClick = (project: TProject) => {
         navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
         updateGlobalsStore({
-            selectedTaskboard: null,
             selectedTask: null
+        })
+        updateTaskboardStore({
+            selectedTaskboard: null
         })
     }
 

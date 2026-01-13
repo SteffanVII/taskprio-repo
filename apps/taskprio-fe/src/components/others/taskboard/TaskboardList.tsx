@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { updateGlobalsStore, useGlobalsStore_noTaskboards, useGlobalsStore_projectRole, useGlobalsStore_projectsIsLoading, useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_selectedWorkspace, useGlobalsStore_taskboards, useGlobalsStore_taskboardsIsLoading } from "@/stores/globals";
+import { updateTaskboardStore, useTaskboardStore_noTaskboards, useTaskboardStore_selectedTaskboard, useTaskboardStore_taskboards, useTaskboardStore_taskboardsIsLoading } from "@/stores/taskboard";
+import { useProjectStore_projectRole, useProjectStore_projectsIsLoading, useProjectStore_selectedProject } from "@/stores/project";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 
 import { EProjectRole, TTaskboard } from "@repo/taskprio-types/src";
 import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
@@ -15,10 +17,10 @@ import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const TaskboardList = () => {
 
-    const taskboards = useGlobalsStore_taskboards()
-    const taskboardsIsLoading = useGlobalsStore_taskboardsIsLoading()
-    const noTaskboards = useGlobalsStore_noTaskboards()
-    const projectsIsLoading = useGlobalsStore_projectsIsLoading()
+    const taskboards = useTaskboardStore_taskboards()
+    const taskboardsIsLoading = useTaskboardStore_taskboardsIsLoading()
+    const noTaskboards = useTaskboardStore_noTaskboards()
+    const projectsIsLoading = useProjectStore_projectsIsLoading()
 
     const showSkeleton = useMemo(() => {
         return (taskboardsIsLoading || projectsIsLoading)
@@ -99,14 +101,14 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
         channelActions
     } = useContext(WebSocketContext)
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
-    const selectedProject = useGlobalsStore_selectedProject()
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
-    const projectRole = useGlobalsStore_projectRole()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const selectedProject = useProjectStore_selectedProject()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
+    const projectRole = useProjectStore_projectRole()
 
     const handleTaskboardTabOnClick = () => {
         if (selectedTaskboard?.task_board_id === taskboard.task_board_id) return
-        updateGlobalsStore({
+        updateTaskboardStore({
             selectedTaskboard: taskboard,
             noTaskboards: false
         })
@@ -185,21 +187,6 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
             )}
             onClick={handleTaskboardTabOnClick}
         >
-            {/* {
-                selected &&
-                <>
-                    <svg className="absolute -left-2 bottom-0 w-2 h-2" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 10 0 Q 10 10 0 10 L 10 10 Z" className="fill-background" />
-                        <path d="M 10 0 Q 10 10 0 10 L 10 10 Z" className="fill-background" />
-                        <path d="M 10 0 Q 10 10 0 10" className="stroke-[var(--border)] fill-none" strokeWidth="1" />
-                    </svg>
-                    <svg className="absolute -right-2 bottom-0 w-2 h-2" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 0 0 Q 0 10 10 10 L 0 10 Z" className="fill-background" />
-                        <path d="M 0 0 Q 0 10 10 10 L 0 10 Z" className="fill-background" />
-                        <path d="M 0 0 Q 0 10 10 10" className="stroke-[var(--border)] fill-none" strokeWidth="1" />
-                    </svg>
-                </>
-            } */}
             <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
             {
                 taskboardMenuVisible &&

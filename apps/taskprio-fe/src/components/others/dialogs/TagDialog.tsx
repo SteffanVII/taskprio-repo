@@ -12,18 +12,18 @@ import { HexColorPicker } from "react-colorful";
 import { useCreateProjectTag, useUpdateProjectTag } from "@/services/private/tag/mutation";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { useLayoutEffect } from "react";
-import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import TagDeleteDialog from "./TagDeleteDialog";
 import Spinner from "../Spinner";
 
 const tagSchema = z.object({
-    name : z.string().min(1, { message : "Name is required." }),
-    color : z.string().min(1, { message : "Color is required." })
+    name: z.string().min(1, { message: "Name is required." }),
+    color: z.string().min(1, { message: "Color is required." })
 })
 
 const TagDialog = () => {
 
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedProject = useProjectStore_selectedProject()
 
     const {
         open,
@@ -31,10 +31,10 @@ const TagDialog = () => {
     } = useDialogsStore_tagDialog()
 
     const form = useForm<z.infer<typeof tagSchema>>({
-        resolver : zodResolver(tagSchema),
-        defaultValues : {
-            name : "",
-            color : "#FFFFFF"
+        resolver: zodResolver(tagSchema),
+        defaultValues: {
+            name: "",
+            color: "#FFFFFF"
         }
     })
 
@@ -42,8 +42,8 @@ const TagDialog = () => {
     const color = form.watch("color")
 
     const {
-        mutateAsync : createProjectTagTrigger,
-        isPending : createProjectTagTriggerIsPending
+        mutateAsync: createProjectTagTrigger,
+        isPending: createProjectTagTriggerIsPending
     } = useCreateProjectTag(
         () => {
             closeTagDialog()
@@ -51,38 +51,38 @@ const TagDialog = () => {
     )
 
     const {
-        mutateAsync : updateProjectTagTrigger,
-        isPending : updateProjectTagTriggerIsPending
+        mutateAsync: updateProjectTagTrigger,
+        isPending: updateProjectTagTriggerIsPending
     } = useUpdateProjectTag(
         () => {
             closeTagDialog()
         }
     )
 
-    const onSubmit = ( data : z.infer<typeof tagSchema> ) => {
+    const onSubmit = (data: z.infer<typeof tagSchema>) => {
 
-        if ( tag ) {
+        if (tag) {
 
             updateProjectTagTrigger({
-                params : {
-                    tag_id : tag.tag_id,
-                    project_id : tag.project_id
+                params: {
+                    tag_id: tag.tag_id,
+                    project_id: tag.project_id
                 },
-                body : {
-                    name : data.name,
-                    color : data.color
+                body: {
+                    name: data.name,
+                    color: data.color
                 }
             })
 
         } else {
 
             createProjectTagTrigger({
-                params : {
-                    project_id : selectedProject!.project_id
+                params: {
+                    project_id: selectedProject!.project_id
                 },
-                body : {
-                    name : data.name,
-                    color : data.color
+                body: {
+                    name: data.name,
+                    color: data.color
                 }
             })
 
@@ -92,41 +92,41 @@ const TagDialog = () => {
 
     const closeTagDialog = () => {
         updateDialogsStore({
-            tagDialog : {
-                open : false,
-                tag : null
+            tagDialog: {
+                open: false,
+                tag: null
             }
         })
     }
 
     useLayoutEffect(() => {
-        if ( open ) {
-            if ( tag ) {
+        if (open) {
+            if (tag) {
                 form.reset({
-                    name : tag.tag_name,
-                    color : tag.tag_color
+                    name: tag.tag_name,
+                    color: tag.tag_color
                 })
             } else {
                 form.reset({
-                    name : "",
-                    color : "#FFFFFF"
+                    name: "",
+                    color: "#FFFFFF"
                 })
             }
         }
-    }, [ open, tag ])
+    }, [open, tag])
 
     return (
         <Dialog
             open={open}
-            onOpenChange={ open => {
-                if ( !open ) {
+            onOpenChange={open => {
+                if (!open) {
                     closeTagDialog()
                 }
-            } }
+            }}
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{ tag ? "Edit Tag" : "Create Tag" }</DialogTitle>
+                    <DialogTitle>{tag ? "Edit Tag" : "Create Tag"}</DialogTitle>
                 </DialogHeader>
                 <Form
                     {...form}
@@ -135,13 +135,13 @@ const TagDialog = () => {
                         className={cn(
                             ` flex flex-col space-y-4 `
                         )}
-                        onSubmit={ form.handleSubmit(onSubmit) }
+                        onSubmit={form.handleSubmit(onSubmit)}
                     >
 
                         <FormField
                             control={form.control}
                             name="name"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
@@ -150,7 +150,7 @@ const TagDialog = () => {
                                             placeholder="Tag Name"
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -162,18 +162,18 @@ const TagDialog = () => {
                             <FormField
                                 control={form.control}
                                 name="color"
-                                render={({field}) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Color</FormLabel>
                                         <FormControl>
                                             <HexColorPicker
                                                 color={field.value}
-                                                onChange={ value => {
-                                                    field.onChange( value )
-                                                } }
+                                                onChange={value => {
+                                                    field.onChange(value)
+                                                }}
                                             />
                                         </FormControl>
-                                        <FormMessage/>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -188,10 +188,10 @@ const TagDialog = () => {
                                         ` text-center px-4 py-2 rounded-md `,
                                     )}
                                     style={{
-                                        backgroundColor : color,
-                                        color : getHexLuminance(color) > 0.5 ? "black" : "white"
+                                        backgroundColor: color,
+                                        color: getHexLuminance(color) > 0.5 ? "black" : "white"
                                     }}
-                                >{ !!name ? name : "Tag Name" }</span>
+                                >{!!name ? name : "Tag Name"}</span>
                             </div>
                         </div>
                     </form>
@@ -216,7 +216,7 @@ const TagDialog = () => {
                         }
                     >
                         {
-                            createProjectTagTriggerIsPending || updateProjectTagTriggerIsPending ? <Spinner/> : tag ? "Update" : "Create"
+                            createProjectTagTriggerIsPending || updateProjectTagTriggerIsPending ? <Spinner /> : tag ? "Update" : "Create"
                         }
                     </Button>
                 </DialogFooter>

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useDeactivateTaskboard } from "@/services/private/taskboard/mutation";
 import { updateDialogsStore, useDialogsStore_deactivateTaskboardDialog } from "@/stores/dialogs";
 
-import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -18,56 +18,56 @@ const DeactivateTaskboardDialog = () => {
         taskboard
     } = useDialogsStore_deactivateTaskboardDialog()
 
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedProject = useProjectStore_selectedProject()
 
     const {
-        mutateAsync : deactivateTaskboardTrigger,
-        isPending : deactiveTaskboardIsPending
+        mutateAsync: deactivateTaskboardTrigger,
+        isPending: deactiveTaskboardIsPending
     } = useDeactivateTaskboard({
-        onSuccess : () => {
+        onSuccess: () => {
             updateDialogsStore({
-                deactivateTaskboardDialog : {
-                    open : false,
+                deactivateTaskboardDialog: {
+                    open: false,
                     taskboard
                 }
             })
         }
     })
-    
+
     const deactivateTaskboardFormSchema = z.object({
-        taskboard_name : z.string().min( 1, "Name of the taskboard is required" )
-            .refine( value => {
+        taskboard_name: z.string().min(1, "Name of the taskboard is required")
+            .refine(value => {
                 return value === taskboard?.task_board_name
-            }, { message: `You must type "${taskboard?.task_board_name}" to confirm deletion.` } )
+            }, { message: `You must type "${taskboard?.task_board_name}" to confirm deletion.` })
     })
 
     const form = useForm<z.infer<typeof deactivateTaskboardFormSchema>>({
-        resolver : zodResolver( deactivateTaskboardFormSchema )
+        resolver: zodResolver(deactivateTaskboardFormSchema)
     })
 
     const onSubmit = async () => {
         deactivateTaskboardTrigger({
-            taskboard_id : taskboard!.task_board_id,
-            project_id : selectedProject!.project_id
+            taskboard_id: taskboard!.task_board_id,
+            project_id: selectedProject!.project_id
         })
     }
 
     return (
         <Dialog
             open={open}
-            onOpenChange={ ( openValue ) => {
-                if ( !openValue ) {
+            onOpenChange={(openValue) => {
+                if (!openValue) {
                     form.reset()
                 }
-                if ( !deactiveTaskboardIsPending ) {
+                if (!deactiveTaskboardIsPending) {
                     updateDialogsStore({
-                        deactivateTaskboardDialog : {
-                            open : !open,
+                        deactivateTaskboardDialog: {
+                            open: !open,
                             taskboard
                         }
                     })
                 }
-            } }
+            }}
         >
             <DialogContent>
                 <DialogHeader>
@@ -81,7 +81,7 @@ const DeactivateTaskboardDialog = () => {
                         <FormField
                             control={form.control}
                             name="taskboard_name"
-                            render={ ({ field }) => (
+                            render={({ field }) => (
                                 <FormItem
                                     className="w-full"
                                 >
@@ -108,7 +108,7 @@ const DeactivateTaskboardDialog = () => {
                         }}
                         disabled={deactiveTaskboardIsPending}
                     >
-                        {deactiveTaskboardIsPending ? <Spinner/> : "Deactivate"}
+                        {deactiveTaskboardIsPending ? <Spinner /> : "Deactivate"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -1,11 +1,11 @@
 import NoTaskboardsStage from "@/components/others/project/NoTaskboardsStage";
 import Taskboard from "@/components/others/taskboard/Taskboard";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_noTaskboards } from "@/stores/globals";
+import { useTaskboardStore_noTaskboards } from "@/stores/taskboard";
 
-const TaskboardPage = () => {    
+const TaskboardPage = () => {
 
-    const noTaskboards = useGlobalsStore_noTaskboards()
+    const noTaskboards = useTaskboardStore_noTaskboards()
 
     return (
         <div
@@ -16,14 +16,14 @@ const TaskboardPage = () => {
         >
             {
                 noTaskboards ?
-                <>
-                    <div></div>
-                    <NoTaskboardsStage/>
-                </>
-                :
-                <>
-                    <Taskboard/>
-                </>
+                    <>
+                        <div></div>
+                        <NoTaskboardsStage />
+                    </>
+                    :
+                    <>
+                        <Taskboard />
+                    </>
             }
         </div>
     )

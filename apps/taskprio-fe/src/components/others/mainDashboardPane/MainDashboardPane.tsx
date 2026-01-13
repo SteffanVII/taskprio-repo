@@ -8,7 +8,7 @@ import { useTheme } from "@/lib/utils/themeProvider";
 import TodoCard_MainDashboardPane from "./TodoCard_MainDashboardPane";
 import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { useGlobalsStore_noWorkspaces } from "@/stores/globals";
+import { useWorkspaceStore_noWorkspaces } from "@/stores/workspace";
 import { useElectronStore_isElectron } from "@/stores/electron";
 
 const MainDashboardPane = () => {
@@ -19,7 +19,7 @@ const MainDashboardPane = () => {
     } = useTheme()
 
     const isElectron = useElectronStore_isElectron()
-    const noWorkspaces = useGlobalsStore_noWorkspaces()
+    const noWorkspaces = useWorkspaceStore_noWorkspaces()
 
     return (
         <>

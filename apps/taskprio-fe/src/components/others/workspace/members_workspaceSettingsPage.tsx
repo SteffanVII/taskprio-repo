@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 import { EWorkspaceRole, TWorkspaceMember } from "@repo/taskprio-types/src";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import UserAvatar from "../shared/UserAvatar";
 import WorkspaceMemberBadge from "../shared/WorkspaceMemberBadge";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, PlusIcon } from "lucide-react";
 import { updateDialogsStore } from "@/stores/dialogs";
@@ -11,34 +11,46 @@ import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import dayjs from "dayjs";
 import { Label } from "@/components/ui/label";
-import { useUpdateWorkspaceMemberRole } from "@/services/private/workspace/mutation";
+import { useDeactivateWorkspaceMember, useReactivateWorkspaceMember, useUpdateWorkspaceMemberRole } from "@/services/private/workspace/mutation";
 import { toast } from "sonner";
 import { useGetWorkspaceMember } from "@/services/private/workspace/query";
 import Spinner from "../Spinner";
 import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerOrAdmin";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 type TMembersSectionContext = {
-    selectedMember : TWorkspaceMember | null
-    setSelectedMember : ( member : TWorkspaceMember | null ) => void
+    selectedMember: TWorkspaceMember | null
+    setSelectedMember: (member: TWorkspaceMember | null) => void
 }
 
 const MembersSectionContenxt = createContext<TMembersSectionContext>({
-    selectedMember : null,
-    setSelectedMember : () => {}
+    selectedMember: null,
+    setSelectedMember: () => { }
 })
 
 export const Members_WorkspaceSettingsPage = () => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
 
-    const [ selectedMember, setSelectedMember ] = useState<TWorkspaceMember | null>(null)
+    const [selectedMember, setSelectedMember] = useState<TWorkspaceMember | null>(null)
+    const [showDeactivatedMembers, setShowDeactivatedMembers] = useState<boolean>(false)
+
+    const activeMembers = useMemo(() => {
+        return (selectedWorkspace?.workspace_members || []).filter(member => member.is_active)
+    }, [selectedWorkspace])
+
+    const deactivatedMembers = useMemo(() => {
+        return (selectedWorkspace?.workspace_members || []).filter(member => !member.is_active)
+    }, [selectedWorkspace])
 
     const handleInviteMemberOnClick = () => {
         updateDialogsStore({
-            workspaceInvitationDialog : {
-                open : true
+            workspaceInvitationDialog: {
+                open: true
             }
         })
     }
@@ -71,25 +83,59 @@ export const Members_WorkspaceSettingsPage = () => {
                         >
                             <Button
                                 onClick={handleInviteMemberOnClick}
-                            ><PlusIcon/> Invite Member</Button>
+                            ><PlusIcon /> Invite Member</Button>
                         </div>
                     }
-                    <div
-                        className={cn(
-                            `flex flex-wrap gap-4`
-                        )}
-                    >
-                        {
-                            selectedWorkspace?.workspace_members.map( member => (
-                                <MemberCard
-                                    data={member}
-                                    key={member.user_id}
+                    <div className="flex flex-col gap-8" >
+                        <div
+                            className={cn(
+                                `flex flex-wrap gap-4`
+                            )}
+                        >
+                            {
+                                activeMembers.map(member => (
+                                    <MemberCard
+                                        data={member}
+                                        key={member.user_id}
+                                    />
+                                ))
+                            }
+                        </div>
+                        <div className="flex items-center gap-4" >
+                            <Badge variant={"outline"} className="flex items-center gap-2 h-fit py-2 px-3" >
+                                <Switch
+                                    id="show-deactivated"
+                                    checked={showDeactivatedMembers}
+                                    onCheckedChange={setShowDeactivatedMembers}
                                 />
-                            ) )
+                                <Label htmlFor="show-deactivated" className=" text-muted-foreground text-nowrap " >Show deactivated {deactivatedMembers?.length}</Label>
+                            </Badge>
+                            <Separator className="flex-1" />
+                        </div>
+                        {
+                            showDeactivatedMembers &&
+                            <div
+                                className={cn(
+                                    `flex flex-wrap gap-4`
+                                )}
+                            >
+                                {
+                                    deactivatedMembers.length > 0 ?
+                                    deactivatedMembers.map(member => (
+                                        <MemberCard
+                                            data={member}
+                                            key={member.user_id}
+                                        />
+                                    ))
+                                    :
+                                    <p className="w-full text-center text-muted-foreground my-4" >No deactivated members</p>
+                                }
+                            </div>
                         }
+
                     </div>
                 </div>
-                <MemberDialog/>
+                <MemberDialog />
             </MembersSectionContenxt.Provider>
         </>
     )
@@ -99,10 +145,10 @@ export const Members_WorkspaceSettingsPage = () => {
 export default Members_WorkspaceSettingsPage;
 
 type TMemberCardProps = {
-    data : TWorkspaceMember
+    data: TWorkspaceMember
 }
 
-const MemberCard : React.FC<TMemberCardProps> = ({
+const MemberCard: React.FC<TMemberCardProps> = ({
     data
 }) => {
 
@@ -143,7 +189,7 @@ const MemberCard : React.FC<TMemberCardProps> = ({
 
 const MemberDialog = () => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const {
         selectedMember,
@@ -152,43 +198,61 @@ const MemberDialog = () => {
 
     const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
 
-    const [ role, setRole ] = useState<EWorkspaceRole | null>(null)
+    const [role, setRole] = useState<EWorkspaceRole | null>(null)
 
     const {
-        mutate : updateWorkspaceMemberRoleTrigger,
-        isPending : updateWorkspaceMemberRoleIsPending
+        mutate: updateWorkspaceMemberRoleTrigger,
+        isPending: updateWorkspaceMemberRoleIsPending
     } = useUpdateWorkspaceMemberRole({
-        onSuccess : () => {
+        onSuccess: () => {
             toast.success("Workspace member role updated successfully")
         }
     })
 
     const {
-        data : workspaceMember,
-        isLoading : workspaceMemberIsLoading
+        mutate: deactivateWorkspaceMemberTrigger,
+        isPending: deactivateWorkspaceMemberIsPending
+    } = useDeactivateWorkspaceMember()
+
+    const {
+        mutate: reactivateWorkspaceMemberTrigger,
+        isPending: reactivateWorkspaceMemberIsPending
+    } = useReactivateWorkspaceMember()
+
+    const {
+        data: workspaceMember,
+        isLoading: workspaceMemberIsLoading
     } = useGetWorkspaceMember({
-        params : {
-            workspace_id : selectedWorkspace?.workspace_id,
-            member_id : selectedMember?.user_id
+        params: {
+            workspace_id: selectedWorkspace?.workspace_id,
+            member_id: selectedMember?.user_id
         }
     })
 
     const handleSaveOnClick = () => {
-        if ( workspaceMember ) {
+        if (workspaceMember) {
             updateWorkspaceMemberRoleTrigger({
-                params : {
-                    workspace_id : workspaceMember.workspace_id,
-                    member_id : workspaceMember.user_id
+                params: {
+                    workspace_id: workspaceMember.workspace_id,
+                    member_id: workspaceMember.user_id
                 },
-                body : {
-                    role : role as EWorkspaceRole
+                body: {
+                    role: role as EWorkspaceRole
                 }
             })
         }
     }
 
+    const handleDeactivateMember = () => {
+
+    }
+
+    const handleReactivateMember = () => {
+
+    }
+
     useEffect(() => {
-        if ( workspaceMember ) {
+        if (workspaceMember) {
             setRole(workspaceMember.workspace_role)
         }
     }, [workspaceMember])
@@ -197,7 +261,7 @@ const MemberDialog = () => {
         <Dialog
             open={!!selectedMember}
             onOpenChange={open => {
-                if ( !open ) {
+                if (!open) {
                     setSelectedMember(null)
                 }
             }}
@@ -214,29 +278,21 @@ const MemberDialog = () => {
                         (!workspaceMemberIsLoading && workspaceMember) &&
                         <div
                             className={cn(
-                                `grid gap-4`
+                                `flex flex-col gap-2`
                             )}
-                            style={{
-                                gridTemplateColumns : "min-content 1fr"
-                            }}
                         >
                             <UserAvatar
                                 user_id_or_email={selectedMember?.user_id ?? ""}
-                                size="xl"
+                                size="lg"
                                 disableHoverCard
                             />
-                            <div
-                                className={cn(
-                                    `flex flex-col gap-2`
-                                )}
-                            >
-                                <p className={` text-3xl font-medium `} >{workspaceMember?.firstname} {workspaceMember?.lastname}</p>
-                                <p className={` text-sm text-muted-foreground `} >{workspaceMember?.email}</p>
-                                <p><span className="text-sm text-muted-foreground" >Added on -</span> {workspaceMember?.joined_at ? dayjs(workspaceMember.joined_at).format("MMMM D, YYYY") : "N/A"}</p>
-                                <p className="flex items-center gap-1" ><span className="text-sm text-muted-foreground" >Invited by -</span> {workspaceMember?.invited_by ? <UserAvatar user_id_or_email={workspaceMember.invited_by} size="sm" /> : "N/A"}</p>
-                                {
-                                    // Disable member role change of the selected member is an owner and the current user is not an admin or an owner
-                                    (selectedMember?.workspace_role === EWorkspaceRole.OWNER) || (!isUserWorkspaceOwnerOrAdmin) ?
+                            <p className={` text-3xl font-medium mt-4 `} >{workspaceMember?.firstname} {workspaceMember?.lastname}</p>
+                            <p className={` text-sm text-muted-foreground `} >{workspaceMember?.email}</p>
+                            <p><span className="text-sm text-muted-foreground" >Added on -</span> {workspaceMember?.joined_at ? dayjs(workspaceMember.joined_at).format("MMMM D, YYYY") : "N/A"}</p>
+                            <p className="flex items-center gap-1" ><span className="text-sm text-muted-foreground" >Invited by -</span> {workspaceMember?.invited_by ? <UserAvatar user_id_or_email={workspaceMember.invited_by} size="sm" /> : "N/A"}</p>
+                            {
+                                // Disable member role change of the selected member is an owner and the current user is not an admin or an owner
+                                (selectedMember?.workspace_role === EWorkspaceRole.OWNER) || (!isUserWorkspaceOwnerOrAdmin) ?
                                     <div className="mt-2" >
                                         <WorkspaceMemberBadge role={workspaceMember?.workspace_role ?? EWorkspaceRole.MEMBER} />
                                     </div>
@@ -244,9 +300,9 @@ const MemberDialog = () => {
                                     <>
                                         <Label className="mt-[1rem]" htmlFor="workspace-role" >Workspace Role</Label>
                                         <Select
-                                            items={Object.entries(EWorkspaceRole).map( ([key, value]) => ({
-                                                value : value.toString(),
-                                                label : key.toLowerCase()
+                                            items={Object.entries(EWorkspaceRole).map(([key, value]) => ({
+                                                value: value.toString(),
+                                                label: key.toLowerCase()
                                             }))}
                                             value={role?.toString()}
                                             onValueChange={value => {
@@ -259,7 +315,7 @@ const MemberDialog = () => {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {
-                                                    Object.entries(EWorkspaceRole).filter( ([_, value]) => !isNaN(Number(value)) && value !== EWorkspaceRole.OWNER ).map( ([ key, value ]) => (
+                                                    Object.entries(EWorkspaceRole).filter(([_, value]) => !isNaN(Number(value)) && value !== EWorkspaceRole.OWNER).map(([key, value]) => (
                                                         <SelectItem
                                                             key={key}
                                                             value={value.toString()}
@@ -267,16 +323,39 @@ const MemberDialog = () => {
                                                         >
                                                             {key.toLowerCase()}
                                                         </SelectItem>
-                                                    ) )
+                                                    ))
                                                 }
                                             </SelectContent>
                                         </Select>
                                         <Button
-                                            variant={"destructive"}
-                                        ><AlertCircle/> Drop member from workspace</Button>
+                                            variant={workspaceMember?.is_active ? "destructive" : "secondary"}
+                                            disabled={updateWorkspaceMemberRoleIsPending || deactivateWorkspaceMemberIsPending || reactivateWorkspaceMemberIsPending}
+                                            onClick={() => {
+                                                if (workspaceMember?.is_active) {
+                                                    deactivateWorkspaceMemberTrigger({
+                                                        workspace_id : workspaceMember.workspace_id,
+                                                        member_id : workspaceMember.user_id
+                                                    })
+                                                } else {
+                                                    reactivateWorkspaceMemberTrigger({
+                                                        workspace_id : workspaceMember.workspace_id,
+                                                        member_id : workspaceMember.user_id
+                                                    })
+                                                }
+                                            }}
+                                        >
+                                            {
+                                                (deactivateWorkspaceMemberIsPending || reactivateWorkspaceMemberIsPending) ? <Spinner /> :
+                                                    <>
+                                                        <AlertCircle />
+                                                        {
+                                                            workspaceMember?.is_active ? "Deactivate member from workspace" : "Reactivate member from workspace"
+                                                        }
+                                                    </>
+                                            }
+                                        </Button>
                                     </>
-                                }
-                            </div>
+                            }
                         </div>
                     }
                 </div>
@@ -287,7 +366,7 @@ const MemberDialog = () => {
                             onClick={handleSaveOnClick}
                             disabled={role === workspaceMember?.workspace_role || updateWorkspaceMemberRoleIsPending}
                         >
-                            { updateWorkspaceMemberRoleIsPending ? <Spinner/> : "Save" }
+                            {updateWorkspaceMemberRoleIsPending ? <Spinner /> : "Save"}
                         </Button>
                     </DialogFooter>
                 }

@@ -1,9 +1,12 @@
 import { useGetUserWorkspaces } from "@/services/private/workspace/query";
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
+import { updateProjectStore } from "@/stores/project";
+import { updateTaskboardStore } from "@/stores/taskboard";
+import { updateWorkspaceStore, useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { EWorkspaceRole } from "@repo/taskprio-types/src";
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
+import { useGlobalsStore_user } from "@/stores/globals";
 
 type TStateManager_Workspace = {
     children: React.ReactNode
@@ -17,7 +20,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
     const { workspace_id } = useParams()
 
     const user = useGlobalsStore_user()
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const {
         connected: webSocketConnected,
@@ -34,7 +37,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
     })
 
     useEffect(() => {
-        updateGlobalsStore({
+        updateWorkspaceStore({
             workspaces,
             workspacesIsFetching,
             workspacesIsLoading,
@@ -84,10 +87,14 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
         if (!selectedWorkspace && workspace_id) {
             const foundWorkspace = workspaces?.find(workspace => workspace.workspace_id === workspace_id) ?? null;
             const workspaceRole: EWorkspaceRole | null = foundWorkspace?.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null;
-            updateGlobalsStore({
+            updateWorkspaceStore({
                 selectedWorkspace: foundWorkspace,
                 workspaceRole,
+            })
+            updateProjectStore({
                 noProjects: false,
+            })
+            updateTaskboardStore({
                 noTaskboards: false
             })
             if (foundWorkspace) {
@@ -102,7 +109,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
 
     // Set noWorkspaces global store state
     useLayoutEffect(() => {
-        updateGlobalsStore({
+        updateWorkspaceStore({
             noWorkspaces: (workspaces && !workspacesIsFetching && workspaces.length < 1)
         })
     }, [workspaces, workspacesIsFetching])

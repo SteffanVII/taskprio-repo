@@ -4,54 +4,54 @@ import { CheckCircle2, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import TagBadge from "../tag/TagBadge";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { useProjectStore_selectedProject } from "@/stores/project";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAddTaskTag, useRemoveTaskTag } from "@/services/private/task/mutation";
 
 type TTaskTagEditorProps = {
-    task : TTask | TTaskForCardView
+    task: TTask | TTaskForCardView
 }
 
-const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
+const TaskTagEditor: React.FC<TTaskTagEditorProps> = ({
     task
 }) => {
 
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedProject = useProjectStore_selectedProject()
 
-    const [ tags, setTags ] = useState<TTaskTag[]>(task.tags)
+    const [tags, setTags] = useState<TTaskTag[]>(task.tags)
 
     const {
-        mutateAsync : addTaskTagTrigger
+        mutateAsync: addTaskTagTrigger
     } = useAddTaskTag()
 
     const {
-        mutateAsync : removeTaskTagTrigger
+        mutateAsync: removeTaskTagTrigger
     } = useRemoveTaskTag()
 
-    const onTagSelect = ( tag : TTag ) => {
+    const onTagSelect = (tag: TTag) => {
 
-        const tagExists = tags.find( t => t.tag_id === tag.tag_id )
+        const tagExists = tags.find(t => t.tag_id === tag.tag_id)
 
-        if ( tagExists ) {
-            setTags( tags.filter( t => t.tag_id !== tag.tag_id ) )
+        if (tagExists) {
+            setTags(tags.filter(t => t.tag_id !== tag.tag_id))
             removeTaskTagTrigger({
-                body : {
-                    tag_id : tag.tag_id,
-                    task_id : task.task_id
+                body: {
+                    tag_id: tag.tag_id,
+                    task_id: task.task_id
                 }
             })
         } else {
-            setTags( [ ...tags, {
-                tag_name : tag.tag_name,
-                tag_color : tag.tag_color,
-                tag_id : tag.tag_id,
-                task_id : task.task_id
-            } ] )
+            setTags([...tags, {
+                tag_name: tag.tag_name,
+                tag_color: tag.tag_color,
+                tag_id: tag.tag_id,
+                task_id: task.task_id
+            }])
             addTaskTagTrigger({
-                body : {
-                    tag_id : tag.tag_id,
-                    task_id : task.task_id
+                body: {
+                    tag_id: tag.tag_id,
+                    task_id: task.task_id
                 }
             })
         }
@@ -83,21 +83,21 @@ const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
                                     className="flex flex-col gap-2 "
                                 >
                                     {
-                                        selectedProject.project_tags.map( tag => (
+                                        selectedProject.project_tags.map(tag => (
                                             <div
                                                 key={tag.tag_id}
-                                                onClick={ () => onTagSelect( tag ) }
+                                                onClick={() => onTagSelect(tag)}
                                                 className=" w-full flex gap-3 items-center cursor-pointer "
                                             >
                                                 {
-                                                    tags.find( t => t.tag_id === tag.tag_id ) && <CheckCircle2 className=" ml-2 size-4 text-primary " />
+                                                    tags.find(t => t.tag_id === tag.tag_id) && <CheckCircle2 className=" ml-2 size-4 text-primary " />
                                                 }
                                                 <TagBadge
                                                     tag={tag}
                                                     className=" grow "
                                                 />
                                             </div>
-                                        ) )
+                                        ))
                                     }
                                 </div>
                             </ScrollArea>
@@ -111,12 +111,12 @@ const TaskTagEditor : React.FC<TTaskTagEditorProps> = ({
                 )}
             >
                 {
-                    tags.map( tag => (
+                    tags.map(tag => (
                         <TagBadge
                             tag={tag}
                             key={tag.tag_id}
                         />
-                    ) )
+                    ))
                 }
             </div>
         </div>

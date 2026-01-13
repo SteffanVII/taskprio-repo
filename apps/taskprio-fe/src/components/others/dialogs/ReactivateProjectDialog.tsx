@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useReactivateProject } from "@/services/private/project/mutation";
 import { updateDialogsStore, useDialogsStore_reactivateProjectDialog } from "@/stores/dialogs";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { toast } from "sonner";
 import Spinner from "../Spinner";
 
 const ReactivateProjectDialog = () => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const {
         open,
@@ -20,7 +20,7 @@ const ReactivateProjectDialog = () => {
         isPending: reactivateProjectIsPending
     } = useReactivateProject({
         onSuccess: () => {
-            toast.success( `Project ${project?.project_name} is successfully reactivated.` )
+            toast.success(`Project ${project?.project_name} is successfully reactivated.`)
             updateDialogsStore({
                 reactivateProjectDialog: {
                     open: false,
@@ -29,7 +29,7 @@ const ReactivateProjectDialog = () => {
             });
         }
     });
-    
+
     const handleReactivateProject = () => {
         if (project && selectedWorkspace) {
             reactivateProjectTrigger({
@@ -63,7 +63,7 @@ const ReactivateProjectDialog = () => {
                         onClick={handleReactivateProject}
                         disabled={reactivateProjectIsPending}
                     >
-                        {reactivateProjectIsPending ? <Spinner/> : "Yes, I'm sure"}
+                        {reactivateProjectIsPending ? <Spinner /> : "Yes, I'm sure"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

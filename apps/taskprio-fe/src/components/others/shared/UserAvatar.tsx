@@ -1,6 +1,6 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { cn } from "@/lib/utils"
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import React, { useMemo } from "react"
 import WorkspaceMemberBadge from "./WorkspaceMemberBadge"
 import { ProfilePhotoUrl } from "@/lib/globals"
@@ -8,24 +8,24 @@ import { EProfilePhotoSize } from "@repo/taskprio-types/src"
 import { UserIcon } from "lucide-react"
 
 export type TUserAvatarProps = {
-    user_id_or_email : string,
-    size? : "sm" | "md" | "lg" | "xl"
-    disableHoverCard? : boolean
+    user_id_or_email: string,
+    size?: "sm" | "md" | "lg" | "xl"
+    disableHoverCard?: boolean
 }
 
-const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement, TUserAvatarProps>( ({
+const UserAvatar: React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement, TUserAvatarProps>(({
     user_id_or_email,
     size = "md",
     disableHoverCard = false
 }, ref) => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const user = useMemo(() => {
-        return selectedWorkspace?.workspace_members.find( member => member.user_id === user_id_or_email || member.email === user_id_or_email )
-    }, [ user_id_or_email, selectedWorkspace ])
+        return selectedWorkspace?.workspace_members.find(member => member.user_id === user_id_or_email || member.email === user_id_or_email)
+    }, [user_id_or_email, selectedWorkspace])
 
-    if ( disableHoverCard ) {
+    if (disableHoverCard) {
         return (
             <div
                 ref={ref}
@@ -39,12 +39,12 @@ const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement,
             >
                 {
                     user?.profile_photo?.photo_file_name ?
-                    <img
-                        loading="lazy"
-                        src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}?v=${user.profile_photo.last_modified}`}
-                    />
-                    :
-                    <UserIcon className="size-[70%]" />
+                        <img
+                            loading="lazy"
+                            src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}?v=${user.profile_photo.last_modified}`}
+                        />
+                        :
+                        <UserIcon className="size-[70%]" />
                 }
             </div>
         )
@@ -66,11 +66,11 @@ const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement,
                 >
                     {
                         user?.profile_photo?.photo_file_name ?
-                        <img
-                            src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}`}
-                        />
-                        :
-                        <UserIcon className="size-[70%]" />
+                            <img
+                                src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}`}
+                            />
+                            :
+                            <UserIcon className="size-[70%]" />
                     }
                 </div>
             </HoverCardTrigger>
@@ -89,11 +89,11 @@ const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement,
                     >
                         {
                             user?.profile_photo?.photo_file_name ?
-                            <img
-                                src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}`}
-                            />
-                            :
-                            <UserIcon className="size-[70%]" />
+                                <img
+                                    src={`${ProfilePhotoUrl}/${user?.user_id}/${user?.profile_photo?.photo_file_name?.replace(EProfilePhotoSize.ORIGINAL, EProfilePhotoSize.CROPPED_SMALL)}`}
+                                />
+                                :
+                                <UserIcon className="size-[70%]" />
                         }
                     </span>
                     <div
@@ -115,6 +115,6 @@ const UserAvatar : React.FC<TUserAvatarProps> = React.forwardRef<HTMLDivElement,
         </HoverCard>
     )
 
-} )
+})
 
 export default UserAvatar;

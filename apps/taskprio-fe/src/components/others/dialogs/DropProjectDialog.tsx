@@ -4,7 +4,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } 
 import { Input } from "@/components/ui/input";
 import { useDropProject } from "@/services/private/project/mutation";
 import { updateDialogsStore, useDialogsStore_dropProjectDialog } from "@/stores/dialogs";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -12,7 +12,7 @@ import Spinner from "../Spinner";
 
 const DropProjectDialog = () => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const {
         open,
@@ -46,7 +46,7 @@ const DropProjectDialog = () => {
 
     const onSubmit = async (data: z.infer<typeof dropProjectFormSchema>) => {
         if (!project || !selectedWorkspace) return;
-        
+
         await dropProjectTrigger({
             project_id: project.project_id,
             workspace_id: selectedWorkspace.workspace_id,
@@ -57,8 +57,8 @@ const DropProjectDialog = () => {
     return (
         <Dialog
             open={open}
-            onOpenChange={ ( openValue ) => {
-                if ( !openValue ) {
+            onOpenChange={(openValue) => {
+                if (!openValue) {
                     form.reset()
                 }
                 if (!dropProjectIsPending) {
@@ -69,7 +69,7 @@ const DropProjectDialog = () => {
                         }
                     })
                 }
-            } }
+            }}
         >
             <DialogContent>
                 <DialogHeader>
@@ -83,7 +83,7 @@ const DropProjectDialog = () => {
                         <FormField
                             control={form.control}
                             name="project_name"
-                            render={ ({ field }) => (
+                            render={({ field }) => (
                                 <FormItem
                                     className="w-full"
                                 >
@@ -107,7 +107,7 @@ const DropProjectDialog = () => {
                         onClick={form.handleSubmit(onSubmit)}
                         disabled={dropProjectIsPending}
                     >
-                        {dropProjectIsPending ? <Spinner/> : "Drop"}
+                        {dropProjectIsPending ? <Spinner /> : "Drop"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

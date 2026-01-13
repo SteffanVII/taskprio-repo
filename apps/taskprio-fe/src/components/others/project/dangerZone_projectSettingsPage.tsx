@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { useGlobalsStore_selectedProject } from "@/stores/globals";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import React from "react";
 
 const DangerZone_ProjectSettingsPage = () => {
 
-    const project = useGlobalsStore_selectedProject()
+    const project = useProjectStore_selectedProject()
 
     return (
         <React.Fragment>
@@ -27,8 +27,8 @@ const DangerZone_ProjectSettingsPage = () => {
                             className="w-fit"
                             onClick={() => {
                                 updateDialogsStore({
-                                    deactivateProjectDialog : {
-                                        open : true,
+                                    deactivateProjectDialog: {
+                                        open: true,
                                         project
                                     }
                                 })
@@ -46,8 +46,8 @@ const DangerZone_ProjectSettingsPage = () => {
                             className="w-fit"
                             onClick={() => {
                                 updateDialogsStore({
-                                    dropProjectDialog : {
-                                        open : true,
+                                    dropProjectDialog: {
+                                        open: true,
                                         project
                                     }
                                 })

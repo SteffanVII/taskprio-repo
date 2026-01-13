@@ -2,7 +2,10 @@ import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react
 import { TAddMembersToProjectPayload, TCreateProjectResponse, TUpdateProjectCustomizationPayload } from "./types"
 import { TCreateProjectPayload } from "./types"
 import { axiosInstance } from "@/services/axios"
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { updateGlobalsStore } from "@/stores/globals"
+import { updateProjectStore } from "@/stores/project"
+import { updateTaskboardStore } from "@/stores/taskboard"
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 
 import { TAddProjectMembersResponseData, TDeactivateProjectMemberRequestBody, TDeactivateProjectRequestBody, TDropProjectRequestQueryParams, TProject, TProjectMember, TReactivateProjectMemberRequestBody, TReactivateProjectRequestBody, TUpdateProjectCustomizationResponseData } from "@repo/taskprio-types/src/index"
 import { QueryKeys } from "@/services/enum"
@@ -15,7 +18,7 @@ export const useCreateProject = (successCallback?: (project: TCreateProjectRespo
 
     const queryClient = useQueryClient()
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     return useMutation<TCreateProjectResponse, Error, TCreateProjectPayload>({
         mutationFn: async (payload: TCreateProjectPayload) => {
@@ -47,7 +50,7 @@ type TUseUpdateProjectCustomizationOptions = UseMutationOptions<TUpdateProjectCu
 
 export const useUpdateProjectCustomization = (options?: TUseUpdateProjectCustomizationOptions) => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const queryClient = useQueryClient()
 
@@ -140,10 +143,14 @@ export const useDeactivateProject = (options?: TUseDeactivateProjectOptions) => 
                 queryKey: [...QueryKeys.GET_WORKSPACE_INACTIVE_PROJECTS.split, variables.workspace_id]
             })
             if (project_id === variables.project_id) {
-                updateGlobalsStore({
+                updateProjectStore({
                     selectedProject: null,
-                    selectedTaskboard: null,
+                })
+                updateGlobalsStore({
                     selectedTask: null,
+                })
+                updateTaskboardStore({
+                    selectedTaskboard: null,
                     noTaskboards: false
                 })
                 navigate(`/p/w/${workspace_id}/d`)
@@ -191,10 +198,14 @@ export const useDropProject = (options?: TUseDropProjectOptions) => {
                 queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, variables.workspace_id]
             })
             if (project_id === variables.project_id) {
-                updateGlobalsStore({
+                updateProjectStore({
                     selectedProject: null,
-                    selectedTaskboard: null,
+                })
+                updateGlobalsStore({
                     selectedTask: null,
+                })
+                updateTaskboardStore({
+                    selectedTaskboard: null,
                     noTaskboards: false
                 })
                 navigate(`/p/w/${workspace_id}/d`)
@@ -257,7 +268,7 @@ export const useDeactivateProjectMember = (options?: TUseDeactivateProjectMember
                 queryKey: [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id]
             })
             queryClient.setQueryData(
-                [ ...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id ],
+                [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id],
                 (oldData: TProjectMember) => produce(oldData, (draft) => {
                     draft.is_active = false
                 })
@@ -288,7 +299,7 @@ export const useReactivateProjectMember = (options?: TUseReactivateProjectMember
                 queryKey: [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id]
             })
             queryClient.setQueryData(
-                [ ...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id ],
+                [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id],
                 (oldData: TProjectMember) => produce(oldData, (draft) => {
                     draft.is_active = true
                 })

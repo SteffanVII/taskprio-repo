@@ -6,7 +6,9 @@ import { Minimize, Slash, SquareIcon, X } from "lucide-react";
 import TaskboardList from "../taskboard/TaskboardList";
 import { useContext, useMemo } from "react";
 import { useLocation } from "react-router";
-import { useGlobalsStore_authenticated, useGlobalsStore_selectedProject, useGlobalsStore_taskboards } from "@/stores/globals";
+import { useGlobalsStore_authenticated } from "@/stores/globals";
+import { useTaskboardStore_taskboards } from "@/stores/taskboard";
+import { useProjectStore_selectedProject } from "@/stores/project";
 import TaskTodoPageHeader from "../taskTodo/TaskTodoPageHeader";
 import { WebSocketContext } from "../websocket/WebsocketProvider";
 
@@ -17,8 +19,8 @@ const ElectronCustomTitlebar = () => {
 
     const authenticated = useGlobalsStore_authenticated()
     const windowMaximized = useElectronStore_windowMaximize()
-    const selectedProject = useGlobalsStore_selectedProject()
-    const taskboards = useGlobalsStore_taskboards()
+    const selectedProject = useProjectStore_selectedProject()
+    const taskboards = useTaskboardStore_taskboards()
 
     const {
         connected: webSocketConnected,

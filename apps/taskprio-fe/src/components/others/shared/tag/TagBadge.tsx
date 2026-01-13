@@ -20,10 +20,11 @@ const TagBadge: React.FC<TTagBadgeProps> = ({
             className={cn(
                 ` flex items-center `,
                 ` px-3 py-1 rounded `,
+                ` !font-extralight `,
                 ` cursor-pointer transition-shadow `,
-                ` hover:shadow-lg hover:shadow-foreground/30 hover:z-10 `,
-                size === "sm" && ` text-xs font-extralight px-2 py-0.5 `,
-                size === "xs" && ` text-[0.7rem] font-extralight px-1 py-0.25 `,
+                ` hover:z-10 `,
+                size === "sm" && ` text-xs px-2 py-0.5 `,
+                size === "xs" && ` text-[0.7rem] px-1 py-0.25 `,
                 className
             )}
             style={{

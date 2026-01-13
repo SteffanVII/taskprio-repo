@@ -133,7 +133,7 @@ export const registerWorkspaceRoutes = ( router : Router ) => {
             const { user_id } = req.user
 
             try {
-                await deactivateWorkspaceMember(workspace_id, member_id)
+                await deactivateWorkspaceMember(member_id, workspace_id)
 
                 const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
                     workspace_id,
@@ -169,7 +169,7 @@ export const registerWorkspaceRoutes = ( router : Router ) => {
             const { user_id } = req.user
 
             try {
-                await reactivateWorkspaceMember(workspace_id, member_id)
+                await reactivateWorkspaceMember(member_id, workspace_id)
 
                 const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
                     workspace_id,

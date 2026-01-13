@@ -1,6 +1,9 @@
 import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
-import { updateGlobalsStore, useGlobalsStore_selectedProject, useGlobalsStore_selectedWorkspace, useGlobalsStore_user } from "@/stores/globals";
+import { updateGlobalsStore, useGlobalsStore_user } from "@/stores/globals";
+import { updateProjectStore, useProjectStore_selectedProject } from "@/stores/project";
+import { updateTaskboardStore } from "@/stores/taskboard";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -19,8 +22,8 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
     } = useContext(WebSocketContext)
 
     const user = useGlobalsStore_user()
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
-    const selectedProject = useGlobalsStore_selectedProject()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const selectedProject = useProjectStore_selectedProject()
 
     const {
         data: projects,
@@ -30,7 +33,7 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
     } = useGetUserProjectsByWorkspace(selectedWorkspace?.workspace_id)
 
     useEffect(() => {
-        updateGlobalsStore({
+        updateProjectStore({
             projects,
             projectsIsFetching,
             projectsIsLoading,
@@ -87,13 +90,19 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
         if (!selectedProject && project_id) {
             const foundProject = projects?.find(project => project.project_id === project_id) ?? null;
             const projectMemberRole = foundProject?.project_members.find(projectMember => projectMember.user_id === user?.user_id)?.project_role ?? null
-            updateGlobalsStore({
+            updateProjectStore({
                 selectedProject: foundProject,
                 projectRole: projectMemberRole,
                 noProjects: false,
-                noTaskboards: false
             })
-            if ( foundProject ) {
+            updateGlobalsStore({
+                selectedTask: null
+            })
+            updateTaskboardStore({
+                selectedTaskboard: null,
+                noTaskboards: false,
+            })
+            if (foundProject) {
                 channelActions.joinProjectChannel(foundProject.project_id)
             }
         }
@@ -104,7 +113,7 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
 
     // Set noProjects global store state
     useLayoutEffect(() => {
-        updateGlobalsStore({
+        updateProjectStore({
             noProjects: (projects && !projectsIsFetching && projects.length < 1)
         })
     }, [projects, projectsIsFetching])

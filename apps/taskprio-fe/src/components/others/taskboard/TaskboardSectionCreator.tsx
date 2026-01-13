@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useCreateTaskboardSection } from "@/services/private/tasksection/mutation"
-import { useGlobalsStore_selectedTaskboard } from "@/stores/globals"
+import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard"
 
 import { Plus } from "lucide-react"
 import { useState } from "react"
@@ -12,7 +12,7 @@ import getHexLuminance from "@/lib/utils/hexColorLuminance"
 
 export const TaskboardSectionCreator = () => {
 
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
 
     const [createSection, setCreateSection] = useState(false)
     const [sectionName, setSectionName] = useState<string>("")

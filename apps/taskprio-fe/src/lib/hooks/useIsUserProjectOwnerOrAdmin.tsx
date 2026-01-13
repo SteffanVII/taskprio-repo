@@ -1,10 +1,10 @@
-import { useGlobalsStore_projectRole } from "@/stores/globals"
+import { useProjectStore_projectRole } from "@/stores/project"
 import { EProjectRole } from "@repo/taskprio-types/src"
 
 
 const useIsUserProjectOwnerOrAdmin = () => {
 
-    const projectRole = useGlobalsStore_projectRole()
+    const projectRole = useProjectStore_projectRole()
 
 
     return projectRole === EProjectRole.OWNER || projectRole === EProjectRole.ADMIN

@@ -4,7 +4,8 @@ import Spinner from "../Spinner";
 import { useCreateProject } from "@/services/private/project/mutation";
 import { useNavigate } from "react-router";
 
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { updateProjectStore } from "@/stores/project";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { z } from "zod"
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +28,7 @@ const NoProjectStage = () => {
     const navigate = useNavigate()
 
     const sidebar = useSidebar()
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -44,7 +45,7 @@ const NoProjectStage = () => {
     } = useCreateProject((response) => {
         if (!selectedWorkspace) return
         form.reset()
-        updateGlobalsStore({
+        updateProjectStore({
             noProjects: false
         })
         navigate(`/p/w/${selectedWorkspace.workspace_id}/d/${response.project_id}`)

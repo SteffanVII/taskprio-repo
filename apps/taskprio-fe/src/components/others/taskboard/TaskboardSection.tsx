@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import TaskboardTaskInitialCreator from "./TaskboardTaskInitialCreator";
 import { useCreateTask } from "@/services/private/task/mutation";
-import { useGlobalsStore_selectedTaskboard } from "@/stores/globals";
+import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
 
 import TaskboardTask from "./TaskboardTask";
 import TaskboardTaskDrop from "./TaskboardTaskDrop";
@@ -29,7 +29,7 @@ export const TaskboardSection: React.FC<TTaskboardSectionProps> = ({
     preview
 }) => {
 
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
 
     const [createTask, setCreateTask] = useState(false)
 

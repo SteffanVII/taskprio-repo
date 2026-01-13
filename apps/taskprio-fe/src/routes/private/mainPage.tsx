@@ -9,7 +9,9 @@ import MainDashboardPane from "@/components/others/mainDashboardPane/MainDashboa
 import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStage";
 import Spinner from "@/components/others/Spinner";
 import { cn } from "@/lib/utils";
-import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_logoutIsPending, useGlobalsStore_noProjects, useGlobalsStore_noWorkspaces, useGlobalsStore_projectsIsLoading, useGlobalsStore_workspacesIsLoading } from "@/stores/globals";
+import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_logoutIsPending } from "@/stores/globals";
+import { useProjectStore_noProjects, useProjectStore_projectsIsLoading } from "@/stores/project";
+import { useWorkspaceStore_noWorkspaces, useWorkspaceStore_workspacesIsLoading } from "@/stores/workspace";
 import { Outlet } from "react-router";
 import DeactivateTaskboardDialog from "@/components/others/dialogs/DeactivateTaskboardDialog";
 import ReactivateTaskboardDialog from "@/components/others/dialogs/ReactivateTaskboardDialog";
@@ -33,10 +35,10 @@ const MainPage = () => {
     } = useContext(WebSocketContext)
     const authenticated = useGlobalsStore_authenticated()
     const authenticateIsPending = useGlobalsStore_authenticateIsPending()
-    const noProjects = useGlobalsStore_noProjects()
-    const projectsIsLoading = useGlobalsStore_projectsIsLoading()
-    const noWorkspaces = useGlobalsStore_noWorkspaces()
-    const workspacesIsLoading = useGlobalsStore_workspacesIsLoading()
+    const noProjects = useProjectStore_noProjects()
+    const projectsIsLoading = useProjectStore_projectsIsLoading()
+    const noWorkspaces = useWorkspaceStore_noWorkspaces()
+    const workspacesIsLoading = useWorkspaceStore_workspacesIsLoading()
     const logoutIsPending = useGlobalsStore_logoutIsPending()
 
     const showLoadingScreen = useMemo(() => {

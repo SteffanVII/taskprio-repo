@@ -1,7 +1,7 @@
 import { useGoogleLoginT } from "@/services/authentication";
 import { updateDialogsStore } from "@/stores/dialogs";
 import { updateElectronStore, useElectronStore_preferences } from "@/stores/electron";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
 import { TElectronStorePreferencesOverlayLocation } from "@repo/taskprio-types/src";
 import React, { createContext, useLayoutEffect } from "react";
@@ -33,7 +33,7 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
 
     const navigate = useNavigate()
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
     const preferences = useElectronStore_preferences()
 
     const {

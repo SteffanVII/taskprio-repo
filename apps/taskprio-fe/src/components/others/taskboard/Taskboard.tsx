@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useGetTaskboardSections } from "@/services/private/tasksection/query";
-import { useGlobalsStore_selectedTaskboard, useGlobalsStore_taskboardsIsLoading } from "@/stores/globals";
+import { useTaskboardStore_selectedTaskboard, useTaskboardStore_taskboardsIsLoading } from "@/stores/taskboard";
 import TaskboardSection from "./TaskboardSection";
 import { TTaskForCardView, TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
@@ -22,13 +22,13 @@ export enum ETaskboardDragDataType {
 }
 
 type TTaskboardSectionRenderInfo = {
-    firstSection : boolean,
-    lastSection : boolean,
-    adjacentTop : TTaskSection | null,
-    adjacentBottom : TTaskSection | null,
-    displayOrderTop : number,
-    displayOrderBottom : number,
-    taskboardSection : TTaskSection
+    firstSection: boolean,
+    lastSection: boolean,
+    adjacentTop: TTaskSection | null,
+    adjacentBottom: TTaskSection | null,
+    displayOrderTop: number,
+    displayOrderBottom: number,
+    taskboardSection: TTaskSection
 }
 
 export const Taskboard = () => {
@@ -38,61 +38,61 @@ export const Taskboard = () => {
     } = useParams()
 
     const taskboardTaskDrag = useTaskboardDragStore_taskboardTaskDrag()
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
-    const taskboardsIsLoading = useGlobalsStore_taskboardsIsLoading()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
+    const taskboardsIsLoading = useTaskboardStore_taskboardsIsLoading()
 
     const scrollAreaRef = useRef<HTMLDivElement>(null)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
-            activationConstraint : {
-                distance : 8
+            activationConstraint: {
+                distance: 8
             }
         })
     )
 
     const {
-        data : taskboardSections,
-        isLoading : taskboardSectionsIsLoading,
+        data: taskboardSections,
+        isLoading: taskboardSectionsIsLoading,
     } = useGetTaskboardSections({
-        payload : {
-            pathParameter : {
-                task_board_id : task_board_id
+        payload: {
+            pathParameter: {
+                task_board_id: task_board_id
             },
-            pathQuery : {
-                include_tasks : true
+            pathQuery: {
+                include_tasks: true
             }
         },
-        options : {
-            enabled : !!selectedTaskboard && !!task_board_id
+        options: {
+            enabled: !!selectedTaskboard && !!task_board_id
         }
     })
 
     const {
-        mutateAsync : arrangeTaskMutation
+        mutateAsync: arrangeTaskMutation
     } = useArrangeTask()
 
     const {
-        mutateAsync : updateTaskboardSectionMutation,
+        mutateAsync: updateTaskboardSectionMutation,
     } = useUpdateTaskboardSection()
 
     const taskboardSectionWithRenderInfo = useMemo<React.ReactNode[]>(() => {
 
-        if ( !!taskboardSections ) {
+        if (!!taskboardSections) {
 
             const singleSection = taskboardSections.length === 1
-            
-            return taskboardSections?.map( (taskboardSection, taskboardSectionIndex) => {
+
+            return taskboardSections?.map((taskboardSection, taskboardSectionIndex) => {
                 const firstSection = taskboardSectionIndex === 0
                 const lastSection = taskboardSectionIndex === taskboardSections.length - 1
-    
+
                 const adjacentTop = firstSection && !singleSection ? null : taskboardSections[taskboardSectionIndex - 1]
                 const adjacentBottom = lastSection && !singleSection ? null : taskboardSections[taskboardSectionIndex + 1]
-    
-                const displayOrderTop = firstSection ? taskboardSection.display_order - 100 : ( adjacentTop!.display_order + taskboardSection.display_order ) / 2
-                const displayOrderBottom = lastSection ? taskboardSection.display_order + 100 : ( adjacentBottom!.display_order + taskboardSection.display_order ) / 2
 
-                const renderInfo : TTaskboardSectionRenderInfo = {
+                const displayOrderTop = firstSection ? taskboardSection.display_order - 100 : (adjacentTop!.display_order + taskboardSection.display_order) / 2
+                const displayOrderBottom = lastSection ? taskboardSection.display_order + 100 : (adjacentBottom!.display_order + taskboardSection.display_order) / 2
+
+                const renderInfo: TTaskboardSectionRenderInfo = {
                     firstSection,
                     lastSection,
                     adjacentTop,
@@ -107,26 +107,26 @@ export const Taskboard = () => {
                         {
                             renderInfo.firstSection &&
                             <TaskboardSectionDrop
-                                displayOrder={ renderInfo.displayOrderTop }
-                                bottomTaskSectionId={ renderInfo.taskboardSection.task_section_id }
+                                displayOrder={renderInfo.displayOrderTop}
+                                bottomTaskSectionId={renderInfo.taskboardSection.task_section_id}
                             />
                         }
                         <TaskboardSection
                             key={renderInfo.taskboardSection.task_section_id}
-                            taskSection={{...renderInfo.taskboardSection as TTaskSectionWithTasks}}
+                            taskSection={{ ...renderInfo.taskboardSection as TTaskSectionWithTasks }}
                         />
                         <TaskboardSectionDrop
-                            displayOrder={ renderInfo.displayOrderBottom }
-                            topTaskSectionId={ renderInfo.taskboardSection.task_section_id }
-                            bottomTaskSectionId={ renderInfo.adjacentBottom?.task_section_id }
+                            displayOrder={renderInfo.displayOrderBottom}
+                            topTaskSectionId={renderInfo.taskboardSection.task_section_id}
+                            bottomTaskSectionId={renderInfo.adjacentBottom?.task_section_id}
                         />
                     </React.Fragment>
                 );
-            } )
+            })
         }
 
         return []
-        
+
 
     }, [
         taskboardSections
@@ -140,28 +140,28 @@ export const Taskboard = () => {
         task_board_id
     ])
 
-    const onScrollAreaMouseDown = ( e : React.MouseEvent<HTMLDivElement, MouseEvent> ) => {
+    const onScrollAreaMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 
         e.preventDefault()
 
-        if ( !!taskboardTaskDrag.taskboardTask ) return
+        if (!!taskboardTaskDrag.taskboardTask) return
 
         const el = e.currentTarget
         const startX = e.pageX
         const startScrollLeft = el.scrollLeft
 
         let ticking = false
-        const onMouseMove = ( moveEvent : MouseEvent ) => {
-            if ( !ticking ) {
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            if (!ticking) {
                 // Determine current x immediately
                 const currentX = moveEvent.pageX
-                
+
                 requestAnimationFrame(() => {
                     const dx = currentX - startX
                     el.scrollLeft = startScrollLeft - dx
                     ticking = false
                 })
-                
+
                 ticking = true
             }
         }
@@ -176,31 +176,31 @@ export const Taskboard = () => {
 
     }
 
-    const onDndContextDragStart = ( e : DragStartEvent ) => {
-        if ( e.active.data.current && e.active.data.current.type === ETaskboardDragDataType.TASK ) {
+    const onDndContextDragStart = (e: DragStartEvent) => {
+        if (e.active.data.current && e.active.data.current.type === ETaskboardDragDataType.TASK) {
             updateTaskboardDragStore({
-                taskboardTaskDrag : {
-                    taskboardTask : e.active.data.current.data as TTaskForCardView
+                taskboardTaskDrag: {
+                    taskboardTask: e.active.data.current.data as TTaskForCardView
                 }
             })
         }
-        if ( e.active.data.current && e.active.data.current.type === ETaskboardDragDataType.SECTION ) {
+        if (e.active.data.current && e.active.data.current.type === ETaskboardDragDataType.SECTION) {
             updateTaskboardDragStore({
-                taskboardSectionDrag : {
-                    taskboardSection : e.active.data.current.data as TTaskSection
+                taskboardSectionDrag: {
+                    taskboardSection: e.active.data.current.data as TTaskSection
                 }
             })
         }
     }
 
-    const onDndContextDragEnd = ( e : DragEndEvent ) => {
+    const onDndContextDragEnd = (e: DragEndEvent) => {
 
         updateTaskboardDragStore({
-            taskboardTaskDrag : {
-                taskboardTask : null
+            taskboardTaskDrag: {
+                taskboardTask: null
             },
-            taskboardSectionDrag : {
-                taskboardSection : null
+            taskboardSectionDrag: {
+                taskboardSection: null
             }
         })
 
@@ -208,25 +208,25 @@ export const Taskboard = () => {
             e.active.data.current &&
             e.over?.data.current
         ) {
-            if ( !!e.active.data.current.data ) {
-                if ( e.active.data.current.type === ETaskboardDragDataType.TASK ) {
+            if (!!e.active.data.current.data) {
+                if (e.active.data.current.type === ETaskboardDragDataType.TASK) {
                     const task = e.active.data.current.data as TTaskForCardView
                     const dropData = e.over?.data.current as TTaskboardTaskDrop
                     arrangeTaskMutation({
-                        task_id : task.task_id,
-                        body : {
-                            task_section_id : dropData.task_section_id,
-                            display_order : dropData.display_order
+                        task_id: task.task_id,
+                        body: {
+                            task_section_id: dropData.task_section_id,
+                            display_order: dropData.display_order
                         }
                     })
                 }
-                if ( e.active.data.current.type === ETaskboardDragDataType.SECTION ) {
+                if (e.active.data.current.type === ETaskboardDragDataType.SECTION) {
                     const section = e.active.data.current.data as TTaskSection
                     const dropData = e.over?.data.current as TTaskboardSectionDropProps
                     updateTaskboardSectionMutation({
-                        task_section_id : section.task_section_id,
-                        body : {
-                            display_order : dropData.displayOrder
+                        task_section_id: section.task_section_id,
+                        body: {
+                            display_order: dropData.displayOrder
                         }
                     })
                 }
@@ -242,7 +242,7 @@ export const Taskboard = () => {
                 `relative grow grid h-full min-w-0 min-h-0 max-h-full bg-background`
             )}
             style={{
-                gridTemplateColumns : "1fr"
+                gridTemplateColumns: "1fr"
             }}
         >
             <div
@@ -257,10 +257,10 @@ export const Taskboard = () => {
             >
                 {
                     showSkeleton &&
-                    <TaskboardSkeleton/>
+                    <TaskboardSkeleton />
                 }
                 {
-                    ( !showSkeleton && task_board_id && taskboardSections && taskboardSections.length > 0 ) &&
+                    (!showSkeleton && task_board_id && taskboardSections && taskboardSections.length > 0) &&
                     <DndContext
                         sensors={sensors}
                         collisionDetection={rectIntersection}
@@ -280,12 +280,12 @@ export const Taskboard = () => {
                             }
                         </DragOverlay>
                         {...taskboardSectionWithRenderInfo}
-                        <TaskboardTaskDialog/>
+                        <TaskboardTaskDialog />
                     </DndContext>
                 }
                 {
                     !showSkeleton &&
-                    <TaskboardSectionCreator/>
+                    <TaskboardSectionCreator />
                 }
             </div>
         </div>

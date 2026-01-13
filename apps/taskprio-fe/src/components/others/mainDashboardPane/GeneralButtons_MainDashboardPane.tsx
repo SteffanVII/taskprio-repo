@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils"
-import { updateGlobalsStore, useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { updateGlobalsStore } from "@/stores/globals";
+import { updateProjectStore } from "@/stores/project";
+import { updateTaskboardStore } from "@/stores/taskboard";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { ChartSpline, Notebook, Settings2 } from "lucide-react";
 import { useContext } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
@@ -15,15 +18,19 @@ const GeneralButtons = () => {
     } = useContext(WebSocketContext)
 
     const navigate = useNavigate()
-    const selectedWorkpace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const taskTodoOnClick = () => {
         navigate(`/p/w/${workspace_id}/tt`)
-        updateGlobalsStore({
+        updateProjectStore({
             noProjects: false,
             selectedProject: null,
-            selectedTaskboard: null,
+        })
+        updateGlobalsStore({
             selectedTask: null
+        })
+        updateTaskboardStore({
+            selectedTaskboard: null
         })
         if (project_id) {
             channelActions.leaveProjectChannel(project_id)
@@ -35,11 +42,15 @@ const GeneralButtons = () => {
 
     const workspaceSettingsOnClick = () => {
         navigate(`/p/w/${workspace_id}/workspace_settings`)
-        updateGlobalsStore({
+        updateProjectStore({
             noProjects: false,
             selectedProject: null,
-            selectedTaskboard: null,
+        })
+        updateGlobalsStore({
             selectedTask: null
+        })
+        updateTaskboardStore({
+            selectedTaskboard: null
         })
         if (project_id) {
             channelActions.leaveProjectChannel(project_id)
@@ -51,11 +62,15 @@ const GeneralButtons = () => {
 
     const statisticsOnClick = () => {
         navigate(`/p/w/${workspace_id}/statistics`)
-        updateGlobalsStore({
+        updateProjectStore({
             noProjects: false,
             selectedProject: null,
-            selectedTaskboard: null,
+        })
+        updateGlobalsStore({
             selectedTask: null
+        })
+        updateTaskboardStore({
+            selectedTaskboard: null
         })
         if (project_id) {
             channelActions.leaveProjectChannel(project_id)
@@ -78,7 +93,7 @@ const GeneralButtons = () => {
                     `relative border-0 w-full justify-start gap-4 rounded-none `
                 )}
                 onClick={statisticsOnClick}
-                disabled={!selectedWorkpace}
+                disabled={!selectedWorkspace}
             >
                 <ChartSpline />
                 Reports
@@ -96,7 +111,7 @@ const GeneralButtons = () => {
                     `relative border-0 w-full justify-start gap-4 rounded-none `,
                 )}
                 onClick={workspaceSettingsOnClick}
-                disabled={!selectedWorkpace}
+                disabled={!selectedWorkspace}
             >
                 <Settings2 />
                 Workspace Settings
@@ -114,7 +129,7 @@ const GeneralButtons = () => {
                     `relative border-0 w-full justify-start gap-4 rounded-none `,
                 )}
                 onClick={taskTodoOnClick}
-                disabled={!selectedWorkpace}
+                disabled={!selectedWorkspace}
             >
                 <Notebook />
                 Todo

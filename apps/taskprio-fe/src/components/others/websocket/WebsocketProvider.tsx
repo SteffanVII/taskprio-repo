@@ -1,4 +1,7 @@
-import { useGlobalsStore_authenticated, useGlobalsStore_selectedProject, useGlobalsStore_selectedTaskboard, useGlobalsStore_selectedWorkspace } from "@/stores/globals"
+import { useGlobalsStore_authenticated } from "@/stores/globals"
+import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard"
+import { useProjectStore_selectedProject } from "@/stores/project"
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import { EWebsocketClientEventType, TWebSocketJoinProjectChannelMessage, TWebSocketJoinTaskboardChannelMessage, TWebSocketJoinWorkspaceChannelMessage, TWebSocketLeaveProjectChannelMessage, TWebSocketLeaveTaskboardChannelMessage, TWebSocketLeaveWorkspaceChannelMessage, TWebSocketMessage } from "@repo/taskprio-types/src"
 import { createContext, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useWebSocketEventHandlers } from "./eventHandlers/WebsocketEventHandlers"
@@ -45,9 +48,9 @@ export const WebSocketProvider = ({ children }: TWebSocketProviderProps) => {
 
     const isElectron = useElectronStore_isElectron()
     const authenticated = useGlobalsStore_authenticated()
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
-    const selectedProject = useGlobalsStore_selectedProject()
-    const selectedTaskboard = useGlobalsStore_selectedTaskboard()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const selectedProject = useProjectStore_selectedProject()
+    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
 
     const [connected, setConnected] = useState<boolean>(false)
     const initialConnection = useRef<boolean>(true)

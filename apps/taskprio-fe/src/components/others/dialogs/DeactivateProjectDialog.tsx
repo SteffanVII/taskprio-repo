@@ -8,13 +8,13 @@ import { useDeactivateProject } from "@/services/private/project/mutation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import { useGlobalsStore_selectedWorkspace } from "@/stores/globals";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { toast } from "sonner";
 import Spinner from "../Spinner";
 
 const DeactivateProjectDialog = () => {
 
-    const selectedWorkspace = useGlobalsStore_selectedWorkspace()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const {
         open,
@@ -22,14 +22,14 @@ const DeactivateProjectDialog = () => {
     } = useDialogsStore_deactivateProjectDialog()
 
     const deactivateProjectFormSchema = z.object({
-        project_name : z.string().min( 1, "Name of the project is required" )
-            .refine( value => {
+        project_name: z.string().min(1, "Name of the project is required")
+            .refine(value => {
                 return value === project?.project_name
-            }, { message: `You must type "${project?.project_name}" to confirm deactivation.` } )
+            }, { message: `You must type "${project?.project_name}" to confirm deactivation.` })
     })
 
     const form = useForm<z.infer<typeof deactivateProjectFormSchema>>({
-        resolver : zodResolver( deactivateProjectFormSchema )
+        resolver: zodResolver(deactivateProjectFormSchema)
     })
 
     const {
@@ -37,7 +37,7 @@ const DeactivateProjectDialog = () => {
         isPending: deactivateProjectIsPending
     } = useDeactivateProject({
         onSuccess: () => {
-            toast.success( `Project ${project?.project_name} is successfully deactivated.` )
+            toast.success(`Project ${project?.project_name} is successfully deactivated.`)
             updateDialogsStore({
                 deactivateProjectDialog: {
                     open: false,
@@ -49,7 +49,7 @@ const DeactivateProjectDialog = () => {
 
     const onSubmit = async () => {
         if (!project || !selectedWorkspace) return;
-        
+
         await deactivateProjectTrigger({
             project_id: project.project_id,
             workspace_id: selectedWorkspace.workspace_id
@@ -59,7 +59,7 @@ const DeactivateProjectDialog = () => {
     return (
         <Dialog
             open={open}
-            onOpenChange={ ( openValue ) => {
+            onOpenChange={(openValue) => {
                 if (!openValue) {
                     form.reset()
                 }
@@ -71,7 +71,7 @@ const DeactivateProjectDialog = () => {
                         }
                     })
                 }
-            } }
+            }}
         >
             <DialogContent>
                 <DialogHeader>
@@ -85,7 +85,7 @@ const DeactivateProjectDialog = () => {
                         <FormField
                             control={form.control}
                             name="project_name"
-                            render={ ({ field }) => (
+                            render={({ field }) => (
                                 <FormItem
                                     className="w-full"
                                 >
@@ -111,7 +111,7 @@ const DeactivateProjectDialog = () => {
                         }}
                         disabled={deactivateProjectIsPending}
                     >
-                        {deactivateProjectIsPending ? <Spinner/> : "Deactivate"}
+                        {deactivateProjectIsPending ? <Spinner /> : "Deactivate"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
