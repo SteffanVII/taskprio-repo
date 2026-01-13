@@ -162,7 +162,8 @@ const MemberCard: React.FC<TMemberCardProps> = ({
                 `flex gap-4 items-center`,
                 `p-2 pr-4 bg-background border rounded-xl`,
                 `cursor-pointer transition-all`,
-                `hover:shadow-lg`
+                `hover:shadow-lg`,
+                data.is_active === false && `bg-destructive/10 border-destructive/20`
             )}
             onClick={() => {
                 setSelectedMember(data)
@@ -179,9 +180,15 @@ const MemberCard: React.FC<TMemberCardProps> = ({
             >
                 <p className="text-sm font-medium" >{data.firstname} {data.lastname}</p>
                 <p className="text-sm text-muted-foreground mb-1" >{data.email}</p>
-                <WorkspaceMemberBadge
-                    role={data.workspace_role}
-                />
+                <div className="flex gap-2 items-center" >
+                    <WorkspaceMemberBadge
+                        role={data.workspace_role}
+                    />
+                    {
+                        data.is_active === false &&
+                        <p className="text-sm text-destructive" >Deactivated</p>
+                    }
+                </div>
             </div>
         </div>
     )

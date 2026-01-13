@@ -5,6 +5,7 @@ import { QueryKeys } from "@/services/enum"
 import { TDeactivateWorkspaceMemberRequestBody, TReactivateWorkspaceMemberRequestBody } from "@repo/taskprio-types/src"
 import { AxiosError } from "axios"
 import { useGlobalsStore_user } from "@/stores/globals"
+import { updateWorkspaceStore, useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 
 
 export const useCreateWorkspace = ( onSuccess? : () => void ) => {
@@ -80,6 +81,7 @@ export const useDeactivateWorkspaceMember = ( options? : TUseDeactivateWorkspace
 
     const queryClient = useQueryClient()
     const user = useGlobalsStore_user()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     return useMutation<any, AxiosError, TDeactivateWorkspaceMemberRequestBody>({
         mutationFn : async ( payload ) => {
@@ -96,6 +98,22 @@ export const useDeactivateWorkspaceMember = ( options? : TUseDeactivateWorkspace
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.workspace_id, variables.member_id ]
             })
+            if ( selectedWorkspace?.workspace_id === variables.workspace_id ) {
+                updateWorkspaceStore({
+                    selectedWorkspace : {
+                        ...selectedWorkspace,
+                        workspace_members : selectedWorkspace.workspace_members.map((member) => {
+                            if ( member.user_id === variables.member_id ) {
+                                return {
+                                    ...member,
+                                    is_active : false
+                                }
+                            }
+                            return member
+                        })
+                    }
+                })
+            }
             options?.onSuccess?.( data, variables, context )
         }
     })
@@ -108,6 +126,7 @@ export const useReactivateWorkspaceMember = ( options? : TUseReactivateWorkspace
 
     const queryClient = useQueryClient()
     const user = useGlobalsStore_user()
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     return useMutation<any, AxiosError, TDeactivateWorkspaceMemberRequestBody>({
         mutationFn : async ( payload ) => {
@@ -124,6 +143,22 @@ export const useReactivateWorkspaceMember = ( options? : TUseReactivateWorkspace
             queryClient.invalidateQueries({
                 queryKey : [ ...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.workspace_id, variables.member_id ]
             })
+            if ( selectedWorkspace?.workspace_id === variables.workspace_id ) {
+                updateWorkspaceStore({
+                    selectedWorkspace : {
+                        ...selectedWorkspace,
+                        workspace_members : selectedWorkspace.workspace_members.map((member) => {
+                            if ( member.user_id === variables.member_id ) {
+                                return {
+                                    ...member,
+                                    is_active : true
+                                }
+                            }
+                            return member
+                        })
+                    }
+                })
+            }
             options?.onSuccess?.( data, variables, context )
         }
     })

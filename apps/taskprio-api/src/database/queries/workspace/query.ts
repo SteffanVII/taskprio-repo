@@ -129,6 +129,7 @@ export const getUserWorkspaces = async (
             ).as("workspace_members")
         ])
         .where("workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.BASE64_TO_UUID)}(${userId})`)
+        .where("workspace.workspace_members.is_active", "=", true)
         .groupBy(["workspace.workspace.workspace_id", "workspace.workspace.workspace_name"])
         .execute();
 
