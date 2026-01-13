@@ -228,13 +228,13 @@ const useProjectEventHandlers = () => {
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_PROJECT_MEMBERS.split, message.message.project_id]
             })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id]
+            })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+            })
             if (message.message.project_id === selectedProject?.project_id) {
-                queryClient.invalidateQueries({
-                    queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id]
-                })
-                queryClient.invalidateQueries({
-                    queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
-                })
                 if (message.message.member_id === user?.user_id) {
                     toast.warning(`You've been deactivated from ${selectedProject?.project_name} project`)
                     let newProjects: TProject[] | undefined;
@@ -316,6 +316,9 @@ const useProjectEventHandlers = () => {
         if (message.message.member_id === user?.user_id) {
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, message.message.workspace_id]
+            })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, message.message.workspace_id]
             })
         }
     }, [

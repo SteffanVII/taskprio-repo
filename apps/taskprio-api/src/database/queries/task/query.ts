@@ -294,8 +294,14 @@ export const getTasksAssignedToUserByProjectId = async (
         .leftJoin("taskboard.task_board", "taskboard.task_board.project_id", "project.project.project_id")
         .leftJoin("taskboard.task_section", "taskboard.task_section.task_board_id", "taskboard.task_board.task_board_id")
         .leftJoin("taskboard.task", "taskboard.task.task_section_id", "taskboard.task_section.task_section_id")
-        .leftJoin("taskboard.task_assignee", "taskboard.task_assignee.task_id", "taskboard.task.task_id")
-        .leftJoin("taskboard.task_todo_state", "taskboard.task_todo_state.task_id", "taskboard.task.task_id")
+        .leftJoin("taskboard.task_assignee", join => join
+            .onRef( "taskboard.task_assignee.task_id", "=", "taskboard.task.task_id" )
+            .on( "taskboard.task_assignee.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+        )
+        .leftJoin("taskboard.task_todo_state", join => join
+            .onRef("taskboard.task_todo_state.task_id", "=", "taskboard.task.task_id")
+            .on("taskboard.task_todo_state.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
+        )
         .select(eb => [
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.project_id)`.as("project_id"),
             sql<string>`${sql.raw(EDatabaseFunction.UUID_TO_BASE64)}(project.project.workspace_id)`.as("workspace_id"),
@@ -336,8 +342,6 @@ export const getTasksAssignedToUserByProjectId = async (
                     .filterWhere("taskboard.task.task_id", "is not", null)
                     .filterWhere("taskboard.task.in_trash", "=", false)
                     .filterWhere("taskboard.task_assignee.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
-                    .filterWhere("project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
-                    .filterWhere("workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
                     .$call(aggBuilder => {
                         if (filters.taskboards && filters.taskboards.length > 0) {
                             return aggBuilder.filterWhere("taskboard.task_board.task_board_id", "=", eb.fn.any(sql<string[]>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID_ARRAY)}(${filters.taskboards})`))
@@ -361,7 +365,6 @@ export const getTasksAssignedToUserByProjectId = async (
             eb("taskboard.task_todo_state.active", "is", null)
         ]))
         .where("project.project.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`)
-
         .where("taskboard.task_board.inactive", "=", false)
         .where("workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
         .where("project.project_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
