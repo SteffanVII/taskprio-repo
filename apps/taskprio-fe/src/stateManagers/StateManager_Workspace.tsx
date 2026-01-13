@@ -62,7 +62,9 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
             pathname.includes("/statistics")
         ) return
 
+
         if (!workspace_id) {
+            console.log("No Workspace Selected");
             if (workspaces && workspaces.length > 0) {
                 const lastVisitedWorkspaceId = localStorage.getItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
                 if (lastVisitedWorkspaceId) {

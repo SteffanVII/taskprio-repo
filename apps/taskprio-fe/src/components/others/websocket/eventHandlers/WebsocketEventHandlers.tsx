@@ -77,7 +77,8 @@ export const useWebSocketEventHandlers = () => {
     }, [
         taskboardEventHandlers,
         taskEventHandlers,
-        projectEventHandlers
+        projectEventHandlers,
+        workspaceEventHandlers
     ])
 
     return eventHandlers

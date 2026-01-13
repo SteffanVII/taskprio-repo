@@ -254,6 +254,24 @@ export const deactivateWorkspaceMember = async (
             .where( "workspace.workspace_members.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
             .executeTakeFirstOrThrow()
 
+        const foundActiveTimer = await trx.selectFrom( "taskboard.task_todo_timer" )
+            .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+            .where( "taskboard.task_todo_timer.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+            .where( "taskboard.task_todo_timer.stop", "is", null )
+            .executeTakeFirst()
+
+        if ( foundActiveTimer ) {
+            await trx.updateTable( "taskboard.task_todo_timer" )
+                .set({
+                    stop : sql.raw("CURRENT_TIMESTAMP"),
+                    last_seen : sql.raw("CURRENT_TIMESTAMP")
+                })
+                .where( "taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})` )
+                .where( "taskboard.task_todo_timer.workspace_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${workspaceId})` )
+                .where( "taskboard.task_todo_timer.stop", "is", null )
+                .executeTakeFirstOrThrow()
+        }
+
     }
 
     if ( trx ) {

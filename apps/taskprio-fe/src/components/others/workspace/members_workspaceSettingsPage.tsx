@@ -250,14 +250,6 @@ const MemberDialog = () => {
         }
     }
 
-    const handleDeactivateMember = () => {
-
-    }
-
-    const handleReactivateMember = () => {
-
-    }
-
     useEffect(() => {
         if (workspaceMember) {
             setRole(workspaceMember.workspace_role)

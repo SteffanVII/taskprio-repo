@@ -323,6 +323,20 @@ export const deactivateProjectMember = async (
             .where("taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`)
             .execute()
 
+        await trx.updateTable( "taskboard.task_todo_timer" )
+            .where("taskboard.task_todo_timer.stop", "is", null)
+            .where("taskboard.task_todo_timer.user_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`)
+            .from( "taskboard.task" )
+            .whereRef( "taskboard.task.task_id", "=", "taskboard.task_todo_timer.task_id" )
+            .from( "taskboard.task_board" )
+            .whereRef( "taskboard.task_board.task_board_id", "=", "taskboard.task.task_board_id" )
+            .where("taskboard.task_board.project_id", "=", sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${projectId})`)
+            .set({
+                stop : sql.raw("CURRENT_TIMESTAMP"),
+                last_seen : sql.raw("CURRENT_TIMESTAMP")
+            })
+            .execute()
+
     }
 
     if (trx) {
