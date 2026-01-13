@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express"
 import { ICreateWorkspaceRequest, IDeactivateWorkspaceMemberRequest, IGetWorkspaceMemberRequest, IGetWorkspaceRequest, IReactivateWorkspaceMemberRequest, IUpdateWorkspaceMemberRoleRequest } from "./interfaces.js"
 import { getPoolClient, getPostgrePool } from "../../database/postgresql.js";
-import { getUserWorkspace, getUserWorkspaces, getWorkspaceMember } from "../../database/queries/workspace/query.js";
+import { getUserWorkspace, getUserWorkspaces, getWorkspaceMember, getWorkspaceMembers } from "../../database/queries/workspace/query.js";
 import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
 import { createWorkspace, deactivateWorkspaceMember, reactivateWorkspaceMember, updateWorkspaceMemberRole } from "../../database/queries/workspace/mutation.js";
 import { verifyWorkspaceMemberMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
@@ -135,20 +135,19 @@ export const registerWorkspaceRoutes = ( router : Router ) => {
             try {
                 await deactivateWorkspaceMember(member_id, workspace_id)
 
+                const workspaceMembers = await getWorkspaceMembers( workspace_id )
+
                 const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
                     workspace_id,
                     member_id
                 }
 
-                wsConnectionsManager.broadcastToChannel(
-                    "workspace",
-                    workspace_id,
+                wsConnectionsManager.broadcastToUsers(
                     {
                         type : EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
                         message : wsMessage
                     },
-                    undefined,
-                    [user_id]
+                    workspaceMembers.map( member => member.user_id ).filter( id => id !== user_id )
                 )
 
                 res.status(200).json({ message : "Workspace member deactivated" })
@@ -171,20 +170,19 @@ export const registerWorkspaceRoutes = ( router : Router ) => {
             try {
                 await reactivateWorkspaceMember(member_id, workspace_id)
 
+                const workspaceMembers = await getWorkspaceMembers(workspace_id)
+
                 const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
                     workspace_id,
                     member_id
                 }
 
-                wsConnectionsManager.broadcastToChannel(
-                    "workspace",
-                    workspace_id,
+                wsConnectionsManager.broadcastToUsers(
                     {
                         type : EWebSocketEventType.WORKSPACE_MEMBER_REACTIVATED,
                         message : wsMessage
                     },
-                    undefined,
-                    [user_id]
+                    workspaceMembers.map( member => member.user_id ).filter( id => id !== user_id )
                 )
 
                 res.status(200).json({ message : "Workspace member reactivated" })

@@ -145,12 +145,12 @@ export class WebSocketConnectionsManager {
         const channelMap = {
             workspace : this.workspaceChannels,
             project : this.projectChannels,
-            taskboard : this.taskboardChannels
+            taskboard : this.taskboardChannels,
         }[channelType];
 
         const channel = channelMap.get( channelId );
         if ( channel ) {
-            channel.getConnections().forEach( (userConnections, userId) => {
+             channel.getConnections().forEach( (userConnections, userId) => {
                 if (includedUserIds && includedUserIds.length > 0 && !includedUserIds.includes(userId)) return;
                 if (excludedUserIds && excludedUserIds.length > 0 && excludedUserIds.includes(userId)) return;
 
@@ -162,6 +162,27 @@ export class WebSocketConnectionsManager {
                 } )
             } )
         }
+
+    }
+
+    public broadcastToUsers(
+        message : TWebSocketMessage,
+        userIds : string[]
+    ) {
+
+        if ( userIds.length === 0 ) return;
+
+        userIds.forEach( userId => {
+            const userConnections = this.allConnections.get( userId );
+            if ( userConnections ) {
+                userConnections.forEach( connection => {
+                    if ( connection.readyState === WebSocket.OPEN ) {
+                        console.log("Sending websocket message to user", userId, connection.readyState);
+                        connection.send( JSON.stringify( message ) )
+                    }
+                } )
+            }
+        } )
 
     }
 
