@@ -3,12 +3,14 @@ import { useTaskboardEventHandlers } from "./incoming/taskboardEventHandlers"
 import { useTaskEventHandlers } from "./incoming/taskEventHandlers"
 import useProjectEventHandlers from "./incoming/projectEventHandlers"
 import { EWebSocketEventType, TWebSocketMessage } from "@repo/taskprio-types/src"
+import { useWorkspaceEventHandlers } from "./incoming/workspaceEventHandlers"
 
 export const useWebSocketEventHandlers = () => {
 
     const taskboardEventHandlers = useTaskboardEventHandlers()
     const taskEventHandlers = useTaskEventHandlers()
     const projectEventHandlers = useProjectEventHandlers()
+    const workspaceEventHandlers = useWorkspaceEventHandlers()
 
     const eventHandlers = useCallback(( message : TWebSocketMessage ) => {
         switch ( message.type ) {
@@ -59,6 +61,14 @@ export const useWebSocketEventHandlers = () => {
                 break;
             case EWebSocketEventType.PROJECT_MEMBER_REACTIVATED:
                 projectEventHandlers.projectMemberReactivatedWebSocketMessageHandler( message )
+                break;
+            
+            // Workspace events
+            case EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED:
+                workspaceEventHandlers.workspaceMemberDeactivatedWebSocketMessageHandler( message )
+                break;
+            case EWebSocketEventType.WORKSPACE_MEMBER_REACTIVATED:
+                workspaceEventHandlers.workspaceMemberReactivatedWebSocketMessageHandler( message )
                 break;
             
             default:

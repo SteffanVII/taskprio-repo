@@ -151,8 +151,8 @@ export class WebSocketConnectionsManager {
         const channel = channelMap.get( channelId );
         if ( channel ) {
             channel.getConnections().forEach( (userConnections, userId) => {
-                if (includedUserIds?.length && !includedUserIds.includes(userId)) return;
-                if (excludedUserIds?.length && excludedUserIds.includes(userId)) return;
+                if (includedUserIds && includedUserIds.length > 0 && !includedUserIds.includes(userId)) return;
+                if (excludedUserIds && excludedUserIds.length > 0 && excludedUserIds.includes(userId)) return;
 
                 userConnections.forEach( connection => {
                     if ( connection.readyState === WebSocket.OPEN ) {

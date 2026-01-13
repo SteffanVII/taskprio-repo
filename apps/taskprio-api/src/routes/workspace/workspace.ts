@@ -180,7 +180,7 @@ export const registerWorkspaceRoutes = ( router : Router ) => {
                     "workspace",
                     workspace_id,
                     {
-                        type : EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
+                        type : EWebSocketEventType.WORKSPACE_MEMBER_REACTIVATED,
                         message : wsMessage
                     },
                     undefined,
