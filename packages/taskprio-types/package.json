@@ -10,12 +10,12 @@
         ".": "./src/index.ts"
     },
     "scripts": {
-        "build": "kysely-codegen && node scripts/post-generate.js && tsup",
+        "build": "kysely-codegen && node scripts/post-generate.cjs && tsup",
         "dev": "tsup --watch",
         "lint": "eslint .",
         "clean": "rimraf .turbo node_modules dist",
         "check-types": "tsc --noEmit",
-        "generate": "kysely-codegen && node scripts/post-generate.js"
+        "generate": "kysely-codegen && node scripts/post-generate.cjs"
     },
     "devDependencies": {
         "@repo/eslint-config": "workspace:*",
