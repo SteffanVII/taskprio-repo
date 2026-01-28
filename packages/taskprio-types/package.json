@@ -2,12 +2,18 @@
     "name": "@repo/taskprio-types",
     "version": "0.0.0",
     "private": true,
-    "types": "./src/index.ts",
     "sideEffects": false,
     "license": "MIT",
     "type": "module",
+    "types": "./dist/index.d.ts",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
     "exports": {
-        ".": "./src/index.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
     },
     "scripts": {
         "build": "kysely-codegen && node scripts/post-generate.cjs && tsup",
