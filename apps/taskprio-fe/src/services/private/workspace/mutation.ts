@@ -2,47 +2,47 @@ import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react
 import { TCreateWorkspacePayload, TCreateWorkspaceResponse, TGetUserWorkspacesResponse, TInviteToWorkspacePayload, TUpdateWorkspaceMemberRolePayload } from "./types"
 import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
-import { TDeactivateWorkspaceMemberRequestBody, TReactivateWorkspaceMemberRequestBody } from "@repo/taskprio-types/src"
+import { TDeactivateWorkspaceMemberRequestBody, TReactivateWorkspaceMemberRequestBody } from "@repo/taskprio-types"
 import { AxiosError } from "axios"
 import { useGlobalsStore_user } from "@/stores/globals"
 import { updateWorkspaceStore, useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 
 
-export const useCreateWorkspace = ( onSuccess? : () => void ) => {
+export const useCreateWorkspace = (onSuccess?: () => void) => {
 
     const queryClient = useQueryClient()
 
     return useMutation<TCreateWorkspaceResponse, any, TCreateWorkspacePayload>({
-        mutationFn : async ( payload ) => {
+        mutationFn: async (payload) => {
             const response = await axiosInstance.post<TCreateWorkspaceResponse>(
                 `/private/workspace`,
                 payload.body
             )
             return response.data
         },
-        onSuccess : ( data ) => {
-            queryClient.setQueryData<TGetUserWorkspacesResponse>( [ ...QueryKeys.GET_USER_WORKSPACES.split ], old => {
-                if ( !old ) return [ data ]
+        onSuccess: (data) => {
+            queryClient.setQueryData<TGetUserWorkspacesResponse>([...QueryKeys.GET_USER_WORKSPACES.split], old => {
+                if (!old) return [data]
                 console.log(data);
-                return [ data, ...old ]
-            } )
-            if ( onSuccess ) onSuccess()
+                return [data, ...old]
+            })
+            if (onSuccess) onSuccess()
         }
     })
 }
 
-export const useInviteToWorkspace = ( onSuccess? : () => void ) => {
+export const useInviteToWorkspace = (onSuccess?: () => void) => {
 
     return useMutation<any, any, TInviteToWorkspacePayload>({
-        mutationFn : async ( payload ) => {
+        mutationFn: async (payload) => {
             const response = await axiosInstance.post<any>(
                 `/private/invitation/workspace/${payload.workspace_id}`,
                 payload.body
             )
             return response.data
         },
-        onSuccess : () => {
-            if ( onSuccess ) onSuccess()
+        onSuccess: () => {
+            if (onSuccess) onSuccess()
         }
     })
 
@@ -50,25 +50,25 @@ export const useInviteToWorkspace = ( onSuccess? : () => void ) => {
 
 type TUpdateWorkspaceMemberRoleOptions = UseMutationOptions<any, Error, TUpdateWorkspaceMemberRolePayload>
 
-export const useUpdateWorkspaceMemberRole = ( options? : TUpdateWorkspaceMemberRoleOptions ) => {
+export const useUpdateWorkspaceMemberRole = (options?: TUpdateWorkspaceMemberRoleOptions) => {
 
     const queryClient = useQueryClient()
 
     return useMutation<any, Error, TUpdateWorkspaceMemberRolePayload>({
-        mutationFn : async ( payload ) => {
+        mutationFn: async (payload) => {
             const response = await axiosInstance.patch<any>(
                 `/private/workspace/member-role/${payload.params.workspace_id}/${payload.params.member_id}`,
                 payload.body
             )
             return response.data
         },
-        onSuccess : ( data, variables, context ) => {
-            options?.onSuccess?.( data, variables, context )
+        onSuccess: (data, variables, context) => {
+            options?.onSuccess?.(data, variables, context)
             queryClient.invalidateQueries({
-                queryKey : [ ...QueryKeys.GET_USER_WORKSPACE.split, variables.params.workspace_id ]
+                queryKey: [...QueryKeys.GET_USER_WORKSPACE.split, variables.params.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey : [ ...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.params.workspace_id, variables.params.member_id ]
+                queryKey: [...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.params.workspace_id, variables.params.member_id]
             })
         }
     })
@@ -77,36 +77,36 @@ export const useUpdateWorkspaceMemberRole = ( options? : TUpdateWorkspaceMemberR
 
 type TUseDeactivateWorkspaceMemberOptions = UseMutationOptions<any, AxiosError, TDeactivateWorkspaceMemberRequestBody>
 
-export const useDeactivateWorkspaceMember = ( options? : TUseDeactivateWorkspaceMemberOptions ) => {
+export const useDeactivateWorkspaceMember = (options?: TUseDeactivateWorkspaceMemberOptions) => {
 
     const queryClient = useQueryClient()
     const user = useGlobalsStore_user()
     const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     return useMutation<any, AxiosError, TDeactivateWorkspaceMemberRequestBody>({
-        mutationFn : async ( payload ) => {
+        mutationFn: async (payload) => {
             const response = await axiosInstance.patch(
                 `/private/workspace/member/deactivate`,
                 payload
             )
             return response.data
         },
-        onSuccess : ( data, variables, context ) => {
+        onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({
-                queryKey : [ ...QueryKeys.GET_USER_WORKSPACES.split, user?.user_id ]
+                queryKey: [...QueryKeys.GET_USER_WORKSPACES.split, user?.user_id]
             })
             queryClient.invalidateQueries({
-                queryKey : [ ...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.workspace_id, variables.member_id ]
+                queryKey: [...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.workspace_id, variables.member_id]
             })
-            if ( selectedWorkspace?.workspace_id === variables.workspace_id ) {
+            if (selectedWorkspace?.workspace_id === variables.workspace_id) {
                 updateWorkspaceStore({
-                    selectedWorkspace : {
+                    selectedWorkspace: {
                         ...selectedWorkspace,
-                        workspace_members : selectedWorkspace.workspace_members.map((member) => {
-                            if ( member.user_id === variables.member_id ) {
+                        workspace_members: selectedWorkspace.workspace_members.map((member) => {
+                            if (member.user_id === variables.member_id) {
                                 return {
                                     ...member,
-                                    is_active : false
+                                    is_active: false
                                 }
                             }
                             return member
@@ -114,7 +114,7 @@ export const useDeactivateWorkspaceMember = ( options? : TUseDeactivateWorkspace
                     }
                 })
             }
-            options?.onSuccess?.( data, variables, context )
+            options?.onSuccess?.(data, variables, context)
         }
     })
 
@@ -122,36 +122,36 @@ export const useDeactivateWorkspaceMember = ( options? : TUseDeactivateWorkspace
 
 type TUseReactivateWorkspaceMemberOptions = UseMutationOptions<any, AxiosError, TReactivateWorkspaceMemberRequestBody>
 
-export const useReactivateWorkspaceMember = ( options? : TUseReactivateWorkspaceMemberOptions ) => {
+export const useReactivateWorkspaceMember = (options?: TUseReactivateWorkspaceMemberOptions) => {
 
     const queryClient = useQueryClient()
     const user = useGlobalsStore_user()
     const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     return useMutation<any, AxiosError, TDeactivateWorkspaceMemberRequestBody>({
-        mutationFn : async ( payload ) => {
+        mutationFn: async (payload) => {
             const response = await axiosInstance.patch(
                 `/private/workspace/member/reactivate`,
                 payload
             )
             return response.data
         },
-        onSuccess : ( data, variables, context ) => {
+        onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({
-                queryKey : [ ...QueryKeys.GET_USER_WORKSPACES.split, user?.user_id ]
+                queryKey: [...QueryKeys.GET_USER_WORKSPACES.split, user?.user_id]
             })
             queryClient.invalidateQueries({
-                queryKey : [ ...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.workspace_id, variables.member_id ]
+                queryKey: [...QueryKeys.GET_WORKSPACE_MEMBER.split, variables.workspace_id, variables.member_id]
             })
-            if ( selectedWorkspace?.workspace_id === variables.workspace_id ) {
+            if (selectedWorkspace?.workspace_id === variables.workspace_id) {
                 updateWorkspaceStore({
-                    selectedWorkspace : {
+                    selectedWorkspace: {
                         ...selectedWorkspace,
-                        workspace_members : selectedWorkspace.workspace_members.map((member) => {
-                            if ( member.user_id === variables.member_id ) {
+                        workspace_members: selectedWorkspace.workspace_members.map((member) => {
+                            if (member.user_id === variables.member_id) {
                                 return {
                                     ...member,
-                                    is_active : true
+                                    is_active: true
                                 }
                             }
                             return member
@@ -159,7 +159,7 @@ export const useReactivateWorkspaceMember = ( options? : TUseReactivateWorkspace
                     }
                 })
             }
-            options?.onSuccess?.( data, variables, context )
+            options?.onSuccess?.(data, variables, context)
         }
     })
 

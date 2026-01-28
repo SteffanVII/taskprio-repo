@@ -1,5 +1,5 @@
-import { TUserSecure } from "@repo/taskprio-types/src/index"
-import { TTask } from "@repo/taskprio-types/src/index"
+import { TUserSecure } from "@repo/taskprio-types"
+import { TTask } from "@repo/taskprio-types"
 import { Store, useStore } from "@tanstack/react-store"
 
 export type TGlobalsStore = {

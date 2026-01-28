@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { updateDialogsStore, useDialogsStore_renameTaskboardDialog } from "@/stores/dialogs";
 
@@ -56,10 +56,11 @@ const RenameTaskboardDialog = () => {
                                 >
                                     <FormControl>
                                         <Input
-                                            placeholder="Taskboard Name"
+                                            placeholder="Name"
                                             {...field}
                                         />
                                     </FormControl>
+                                    <FormDescription>Type the new taskboard name</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}

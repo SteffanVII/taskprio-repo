@@ -7,7 +7,7 @@ import useIsUserProjectOwnerOrAdmin from "@/lib/hooks/useIsUserProjectOwnerOrAdm
 import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerOrAdmin";
 import { useWorkspaceStore_workspaceRole } from "@/stores/workspace";
 
-import { EWorkspaceRole } from "@repo/taskprio-types/src";
+import { EWorkspaceRole } from "@repo/taskprio-types";
 import DeactivatedTaskboards_ProjectSettingsPage from "@/components/others/project/DeactivatedTaskboards_ProjectSettingsPage";
 
 const ProjectSettingsPage = () => {

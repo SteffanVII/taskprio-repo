@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { ETaskTodoPageDragType } from "@/stores/taskboardDrag"
-import { TUserAvailableTaskTodo } from "@repo/taskprio-types/src"
+import { TUserAvailableTaskTodo } from "@repo/taskprio-types"
 import TagBadge from "../../shared/tag/TagBadge"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -10,11 +10,11 @@ import { useTaskTodoPageStore_sessionActive, useTaskTodoPageStore_topTaskTodo } 
 import { useDraggable } from "@dnd-kit/core"
 
 type TTaskCardProps = {
-    data : TUserAvailableTaskTodo,
-    preview? : boolean
+    data: TUserAvailableTaskTodo,
+    preview?: boolean
 }
 
-const TaskCard : React.FC<TTaskCardProps> = ({
+const TaskCard: React.FC<TTaskCardProps> = ({
     data,
     preview = false
 }) => {
@@ -23,7 +23,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
     const topTaskTodo = useTaskTodoPageStore_topTaskTodo()
 
     const {
-        mutateAsync : moveTaskToTodoTrigger
+        mutateAsync: moveTaskToTodoTrigger
     } = useMoveTaskToTodo()
 
     const {
@@ -32,29 +32,29 @@ const TaskCard : React.FC<TTaskCardProps> = ({
         setNodeRef,
         isDragging
     } = useDraggable({
-        id : data.task_id + (preview ? "_preview_available" : "_available"),
-        data : {
-            type : ETaskTodoPageDragType.AVAILABLE,
+        id: data.task_id + (preview ? "_preview_available" : "_available"),
+        data: {
+            type: ETaskTodoPageDragType.AVAILABLE,
             data
         },
-        disabled : preview
+        disabled: preview
     })
 
     // IMPORTANT : onMouseDownHandler is required for scroll drag to work
-    const onMouseDownHandler = ( e : React.MouseEvent<HTMLDivElement> ) => {
+    const onMouseDownHandler = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation()
     }
 
     const handleMoveTaskToTodoTrigger = async () => {
         moveTaskToTodoTrigger({
-            pathParameters : {
-                task_id : data.task_id
+            pathParameters: {
+                task_id: data.task_id
             },
-            body : {
-                display_order : topTaskTodo ? topTaskTodo.display_order + 100 : 0
+            body: {
+                display_order: topTaskTodo ? topTaskTodo.display_order + 100 : 0
             },
-            optimisticHelpers : {
-                task : data
+            optimisticHelpers: {
+                task: data
             }
         })
     }
@@ -82,7 +82,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
                             data.project_color !== "#ffffff" && getHexLuminance(data.project_color) > 0.4 ? `text-black` : `text-white`
                         )}
                         style={{
-                            backgroundColor : data.project_color === "#ffffff" ? undefined : data.project_color
+                            backgroundColor: data.project_color === "#ffffff" ? undefined : data.project_color
                         }}
                     >{data.project_abbreviation.toUpperCase()}-{data.task_depth}</p>
                     <div
@@ -96,7 +96,7 @@ const TaskCard : React.FC<TTaskCardProps> = ({
                             size={"icon-sm"}
                             variant={"outline"}
                             onClick={handleMoveTaskToTodoTrigger}
-                        ><Plus/></Button>
+                        ><Plus /></Button>
                     </div>
                 </div>
                 <p
@@ -113,13 +113,13 @@ const TaskCard : React.FC<TTaskCardProps> = ({
                             )}
                         >
                             {
-                                data.tags.map( tag => (
+                                data.tags.map(tag => (
                                     <TagBadge
                                         tag={tag}
                                         key={tag.tag_id}
                                         size="sm"
                                     />
-                                ) )
+                                ))
                             }
                         </div>
                     )

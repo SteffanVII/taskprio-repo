@@ -1,4 +1,4 @@
-import { TProject, TProjectInactiveForTable, TTag, TTaskboard, TTaskboardInactiveForTable, TTaskForCardView } from "@repo/taskprio-types/src";
+import { TProject, TProjectInactiveForTable, TTag, TTaskboard, TTaskboardInactiveForTable, TTaskForCardView } from "@repo/taskprio-types";
 import { Store, useStore } from "@tanstack/react-store";
 
 export type TDialogStore = {

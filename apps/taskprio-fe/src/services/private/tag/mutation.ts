@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TCreateProjectTagPayload, TDeleteProjectTagPayload, TUpdateProjectTagPayload } from "./types";
-import { TCreateProjectTagResponse, TDeleteProjectTagResponse, TUpdateProjectTagResponse } from "@repo/taskprio-types/src";
+import { TCreateProjectTagResponse, TDeleteProjectTagResponse, TUpdateProjectTagResponse } from "@repo/taskprio-types";
 import { axiosInstance } from "@/services/axios";
 import { QueryKeys } from "@/services/enum";
 import { updateProjectStore, useProjectStore_selectedProject } from "@/stores/project";

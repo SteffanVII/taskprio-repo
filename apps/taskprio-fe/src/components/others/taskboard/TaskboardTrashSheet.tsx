@@ -5,7 +5,7 @@ import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
 import { ArchiveRestore, Trash2, Undo2 } from "lucide-react";
 import { useGetTaskboardTrashTasks } from "@/services/private/taskboard/query";
 import Spinner from "../Spinner";
-import { TTaskPrimitive } from "@repo/taskprio-types/src";
+import { TTaskPrimitive } from "@repo/taskprio-types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";

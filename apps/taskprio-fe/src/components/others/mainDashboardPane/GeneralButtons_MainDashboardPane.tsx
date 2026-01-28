@@ -80,66 +80,51 @@ const GeneralButtons = () => {
         }
     }
 
+    const generalButtons = [
+        {
+            title : "Reports",
+            path : "/statistics",
+            icon : <ChartSpline />,
+            onclick : statisticsOnClick
+        },
+        {
+            title : "Workspace Settings",
+            path : "/workspace_settings",
+            icon : <Settings2 />,
+            onclick : workspaceSettingsOnClick
+        },
+        {
+            title : "Todo",
+            path : "/tt",
+            icon : <Notebook />,
+            onclick : taskTodoOnClick
+        }
+    ]
+
     return (
         <div
             className={cn(
-                ` flex flex-col p-2 `
+                ` flex flex-col p-2 gap-1 `
             )}
         >
-            <Button
-                size={"lg"}
-                variant={pathname.includes("/statistics") ? "secondary" : "ghost"}
-                className={cn(
-                    `relative border-0 w-full justify-start gap-4 rounded-none `
-                )}
-                onClick={statisticsOnClick}
-                disabled={!selectedWorkspace}
-            >
-                <ChartSpline />
-                Reports
-                {
-                    pathname.includes("/statistics") &&
-                    <div
-                        className="absolute top-0 right-0 w-2 h-full bg-primary"
-                    ></div>
-                }
-            </Button>
-            <Button
-                size={"lg"}
-                variant={pathname.includes("/workspace_settings") ? "secondary" : "ghost"}
-                className={cn(
-                    `relative border-0 w-full justify-start gap-4 rounded-none `,
-                )}
-                onClick={workspaceSettingsOnClick}
-                disabled={!selectedWorkspace}
-            >
-                <Settings2 />
-                Workspace Settings
-                {
-                    pathname.includes("/workspace_settings") &&
-                    <div
-                        className="absolute top-0 right-0 w-2 h-full bg-primary"
-                    ></div>
-                }
-            </Button>
-            <Button
-                size={"lg"}
-                variant={pathname.includes("/tt") ? "secondary" : "ghost"}
-                className={cn(
-                    `relative border-0 w-full justify-start gap-4 rounded-none `,
-                )}
-                onClick={taskTodoOnClick}
-                disabled={!selectedWorkspace}
-            >
-                <Notebook />
-                Todo
-                {
-                    pathname.includes("/tt") &&
-                    <div
-                        className="absolute top-0 right-0 w-2 h-full bg-primary"
-                    ></div>
-                }
-            </Button>
+            {
+                generalButtons.map( button => (
+                    <Button
+                        key={button.path}
+                        size={"lg"}
+                        variant={pathname.includes(button.path) ? "secondary" : "ghost"}
+                        className={cn(
+                            `relative w-full justify-start gap-4 border-0 `,
+                            pathname.includes(button.path) && ` bg-primary/20 hover:bg-primary/15 transition-colors duration-500`
+                        )}
+                        onClick={button.onclick}
+                        disabled={!selectedWorkspace}
+                    >
+                        {button.icon}
+                        {button.title}
+                    </Button>
+                ) )
+            }
         </div>
     )
 

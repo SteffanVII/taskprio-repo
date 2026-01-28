@@ -3,19 +3,19 @@ import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
 import { cn } from "@/lib/utils"
 import { starterKitExtensions } from "@/lib/utils/shared"
-import { TTaskComment } from "@repo/taskprio-types/src"
+import { TTaskComment } from "@repo/taskprio-types"
 import { Editor, EditorContent, useEditor, useEditorState } from "@tiptap/react"
 import { BoldIcon, ItalicIcon, ListIcon, ListOrderedIcon, UnderlineIcon, X } from "lucide-react"
 import React, { useEffect } from "react"
 
 type TCommentEditor_CommentSection = {
-    editor : Editor
-    onContentChange : ( content : string ) => void,
-    clearReplyingToTaskComment : () => void,
-    replyingToTaskComment? : TTaskComment,
+    editor: Editor
+    onContentChange: (content: string) => void,
+    clearReplyingToTaskComment: () => void,
+    replyingToTaskComment?: TTaskComment,
 }
 
-const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = ({
+const CommentEditor_CommentSection: React.FC<TCommentEditor_CommentSection> = ({
     editor,
     onContentChange,
     clearReplyingToTaskComment,
@@ -24,45 +24,45 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
 
     const editorButtonsState = useEditorState({
         editor,
-        selector : ({editor}) => {
+        selector: ({ editor }) => {
             onContentChange(editor.getHTML())
             return {
-                content : editor.getText(),
-                isBold : editor.isActive("bold") ?? false,
-                canBold : editor.can().chain().toggleBold().run() ?? false,
-                isItalic : editor.isActive("italic") ?? false,
-                canItalic : editor.can().chain().toggleItalic().run() ?? false,
-                isUnderline : editor.isActive("underline") ?? false,
-                canUnderline : editor.can().chain().toggleUnderline().run() ?? false,
-                isList : editor.isActive("bulletList") ?? false,
-                canList : editor.can().chain().toggleBulletList().run() ?? false,
-                isListOrdered : editor.isActive("orderedList") ?? false,
-                canListOrdered : editor.can().chain().toggleOrderedList().run() ?? false,
+                content: editor.getText(),
+                isBold: editor.isActive("bold") ?? false,
+                canBold: editor.can().chain().toggleBold().run() ?? false,
+                isItalic: editor.isActive("italic") ?? false,
+                canItalic: editor.can().chain().toggleItalic().run() ?? false,
+                isUnderline: editor.isActive("underline") ?? false,
+                canUnderline: editor.can().chain().toggleUnderline().run() ?? false,
+                isList: editor.isActive("bulletList") ?? false,
+                canList: editor.can().chain().toggleBulletList().run() ?? false,
+                isListOrdered: editor.isActive("orderedList") ?? false,
+                canListOrdered: editor.can().chain().toggleOrderedList().run() ?? false,
             }
         }
     })
 
     const replyEditor = useEditor({
-        extensions : [
+        extensions: [
             starterKitExtensions
         ],
-        editorProps : {
-            attributes : {
-                class : cn(
+        editorProps: {
+            attributes: {
+                class: cn(
                     `max-h-[4rem] min-h-[2rem] text-xs overflow-hidden`
                 )
             }
         },
-        onUpdate : ({editor}) => {
-            if ( editor.getText().length > 500 ) {
+        onUpdate: ({ editor }) => {
+            if (editor.getText().length > 500) {
                 editor.commands.setContent(editor.getText().slice(0, 500) + "...")
             }
         },
-        editable : false
+        editable: false
     })
 
     useEffect(() => {
-        if ( replyingToTaskComment ) {
+        if (replyingToTaskComment) {
             replyEditor.commands.setContent(replyingToTaskComment.comment_content || "")
         } else {
             replyEditor.commands.clearContent()
@@ -85,7 +85,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                         `translate-y-[0.3rem]`
                     )}
                     style={{
-                        gridTemplateColumns : "1fr min-content"
+                        gridTemplateColumns: "1fr min-content"
                     }}
                 >
                     <div
@@ -119,7 +119,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                         className="absolute top-1 right-1"
                         onClick={clearReplyingToTaskComment}
                     >
-                        <X/>
+                        <X />
                     </Button>
                 </div>
             }
@@ -140,7 +140,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                             editor?.chain().focus().toggleBold().run()
                         }}
                     >
-                        <BoldIcon/>
+                        <BoldIcon />
                     </Toggle>
                     <Toggle
                         pressed={editorButtonsState.isItalic}
@@ -149,7 +149,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                             editor?.chain().focus().toggleItalic().run()
                         }}
                     >
-                        <ItalicIcon/>
+                        <ItalicIcon />
                     </Toggle>
                     <Toggle
                         pressed={editorButtonsState.isUnderline}
@@ -158,7 +158,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                             editor?.chain().focus().toggleUnderline().run()
                         }}
                     >
-                        <UnderlineIcon/>
+                        <UnderlineIcon />
                     </Toggle>
                     <div className="h-6 border-r border-border my-auto" ></div>
                     <Toggle
@@ -168,7 +168,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                             editor?.chain().focus().toggleBulletList().run()
                         }}
                     >
-                        <ListIcon/>
+                        <ListIcon />
                     </Toggle>
                     <Toggle
                         pressed={editorButtonsState.isListOrdered}
@@ -177,7 +177,7 @@ const CommentEditor_CommentSection : React.FC<TCommentEditor_CommentSection> = (
                             editor?.chain().focus().toggleOrderedList().run()
                         }}
                     >
-                        <ListOrderedIcon/>
+                        <ListOrderedIcon />
                     </Toggle>
                 </div>
                 <EditorContent

@@ -1,4 +1,4 @@
-import { EProjectRole, TProject } from "@repo/taskprio-types/src/index";
+import { EProjectRole, TProject } from "@repo/taskprio-types";
 import { Store, useStore } from "@tanstack/react-store";
 
 export type TProjectStore = {

@@ -1,5 +1,5 @@
 import { useWorkspaceStore_workspaceRole } from "@/stores/workspace"
-import { EWorkspaceRole } from "@repo/taskprio-types/src"
+import { EWorkspaceRole } from "@repo/taskprio-types"
 
 const useUserWorkspaceOwner = () => {
     const workspaceRole = useWorkspaceStore_workspaceRole()

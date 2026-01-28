@@ -18,7 +18,12 @@ export enum EEvents {
     MAKE_WINDOW_TO_FULL_MODE = "make-window-to-full-mode",
     MAKE_WINDOW_TO_TASK_TODO_FOCUS_MODE = "make-window-to-task-todo-focus-mode",
     CHANGE_OVERLAY_SCREEN = "change_overlay_screen",
-    CHANGE_OVERLAY_LOCATION = "change_overlay_location"
+    CHANGE_OVERLAY_LOCATION = "change_overlay_location",
+
+    // Websocket
+    INITIALIZE_WEBSOCKET = "initialize_websocket",
+    CLOSE_WEBSOCKET = "close_websocket",
+    SEND_WEBSOCKET_MESSAGE = "send_websocket_message"
 }
 
 export enum EEventListeners {
@@ -28,5 +33,10 @@ export enum EEventListeners {
     // General
     CONSOLE_LOG = "console-log",
     GOOGLE_LOGIN_SUCCESS = "google-login-success",
-    ACCEPT_INVITATION = "accept_invitation"
+    ACCEPT_INVITATION = "accept_invitation",
+
+    // Websocket
+    WEBSOCKET_CONNECTION_STATE = "websocket_connection_state",
+    WEBSOCKET_ONMESSAGE = "websocket_onmessage",
+    ON_PING_SERVER = "on_ping_server"
 }

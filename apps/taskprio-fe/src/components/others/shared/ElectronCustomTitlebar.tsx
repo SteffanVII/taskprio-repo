@@ -10,7 +10,7 @@ import { useGlobalsStore_authenticated } from "@/stores/globals";
 import { useTaskboardStore_taskboards } from "@/stores/taskboard";
 import { useProjectStore_selectedProject } from "@/stores/project";
 import TaskTodoPageHeader from "../taskTodo/TaskTodoPageHeader";
-import { WebSocketContext } from "../websocket/WebsocketProvider";
+import { EWebsocketConnectionState, WebSocketContext } from "../websocket/WebsocketProvider";
 
 
 const ElectronCustomTitlebar = () => {
@@ -23,11 +23,11 @@ const ElectronCustomTitlebar = () => {
     const taskboards = useTaskboardStore_taskboards()
 
     const {
-        connected: webSocketConnected,
+        connectionState: webSocketConnectionState,
     } = useContext(WebSocketContext)
 
     const showTaskboardList = useMemo(() => {
-        return authenticated && webSocketConnected && pathname.includes("/p") && selectedProject && pathname.includes("/d") && !pathname.includes("/project_settings") && taskboards && taskboards.length > 0
+        return authenticated && webSocketConnectionState === EWebsocketConnectionState.OPEN && pathname.includes("/p") && selectedProject && pathname.includes("/d") && !pathname.includes("/project_settings") && taskboards && taskboards.length > 0
     }, [
         pathname,
         selectedProject,
@@ -35,7 +35,7 @@ const ElectronCustomTitlebar = () => {
     ])
 
     const showTaskTodoPageHeader = useMemo(() => {
-        return authenticated && webSocketConnected && pathname.includes("/p") && pathname.includes("/tt")
+        return authenticated && webSocketConnectionState === EWebsocketConnectionState.OPEN && pathname.includes("/p") && pathname.includes("/tt")
     }, [
         pathname
     ])

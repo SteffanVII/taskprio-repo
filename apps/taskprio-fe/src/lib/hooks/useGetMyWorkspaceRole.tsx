@@ -1,6 +1,6 @@
 import { useGlobalsStore_user } from "@/stores/globals";
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
-import { EWorkspaceRole } from "@repo/taskprio-types/src";
+import { EWorkspaceRole } from "@repo/taskprio-types";
 import { useMemo } from "react";
 
 

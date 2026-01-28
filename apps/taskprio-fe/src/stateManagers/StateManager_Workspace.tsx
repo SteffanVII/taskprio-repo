@@ -4,8 +4,8 @@ import { updateTaskboardStore } from "@/stores/taskboard";
 import { updateWorkspaceStore, useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import React, { useContext, useEffect, useLayoutEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { EWorkspaceRole } from "@repo/taskprio-types/src";
-import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
+import { EWorkspaceRole } from "@repo/taskprio-types";
+import { EWebsocketConnectionState, WebSocketContext } from "@/components/others/websocket/WebsocketProvider";
 import { useGlobalsStore_user } from "@/stores/globals";
 
 type TStateManager_Workspace = {
@@ -23,7 +23,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
     const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
     const {
-        connected: webSocketConnected,
+        connectionState: webSocketConnectionState,
         channelActions
     } = useContext(WebSocketContext)
 
@@ -33,7 +33,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
         isLoading: workspacesIsLoading,
         isError: workspacesIsError
     } = useGetUserWorkspaces({
-        enabled: webSocketConnected
+        enabled: webSocketConnectionState === EWebsocketConnectionState.OPEN
     })
 
     useEffect(() => {

@@ -1,7 +1,7 @@
 import { app } from "electron"
 import { mainWindow } from "./main"
-import { EEventListeners } from "src/lib/enums"
 import path from "node:path";
+import { EEventListeners } from "src/lib/enums";
 
 if ( app.isPackaged ) {
     const devPath = path.join( app.getPath("appData"), "taskprio-electron-dev" )
@@ -13,7 +13,7 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
     app.quit()
 } else {
-    app.on("second-instance", (_, commandLine, _workingDirectory) => {
+    app.on("second-instance", (_, commandLine) => {
         if (mainWindow) {
             if (mainWindow.isMinimized()) mainWindow.restore()
             mainWindow.focus()

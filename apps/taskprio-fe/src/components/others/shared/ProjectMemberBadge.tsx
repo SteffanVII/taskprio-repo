@@ -1,17 +1,17 @@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { EProjectRole } from "@repo/taskprio-types/src"
+import { EProjectRole } from "@repo/taskprio-types"
 import React from "react"
 
 export type TProjectMemberBadgeProps = {
-    role : EProjectRole
+    role: EProjectRole
 }
 
-const ProjectMemberBadge : React.FC<TProjectMemberBadgeProps> = ({
+const ProjectMemberBadge: React.FC<TProjectMemberBadgeProps> = ({
     role
 }) => {
 
-    if ( role === EProjectRole.OWNER ) {
+    if (role === EProjectRole.OWNER) {
         return (
             <Badge
                 variant="outline"
@@ -25,7 +25,7 @@ const ProjectMemberBadge : React.FC<TProjectMemberBadgeProps> = ({
         )
     }
 
-    if ( role === EProjectRole.MEMBER ) {
+    if (role === EProjectRole.MEMBER) {
         return (
             <Badge
                 variant="outline"
@@ -39,7 +39,7 @@ const ProjectMemberBadge : React.FC<TProjectMemberBadgeProps> = ({
         )
     }
 
-    if ( role === EProjectRole.GUEST ) {
+    if (role === EProjectRole.GUEST) {
         return (
             <Badge
                 variant="outline"
@@ -53,7 +53,7 @@ const ProjectMemberBadge : React.FC<TProjectMemberBadgeProps> = ({
         )
     }
 
-    if ( role === EProjectRole.ADMIN ) {
+    if (role === EProjectRole.ADMIN) {
         return (
             <Badge
                 variant="outline"
@@ -66,7 +66,7 @@ const ProjectMemberBadge : React.FC<TProjectMemberBadgeProps> = ({
             </Badge>
         )
     }
-    
+
 }
 
 export default ProjectMemberBadge;

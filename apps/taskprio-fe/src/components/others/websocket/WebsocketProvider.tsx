@@ -2,15 +2,20 @@ import { useGlobalsStore_authenticated } from "@/stores/globals"
 import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard"
 import { useProjectStore_selectedProject } from "@/stores/project"
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
-import { EWebsocketClientEventType, TWebSocketJoinProjectChannelMessage, TWebSocketJoinTaskboardChannelMessage, TWebSocketJoinWorkspaceChannelMessage, TWebSocketLeaveProjectChannelMessage, TWebSocketLeaveTaskboardChannelMessage, TWebSocketLeaveWorkspaceChannelMessage, TWebSocketMessage } from "@repo/taskprio-types/src"
+import { EWebsocketClientEventType, TWebSocketJoinProjectChannelMessage, TWebSocketJoinTaskboardChannelMessage, TWebSocketJoinWorkspaceChannelMessage, TWebSocketLeaveProjectChannelMessage, TWebSocketLeaveTaskboardChannelMessage, TWebSocketLeaveWorkspaceChannelMessage, TWebSocketMessage } from "@repo/taskprio-types"
 import { createContext, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useWebSocketEventHandlers } from "./eventHandlers/WebsocketEventHandlers"
-import { useElectronStore_isElectron } from "@/stores/electron"
 import { usePingServer } from "@/services/private/PrivateLayout"
 
+export enum EWebsocketConnectionState {
+    CONNECTING,
+    OPEN,
+    CLOSING,
+    CLOSED
+}
+
 type TWebSocketContext = {
-    connected: boolean,
-    socket: WebSocket | null,
+    connectionState: EWebsocketConnectionState,
     closeWebSocketConnection: () => void,
     sendWebSocketMessage: (message: TWebSocketMessage) => void,
     channelActions: {
@@ -25,8 +30,7 @@ type TWebSocketContext = {
 }
 
 export const WebSocketContext = createContext<TWebSocketContext>({
-    connected: false,
-    socket: null,
+    connectionState: EWebsocketConnectionState.CLOSED,
     sendWebSocketMessage: () => { },
     closeWebSocketConnection: () => { },
     channelActions: {
@@ -46,16 +50,17 @@ type TWebSocketProviderProps = {
 
 export const WebSocketProvider = ({ children }: TWebSocketProviderProps) => {
 
-    const isElectron = useElectronStore_isElectron()
     const authenticated = useGlobalsStore_authenticated()
     const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
     const selectedProject = useProjectStore_selectedProject()
     const selectedTaskboard = useTaskboardStore_selectedTaskboard()
 
-    const [connected, setConnected] = useState<boolean>(false)
+    // const [connected, setConnected] = useState<boolean>(false)
     const initialConnection = useRef<boolean>(true)
     const socket = useRef<WebSocket | null>(null)
-    const checkHealthTimerWorker = useRef<Worker>(null)
+    // const checkHealthTimerWorker = useRef<Worker>(null)
+
+    const [ connectionState, setConnectionState ] = useState<EWebsocketConnectionState>(EWebsocketConnectionState.CLOSED)
 
     const {
         mutateAsync: pingServerMutateAsync
@@ -132,103 +137,94 @@ export const WebSocketProvider = ({ children }: TWebSocketProviderProps) => {
     // Event Handlers
     const websocketEventHandlers = useWebSocketEventHandlers();
 
-    const createCheckHealthTimer = () => {
-        if (checkHealthTimerWorker.current === null) {
-            checkHealthTimerWorker.current = new Worker(new URL("./checkHealthTimer.js", import.meta.url))
-            checkHealthTimerWorker.current!.onmessage = (event: MessageEvent) => {
-                const count = event.data
-                if (count % 60 === 0 || count === 0) {
-                    pingServerMutateAsync()
-                    sendWebSocketMessage({
-                        type: EWebsocketClientEventType.CHECK_HEALTH,
-                        message: {
-                            message: "ping"
-                        }
-                    })
-                }
-            }
-        }
-    }
+    // const createCheckHealthTimer = () => {
+    //     if (checkHealthTimerWorker.current === null) {
+    //         checkHealthTimerWorker.current = new Worker(new URL("./checkHealthTimer.js", import.meta.url))
+    //         checkHealthTimerWorker.current!.onmessage = (event: MessageEvent) => {
+    //             const count = event.data
+    //             if (count % 60 === 0 || count === 0) {
+    //                 pingServerMutateAsync()
+    //                 sendWebSocketMessage({
+    //                     type: EWebsocketClientEventType.CHECK_HEALTH,
+    //                     message: {
+    //                         message: "ping"
+    //                     }
+    //                 })
+    //             }
+    //         }
+    //     }
+    // }
 
-    const clearCheckHealthTimer = () => {
-        if (checkHealthTimerWorker.current) {
-            checkHealthTimerWorker.current.onmessage = null
-            checkHealthTimerWorker.current.terminate()
-            checkHealthTimerWorker.current = null
-        }
-    }
+    // const clearCheckHealthTimer = () => {
+    //     if (checkHealthTimerWorker.current) {
+    //         checkHealthTimerWorker.current.onmessage = null
+    //         checkHealthTimerWorker.current.terminate()
+    //         checkHealthTimerWorker.current = null
+    //     }
+    // }
 
     const closeWebSocketConnection = () => {
-        if (!socket.current) return
-        socket.current.close()
-        socket.current = null
-        setConnected(false)
-        initialConnection.current = true
+        window.electronAPI.closeWebsocket()
     }
 
     const createConnection = () => {
-        if (!authenticated) return
+        window.electronAPI.onWebsocketConnectionState((event) => {
+            console.log("Websocket Connection State", event);
+            setConnectionState(event)
+        })
+        window.electronAPI.onPingServer(() => {
+            pingServerMutateAsync()
+        })
+        window.electronAPI.initializeWebsocket()
+        window.electronAPI.onWebsocketMessage((event) => {
+            const message = event
+            websocketEventHandlers(message)
+        })
 
-        socket.current = null;
-        socket.current = new WebSocket(
-            `${import.meta.env.VITE_TASKPRIO_WSS_URL}?connection_type=${isElectron ? "electron" : "webapp"}&client_id=${localStorage.getItem(import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME)}`
-        )
-        socket.current.onopen = () => {
-            console.log("Connection open")
-            createCheckHealthTimer()
-            setConnected(true)
-            initialConnection.current = false
-        }
+        // socket.current = null;
+        // socket.current = new WebSocket(
+        //     `${import.meta.env.VITE_TASKPRIO_WSS_URL}?connection_type=${isElectron ? "electron" : "webapp"}&client_id=${localStorage.getItem(import.meta.env.VITE_CLIENT_ID_LOCAL_STORAGE_NAME)}`
+        // )
+        // socket.current.onopen = () => {
+        //     console.log("Connection open")
+        //     createCheckHealthTimer()
+        //     setConnected(true)
+        //     initialConnection.current = false
+        // }
 
-        socket.current.onclose = () => {
-            console.log("Connection closed")
-            clearCheckHealthTimer()
-            setConnected(false)
-            if (initialConnection.current === false) {
-                setTimeout(() => {
-                    createConnection()
-                }, 3000)
-            }
-        }
+        // socket.current.onclose = () => {
+        //     console.log("Connection closed")
+        //     clearCheckHealthTimer()
+        //     setConnected(false)
+        //     if (initialConnection.current === false) {
+        //         setTimeout(() => {
+        //             createConnection()
+        //         }, 3000)
+        //     }
+        // }
 
-        socket.current.onerror = () => {
-            console.log("Connection error")
-            clearCheckHealthTimer()
-            setConnected(false)
-            if (initialConnection.current === false) {
-                setTimeout(() => {
-                    createConnection()
-                }, 3000)
-            }
-        }
+        // socket.current.onerror = () => {
+        //     console.log("Connection error")
+        //     clearCheckHealthTimer()
+        //     setConnected(false)
+        //     if (initialConnection.current === false) {
+        //         setTimeout(() => {
+        //             createConnection()
+        //         }, 3000)
+        //     }
+        // }
     }
 
     useLayoutEffect(() => {
-        if (socket.current) return
+        if ( !authenticated ) return
         createConnection()
         return () => {
-            clearCheckHealthTimer()
             closeWebSocketConnection()
         }
-    }, [authenticated, isElectron])
-
-    // Attach the message handlers to the socket
-    useLayoutEffect(() => {
-        if (!connected) return
-        if (!socket.current) return
-        socket.current.onmessage = (event) => {
-            const message = JSON.parse(event.data) as TWebSocketMessage
-            websocketEventHandlers(message)
-        }
-    }, [
-        connected,
-        selectedWorkspace,
-        authenticated,
-        websocketEventHandlers
-    ])
+    }, [ authenticated ])
 
     const contextValue = useMemo(() => ({
-        connected,
+        connectionState,
         sendWebSocketMessage,
         closeWebSocketConnection,
         channelActions: {
@@ -240,7 +236,7 @@ export const WebSocketProvider = ({ children }: TWebSocketProviderProps) => {
             leaveTaskboardChannel
         }
     }), [
-        connected,
+        connectionState,
         sendWebSocketMessage,
         closeWebSocketConnection,
         joinWorkspaceChannel,
@@ -256,7 +252,6 @@ export const WebSocketProvider = ({ children }: TWebSocketProviderProps) => {
             value={{
                 ...contextValue,
                 initialConnection: initialConnection.current,
-                socket: socket.current,
             }}
         >
             {children}

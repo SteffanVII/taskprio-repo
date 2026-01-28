@@ -185,11 +185,13 @@ const TagDialog = () => {
                                 <span
                                     className={cn(
                                         ` max-w-full `,
-                                        ` text-center px-4 py-2 rounded-md `,
+                                        ` text-center px-4 py-2 rounded-md border `,
                                     )}
                                     style={{
-                                        backgroundColor: color,
-                                        color: getHexLuminance(color) > 0.5 ? "black" : "white"
+                                        borderColor : `${color}80`,
+                                        backgroundColor: `${color}1a`,
+                                        // backgroundColor: color,
+                                        // color: getHexLuminance(color) > 0.5 ? "black" : "white"
                                     }}
                                 >{!!name ? name : "Tag Name"}</span>
                             </div>
@@ -208,6 +210,7 @@ const TagDialog = () => {
                         )
                     }
                     <Button
+                        variant={"outline"}
                         onClick={() => {
                             form.handleSubmit(onSubmit)()
                         }}

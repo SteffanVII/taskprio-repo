@@ -4,7 +4,7 @@ import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import React, { useMemo } from "react"
 import WorkspaceMemberBadge from "./WorkspaceMemberBadge"
 import { ProfilePhotoUrl } from "@/lib/globals"
-import { EProfilePhotoSize } from "@repo/taskprio-types/src"
+import { EProfilePhotoSize } from "@repo/taskprio-types"
 import { UserIcon } from "lucide-react"
 
 export type TUserAvatarProps = {

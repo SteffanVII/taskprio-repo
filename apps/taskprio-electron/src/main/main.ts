@@ -1,12 +1,11 @@
 import { app, BrowserWindow, screen } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { EEventListeners, EEvents } from 'src/lib/enums.js';
-import { URL } from 'node:url';
-import { titlebarMain } from './titlebar/index.js';
-import { generalMain } from './general/index.js';
-import { taskTodoOverlayMain } from './taskTodoOverlay/index.js';
-import "./protocolHandler.js"
+import { titlebarMain } from './titlebar';
+import { generalMain } from './general';
+import { taskTodoOverlayMain } from './taskTodoOverlay';
+import "./protocolHandler"
+import { websocketMain } from './websocket';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -51,7 +50,7 @@ const createWindow = () => {
 
     mainWindow.setPosition(20, 20)
 
-    // mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
 
     return mainWindow
 };
@@ -64,6 +63,7 @@ app.on('ready', () => {
     titlebarMain()
     generalMain()
     taskTodoOverlayMain()
+    websocketMain()
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -83,6 +83,7 @@ app.on('activate', () => {
         titlebarMain()
         generalMain()
         taskTodoOverlayMain()
+        websocketMain()
     }
 });
 

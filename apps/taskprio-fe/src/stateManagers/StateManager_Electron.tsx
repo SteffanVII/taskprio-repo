@@ -3,7 +3,7 @@ import { updateDialogsStore } from "@/stores/dialogs";
 import { updateElectronStore, useElectronStore_preferences } from "@/stores/electron";
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
-import { TElectronStorePreferencesOverlayLocation } from "@repo/taskprio-types/src";
+import { TElectronStorePreferencesOverlayLocation } from "@repo/taskprio-types";
 import React, { createContext, useLayoutEffect } from "react";
 import { useNavigate } from "react-router";
 

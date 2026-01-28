@@ -3,29 +3,29 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, D
 import { cn } from "@/lib/utils"
 import { taskSectionColors } from "@/lib/utils/shared"
 import { useUpdateTaskboardSection } from "@/services/private/tasksection/mutation"
-import { TTaskSectionWithTasks } from "@repo/taskprio-types/src"
+import { TTaskSectionWithTasks } from "@repo/taskprio-types"
 import { Ellipsis, Pencil } from "lucide-react"
 import React from "react"
 
 type TTaskboardSectionMenuProps = {
-    taskSection : TTaskSectionWithTasks,
-    openRenameModal : () => void
+    taskSection: TTaskSectionWithTasks,
+    openRenameModal: () => void
 }
 
-export const TaskboardSectionMenu : React.FC<TTaskboardSectionMenuProps> = ({
+export const TaskboardSectionMenu: React.FC<TTaskboardSectionMenuProps> = ({
     taskSection,
     openRenameModal
 }) => {
 
     const {
-        mutate : updateTaskboardSection
+        mutate: updateTaskboardSection
     } = useUpdateTaskboardSection()
 
-    const onColorChange = ( color : string ) => {
+    const onColorChange = (color: string) => {
         updateTaskboardSection({
-            task_section_id : taskSection.task_section_id,
-            body : {
-                task_section_color : color
+            task_section_id: taskSection.task_section_id,
+            body: {
+                task_section_color: color
             }
         })
     }
@@ -57,16 +57,16 @@ export const TaskboardSectionMenu : React.FC<TTaskboardSectionMenuProps> = ({
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
                         {
-                            taskSectionColors.map( ( color ) => (
+                            taskSectionColors.map((color) => (
                                 <DropdownMenuItem
                                     key={color}
                                     className={cn(
                                         " flex items-center gap-2 ",
                                         taskSection.task_section_color === color && " bg-foreground/10 "
                                     )}
-                                    onClick={() => onColorChange( color )}
+                                    onClick={() => onColorChange(color)}
                                 >
-                                    <div className=" size-4 w-full rounded-sm" style={{ backgroundColor : color }}></div>
+                                    <div className=" size-4 w-full rounded-sm" style={{ backgroundColor: color }}></div>
                                     {/* {color} */}
                                 </DropdownMenuItem>
                             ))

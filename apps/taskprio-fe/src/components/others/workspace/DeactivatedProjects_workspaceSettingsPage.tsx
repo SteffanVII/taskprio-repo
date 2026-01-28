@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { useGetDeactivatedProjects } from "@/services/private/project/query";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { TProjectInactiveForTable } from "@repo/taskprio-types/src";
+import { TProjectInactiveForTable } from "@repo/taskprio-types";
 import { Delete, RefreshCcw } from "lucide-react";
 import { useParams } from "react-router";
 
@@ -18,11 +18,11 @@ const DeactivatedProjects_WorkspaceSettingsPage = () => {
     } = useParams()
 
     const {
-        data : deactivatedProjects,
-        isLoading : deactivatedProjectsIsLoading,
-        isError : deactivatedProjectsIsError
+        data: deactivatedProjects,
+        isLoading: deactivatedProjectsIsLoading,
+        isError: deactivatedProjectsIsError
     } = useGetDeactivatedProjects({
-        payload : {
+        payload: {
             workspace_id
         }
     })
@@ -74,12 +74,12 @@ const DeactivatedProjects_WorkspaceSettingsPage = () => {
                                 </TableRow>
                             }
                             {
-                                deactivatedProjects?.map( project => (
+                                deactivatedProjects?.map(project => (
                                     <DeactivateProjectRow
                                         key={project.project_id}
                                         data={project}
                                     />
-                                ) )
+                                ))
                             }
                         </TableBody>
                     </Table>
@@ -92,25 +92,25 @@ const DeactivatedProjects_WorkspaceSettingsPage = () => {
 export default DeactivatedProjects_WorkspaceSettingsPage;
 
 type TDeactivateProjectRowProps = {
-    data : TProjectInactiveForTable
+    data: TProjectInactiveForTable
 }
 
-const DeactivateProjectRow : React.FC<TDeactivateProjectRowProps> = ({ data }) => {
+const DeactivateProjectRow: React.FC<TDeactivateProjectRowProps> = ({ data }) => {
 
     const handleShowReactivateProjectDialog = () => {
         updateDialogsStore({
-            reactivateProjectDialog : {
-                open : true,
-                project : data
+            reactivateProjectDialog: {
+                open: true,
+                project: data
             }
         })
     }
 
     const handleDropProjectDialog = () => {
         updateDialogsStore({
-            dropProjectDialog : {
-                open : true,
-                project : data
+            dropProjectDialog: {
+                open: true,
+                project: data
             }
         })
     }
@@ -124,7 +124,7 @@ const DeactivateProjectRow : React.FC<TDeactivateProjectRowProps> = ({ data }) =
                 <Tooltip>
                     <TooltipTrigger
                         render={
-                            <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateProjectDialog}><RefreshCcw/></Button>
+                            <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateProjectDialog}><RefreshCcw /></Button>
                         }
                     />
                     <TooltipContent>Restore Project</TooltipContent>
@@ -132,7 +132,7 @@ const DeactivateProjectRow : React.FC<TDeactivateProjectRowProps> = ({ data }) =
                 <Tooltip>
                     <TooltipTrigger
                         render={
-                            <Button size={"icon-sm"} variant={"destructive"} onClick={handleDropProjectDialog}><Delete/></Button>
+                            <Button size={"icon-sm"} variant={"destructive"} onClick={handleDropProjectDialog}><Delete /></Button>
                         }
                     />
                     <TooltipContent>Drop Project</TooltipContent>

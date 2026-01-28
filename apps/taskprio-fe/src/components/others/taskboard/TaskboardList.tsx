@@ -6,7 +6,7 @@ import { updateTaskboardStore, useTaskboardStore_noTaskboards, useTaskboardStore
 import { useProjectStore_projectRole, useProjectStore_projectsIsLoading, useProjectStore_selectedProject } from "@/stores/project";
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 
-import { EProjectRole, TTaskboard } from "@repo/taskprio-types/src";
+import { EProjectRole, TTaskboard } from "@repo/taskprio-types";
 import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
 import React, { useContext, useMemo } from "react";
 import { useNavigate } from "react-router";
@@ -36,7 +36,7 @@ const TaskboardList = () => {
 
     return (
         <div
-            className="grow grid w-full h-full min-h-[2.55rem] ml-1 items-center mt-auto z-10 "
+            className="grow grid w-full h-fit min-h-[2rem] ml-1 translate-y-[1px] mt-auto items-center z-10"
             style={{
                 gridTemplateColumns: "min-content 1fr"
             }}
@@ -59,7 +59,7 @@ const TaskboardList = () => {
                     <TooltipContent>Create Taskboard</TooltipContent>
                 </Tooltip>
             }
-            <ScrollArea className="min-w-0 h-fit translate-y-[3px]" >
+            <ScrollArea className="min-w-0 h-fit" >
                 <div
                     className="w-full max-w-full flex"
                 >
@@ -187,6 +187,19 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
             )}
             onClick={handleTaskboardTabOnClick}
         >
+            {
+                selected &&
+                <>
+                    <svg className="absolute bottom-0 left-0 -translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
+                        <path d="M 8 8 H 0 A 8 8 0 0 0 8 0 V 8 Z" />
+                        <path d="M 0 8 A 8 8 0 0 0 8 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
+                    </svg>
+                    <svg className="absolute bottom-0 right-0 translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
+                        <path d="M 0 8 H 8 A 8 8 0 0 1 0 0 V 8 Z" />
+                        <path d="M 8 8 A 8 8 0 0 1 0 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
+                    </svg>
+                </>
+            }
             <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
             {
                 taskboardMenuVisible &&

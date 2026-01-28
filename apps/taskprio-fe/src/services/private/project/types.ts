@@ -1,4 +1,4 @@
-import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TGetProjectMemberRequestParams, TProject, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams } from "@repo/taskprio-types/src/index"
+import { TAddProjectMembersRequestBody, TAddProjectMembersRequestParams, TCreateProjectRequestBody, TGetProjectMemberRequestParams, TProject, TUpdateProjectCustomizationRequestBody, TUpdateProjectCustomizationRequestParams } from "@repo/taskprio-types"
 
 export type TCreateProjectPayload = {
     body: TCreateProjectRequestBody

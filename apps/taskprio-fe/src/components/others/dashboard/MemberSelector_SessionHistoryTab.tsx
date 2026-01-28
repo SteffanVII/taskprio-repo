@@ -5,7 +5,7 @@ import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { User } from "lucide-react";
 import UserAvatar from "../shared/UserAvatar";
 import { updateSessionHistoryTabStore, useSessionHistoryTabStore_selectedMembers } from "@/stores/sessionHistoryTab";
-import { TWorkspaceMember } from "@repo/taskprio-types/src";
+import { TWorkspaceMember } from "@repo/taskprio-types";
 
 
 

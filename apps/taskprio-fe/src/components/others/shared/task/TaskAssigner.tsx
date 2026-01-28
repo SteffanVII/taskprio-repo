@@ -7,7 +7,7 @@ import { Check, Plus } from "lucide-react"
 import React from "react";
 import UserAvatar from "../UserAvatar";
 import { useAddTaskAssignee, useRemoveTaskAssignee } from "@/services/private/task/mutation";
-import { TProjectMember } from "@repo/taskprio-types/src";
+import { TProjectMember } from "@repo/taskprio-types";
 import { Button } from "@/components/ui/button";
 
 export type TTaskAssignerProps = {

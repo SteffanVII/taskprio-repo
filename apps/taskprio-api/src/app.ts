@@ -164,7 +164,6 @@ APP.use("/private", privateRoutes)
 APP.use("/invitation", invitationPublicRoutes)
 APP.use("/redirect", redirectRoutes)
 
-
 // Start the server
 SERVER.listen(PORT, () => {
     console.log(`Server is running on port ${PORT} 🚀`)

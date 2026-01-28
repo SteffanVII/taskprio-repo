@@ -6,7 +6,7 @@ import {
     useTaskTodoPageStore_timerCount,
     updateTaskTodoPageStore
 } from "@/stores/taskTodoPage"
-import { EWebsocketClientEventType, TGetUserTaskTodoStateResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { EWebsocketClientEventType, TGetUserTaskTodoStateResponseData, TUserTaskTodoState } from "@repo/taskprio-types"
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react"
 import { useParams } from "react-router"
 import { useQueryClient } from "@tanstack/react-query"

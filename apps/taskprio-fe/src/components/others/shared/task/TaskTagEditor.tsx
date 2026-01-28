@@ -1,5 +1,5 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { TTag, TTask, TTaskForCardView, TTaskTag } from "@repo/taskprio-types/src";
+import { TTag, TTask, TTaskForCardView, TTaskTag } from "@repo/taskprio-types";
 import { CheckCircle2, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import TagBadge from "../tag/TagBadge";

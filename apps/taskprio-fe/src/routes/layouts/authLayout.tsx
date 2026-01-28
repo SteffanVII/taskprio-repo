@@ -45,8 +45,8 @@ const AuthLayout = () => {
     )
 
     useLayoutEffect( () => {
-        if ( !authenticated ) authenticate()
-    }, [] )
+        if ( !authenticated && !authenticateIsPending ) authenticate()
+    }, [authenticated, authenticateIsPending])
 
     useLayoutEffect(() => {
         updateGlobalsStore({

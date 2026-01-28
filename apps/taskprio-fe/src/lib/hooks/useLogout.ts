@@ -1,4 +1,4 @@
-import { WebSocketContext } from "@/components/others/websocket/WebsocketProvider"
+import { EWebsocketConnectionState, WebSocketContext } from "@/components/others/websocket/WebsocketProvider"
 import { useLogoutRequest } from "@/services/authentication"
 import { resetDialogsStore } from "@/stores/dialogs"
 import { resetGlobalsStore, updateGlobalsStore } from "@/stores/globals"
@@ -26,7 +26,7 @@ export const useLogout = (): TUseLogout => {
     const queryClient = useQueryClient()
 
     const {
-        connected,
+        connectionState,
         closeWebSocketConnection
     } = useContext(WebSocketContext)
 
@@ -36,7 +36,7 @@ export const useLogout = (): TUseLogout => {
         isError: isLogoutError
     } = useLogoutRequest({
         onSuccess: () => {
-            if (connected) closeWebSocketConnection()
+            if (connectionState === EWebsocketConnectionState.OPEN) closeWebSocketConnection()
             Cookies.remove("access_token")
             localStorage.removeItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
             localStorage.removeItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME)

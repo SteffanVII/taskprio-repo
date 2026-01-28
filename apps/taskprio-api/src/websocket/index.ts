@@ -2,7 +2,6 @@ import { WebSocketServer } from "ws"
 import { WebSocket } from "ws"
 import { IncomingMessage } from "http"
 import { TWebSocketMessage } from "@repo/taskprio-types"
-import cookie from "cookie"
 import { TJWTPayload } from "../middlewares/types.js"
 import jwt from "jsonwebtoken"
 import { EWebsocketConnectionType, WebSocketConnectionsManager } from "./connectionsManager.js"
@@ -11,11 +10,10 @@ export const registerWebSocketLogic = ( wss : WebSocketServer, wsConnectionsMana
 
     // Connection event
     wss.on("connection", ( ws : WebSocket, req : IncomingMessage ) => {
-        const cookies = cookie.parse(req.headers.cookie || "")
-        const accessToken = cookies["access_token"]
         const url = new URL(req.url || "", `ws://${req.headers.host}`);
         const connectionType = url.searchParams.get('connection_type')
         const client_id = url.searchParams.get('client_id')
+        const accessToken = url.searchParams.get('access_token');
 
         const decodedToken = jwt.verify(accessToken, process.env.JSONWEBTOKEN_SECRET) as TJWTPayload;
 

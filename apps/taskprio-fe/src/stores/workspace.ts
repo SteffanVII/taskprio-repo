@@ -1,5 +1,5 @@
 import { TGetUserWorkspacesResponse } from "@/services/private/workspace/types";
-import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";
+import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types";
 import { Store, useStore } from "@tanstack/react-store";
 
 export type TWorkspaceStore = {

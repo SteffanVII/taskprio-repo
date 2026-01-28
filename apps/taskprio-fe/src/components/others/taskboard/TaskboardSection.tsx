@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
+import { TTaskSectionWithTasks } from "@repo/taskprio-types";
 import { Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import TaskboardTaskInitialCreator from "./TaskboardTaskInitialCreator";

@@ -1,81 +1,81 @@
-import { TAddTaskAssigneeRequestBody, TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRemoveTaskTagRequestBody, TRestoreTaskFromTrashRequestParams, TTask, TTaskAssignee, TTaskTimeLog } from "@repo/taskprio-types/src";
+import { TAddTaskAssigneeRequestBody, TAddTaskCommentRequestBody, TAddTaskCommentRequestPathParams, TGetTaskCommentsRequestPathParams, TMoveTaskToTrashRequestParams, TRemoveTaskTagRequestBody, TRestoreTaskFromTrashRequestParams, TTask, TTaskAssignee, TTaskTimeLog } from "@repo/taskprio-types";
 
 // Query
 export type TGetTaskResponse = TTask
 
 export type TGetTaskCommentsPayload = {
-    pathParameter : Partial<TGetTaskCommentsRequestPathParams>
+    pathParameter: Partial<TGetTaskCommentsRequestPathParams>
 }
 // Mutation
 
 export type TCreateTaskPayload = {
-    body : {
-        task_board_id : string,
-        task_section_id : string,
-        task_title : string
+    body: {
+        task_board_id: string,
+        task_section_id: string,
+        task_title: string
     }
 }
 
 export type TCreateTaskResponse = TTask;
 
 export type TArrangeTaskPayload = {
-    task_id : string,
-    body : {
-        task_section_id : string,
-        display_order : number
+    task_id: string,
+    body: {
+        task_section_id: string,
+        display_order: number
     }
 }
 
 export type TUpdateTaskPrimitiveFieldsPayload = {
-    task_id : string,
-    body : {
-        task_title? : string,
-        task_description? : string | null,
-        task_estimate? : number | null,
-        task_deadline? : string | null
+    task_id: string,
+    body: {
+        task_title?: string,
+        task_description?: string | null,
+        task_estimate?: number | null,
+        task_deadline?: string | null
     }
 }
 
 export type TArrangeTaskResponse = TTask;
 
 export type TAddTaskAssigneePayload = {
-    optimisticData? : TTaskAssignee,
-    body : TAddTaskAssigneeRequestBody
+    optimisticData?: TTaskAssignee,
+    body: TAddTaskAssigneeRequestBody
 }
 
 export type TRemoveTaskAssigneePayload = Omit<TAddTaskAssigneePayload, "optimisticData">
 
 export type TAddTaskTimeLogPayload = {
-    task_id : string,
-    body : {
-        time_spent : number
+    task_id: string,
+    body: {
+        time_spent: number
     }
 }
 
 export type TAddTaskTimeLogResponse = TTaskTimeLog;
 
 export type TAddTaskTagPayload = {
-    body : {
-        tag_id : string,
-        task_id : string
+    body: {
+        tag_id: string,
+        task_id: string
     }
 }
 
 export type TRemoveTaskTagPayload = {
-    body : TRemoveTaskTagRequestBody
+    body: TRemoveTaskTagRequestBody
 }
 
 export type TAddTaskCommentPayload = {
-    pathParameter : TAddTaskCommentRequestPathParams,
-    body : TAddTaskCommentRequestBody
+    pathParameter: TAddTaskCommentRequestPathParams,
+    body: TAddTaskCommentRequestBody
 }
 
 export type TMoveTaskToTrashPayload = {
-    params : TMoveTaskToTrashRequestParams
+    params: TMoveTaskToTrashRequestParams
 }
 
 export type TRestoreTaskFromTrashPayload = {
-    params : TRestoreTaskFromTrashRequestParams
+    params: TRestoreTaskFromTrashRequestParams
 }
 
 // Task

@@ -4,7 +4,7 @@ import { axiosInstance } from "@/services/axios"
 import { QueryKeys } from "@/services/enum"
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 
-import { TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TGetAvailableTasksByProjectRequestQuery, TGetAvailableTasksByProjectResponseData, TGetUserTaskTodoStateResponseData, TStartOrStopTaskTodoTimerResponseData, TUserTaskTodoState } from "@repo/taskprio-types"
 import { produce } from "immer"
 import { AxiosError } from "axios"
 import { useTaskTodoPageStore_projectColumnsFilterState } from "@/stores/taskTodoPage"
@@ -29,12 +29,12 @@ export const useMoveTaskToTodo = (onSuccess?: () => void) => {
             const filtersKey: Partial<TGetAvailableTasksByProjectRequestQuery> = {}
 
             if (variables.optimisticHelpers?.task.project_id) {
-                const search = projectColumnsFilterState[variables.optimisticHelpers?.task.project_id].search
-                if (search && search.trim() !== "") {
+                const search = projectColumnsFilterState[variables.optimisticHelpers?.task.project_id]?.search
+                if (!!search && search.trim() !== "") {
                     filtersKey["search"] = search
                 }
-                const taskboards = projectColumnsFilterState[variables.optimisticHelpers?.task.project_id].taskboards
-                if (taskboards && taskboards.length > 0) {
+                const taskboards = projectColumnsFilterState[variables.optimisticHelpers?.task.project_id]?.taskboards
+                if (!!taskboards && taskboards.length > 0) {
                     filtersKey["taskboards"] = taskboards
                 }
             }

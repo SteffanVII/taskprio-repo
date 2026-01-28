@@ -11,7 +11,7 @@ import { updateWorkspaceStore, useWorkspaceStore_selectedWorkspace, useWorkspace
 import { ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
 import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types/src";
+import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types";
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -120,7 +120,7 @@ const WorkspaceDropdown_MainDashboardPane = () => {
                     render={
                         <div
                             className={cn(
-                                ` bg-primary/10 text-sidebar-foreground px-3 py-2`,
+                                ` bg-primary/20 border border-primary/80 text-sidebar-foreground px-3 py-2 rounded-md`,
                                 `cursor-pointer flex items-center justify-between`
                             )}
                         >

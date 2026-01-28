@@ -10,7 +10,7 @@ import getHexLuminance from "@/lib/utils/hexColorLuminance"
 import { useCommitTaskTodo, useCompleteTaskTodo, useRemoveTaskFromTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation"
 import { ETaskTodoPageDragType, updateTaskboardDragStore } from "@/stores/taskboardDrag"
 
-import { TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TUserTaskTodoState } from "@repo/taskprio-types"
 import { CheckSquareIcon, EditIcon, GitCommitVertical, TrashIcon, XSquare } from "lucide-react"
 import React, { useMemo, useState } from "react"
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage"

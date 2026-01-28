@@ -37,6 +37,7 @@
     "@electron/fuses": "^1.0.0",
     "@types/conf": "^3.0.3",
     "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vitejs/plugin-react": "^4.3.4",
@@ -49,9 +50,12 @@
   "dependencies": {
     "@repo/taskprio-types": "workspace:*",
     "@tailwindcss/vite": "^4.1.10",
+    "dotenv": "^16.5.0",
     "electron-router-dom": "^2.1.0",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^11.0.2",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.10",
+    "uuid": "^13.0.0",
+    "ws": "^8.18.2"
   }
 }

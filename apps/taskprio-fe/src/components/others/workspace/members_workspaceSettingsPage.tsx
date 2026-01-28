@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { EWorkspaceRole, TWorkspaceMember } from "@repo/taskprio-types/src";
+import { EWorkspaceRole, TWorkspaceMember } from "@repo/taskprio-types";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import UserAvatar from "../shared/UserAvatar";
 import WorkspaceMemberBadge from "../shared/WorkspaceMemberBadge";
@@ -82,6 +82,7 @@ export const Members_WorkspaceSettingsPage = () => {
                             )}
                         >
                             <Button
+                                variant={"outline"}
                                 onClick={handleInviteMemberOnClick}
                             ><PlusIcon /> Invite Member</Button>
                         </div>
@@ -121,14 +122,14 @@ export const Members_WorkspaceSettingsPage = () => {
                             >
                                 {
                                     deactivatedMembers.length > 0 ?
-                                    deactivatedMembers.map(member => (
-                                        <MemberCard
-                                            data={member}
-                                            key={member.user_id}
-                                        />
-                                    ))
-                                    :
-                                    <p className="w-full text-center text-muted-foreground my-4" >No deactivated members</p>
+                                        deactivatedMembers.map(member => (
+                                            <MemberCard
+                                                data={member}
+                                                key={member.user_id}
+                                            />
+                                        ))
+                                        :
+                                        <p className="w-full text-center text-muted-foreground my-4" >No deactivated members</p>
                                 }
                             </div>
                         }
@@ -332,13 +333,13 @@ const MemberDialog = () => {
                                             onClick={() => {
                                                 if (workspaceMember?.is_active) {
                                                     deactivateWorkspaceMemberTrigger({
-                                                        workspace_id : workspaceMember.workspace_id,
-                                                        member_id : workspaceMember.user_id
+                                                        workspace_id: workspaceMember.workspace_id,
+                                                        member_id: workspaceMember.user_id
                                                     })
                                                 } else {
                                                     reactivateWorkspaceMemberTrigger({
-                                                        workspace_id : workspaceMember.workspace_id,
-                                                        member_id : workspaceMember.user_id
+                                                        workspace_id: workspaceMember.workspace_id,
+                                                        member_id: workspaceMember.user_id
                                                     })
                                                 }
                                             }}

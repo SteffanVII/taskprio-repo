@@ -1,4 +1,4 @@
-import { TGetWorkspaceMemberParams, TUpdateWorkspaceMemberRoleBody, TUpdateWorkspaceMemberRoleParams, TWorkspace } from "@repo/taskprio-types/src/index"
+import { TGetWorkspaceMemberParams, TUpdateWorkspaceMemberRoleBody, TUpdateWorkspaceMemberRoleParams, TWorkspace } from "@repo/taskprio-types"
 
 // Query
 
@@ -7,32 +7,32 @@ export type TGetUserWorkspacesResponse = TWorkspace[]
 export type TGetUserWorkspaceResponse = TWorkspace
 
 export type TGetWorkspaceMemberPayload = {
-    params : Partial<TGetWorkspaceMemberParams>
+    params: Partial<TGetWorkspaceMemberParams>
 }
 
 // Mutation
 
 export type TCreateWorkspacePayload = {
-    body : TCreateWorkspaceBody
+    body: TCreateWorkspaceBody
 }
 
 export type TCreateWorkspaceBody = {
-    workspace_name : string,
+    workspace_name: string,
 }
 
 export type TCreateWorkspaceResponse = TWorkspace
 
 export type TInviteToWorkspacePayload = {
-    workspace_id : string,
-    body : {
-        projects : string[],
-        emails : string[]
+    workspace_id: string,
+    body: {
+        projects: string[],
+        emails: string[]
     }
 }
 
 export type TUpdateWorkspaceMemberRolePayload = {
-    params : TUpdateWorkspaceMemberRoleParams,
-    body : TUpdateWorkspaceMemberRoleBody
+    params: TUpdateWorkspaceMemberRoleParams,
+    body: TUpdateWorkspaceMemberRoleBody
 }
 
 // Workspace

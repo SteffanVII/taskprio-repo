@@ -6,7 +6,7 @@ import CommentEditor_CommentSection from "./CommentEditor_CommecntSection";
 import React, { useState } from "react";
 import { useGetTaskComments } from "@/services/private/task/query";
 import { useAddTaskComment } from "@/services/private/task/mutation";
-import { TTaskComment } from "@repo/taskprio-types/src";
+import { TTaskComment } from "@repo/taskprio-types";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useGlobalsStore_user } from "@/stores/globals";
 import dayjs from "dayjs";
@@ -14,39 +14,39 @@ import { starterKitExtensions } from "@/lib/utils/shared";
 import Spinner from "../../Spinner";
 
 type TCommentSection_TaskboardTaskDialog = {
-    taskId : string
+    taskId: string
 }
 
-const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTaskDialog> = ({ taskId }) => {
+const CommentSection_TaskboardTaskDialog: React.FC<TCommentSection_TaskboardTaskDialog> = ({ taskId }) => {
 
     const {
-        mutateAsync : addTaskCommentTrigger,
-        isPending : isAddingTaskComment
+        mutateAsync: addTaskCommentTrigger,
+        isPending: isAddingTaskComment
     } = useAddTaskComment({
-        onSuccess : () => {
+        onSuccess: () => {
             editor.commands.clearContent()
             setReplyingToTaskComment(null)
         }
     })
 
     const {
-        data : comments
+        data: comments
     } = useGetTaskComments({
-        pathParameter : {
-            task_id : taskId
+        pathParameter: {
+            task_id: taskId
         }
     })
 
-    const [ replyingToTaskComment, setReplyingToTaskComment ] = useState<TTaskComment | null>(null)
-    const [ commentContent, setCommentContent ] = useState<string>("")
+    const [replyingToTaskComment, setReplyingToTaskComment] = useState<TTaskComment | null>(null)
+    const [commentContent, setCommentContent] = useState<string>("")
 
     const editor = useEditor({
-        extensions : [
+        extensions: [
             starterKitExtensions
         ],
-        editorProps : {
-            attributes : {
-                class : cn(
+        editorProps: {
+            attributes: {
+                class: cn(
                     `p-4`
                 )
             }
@@ -55,21 +55,21 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
 
     const handleAddComment = async () => {
 
-        if ( !commentContent || commentContent.trim() === "" ) return
+        if (!commentContent || commentContent.trim() === "") return
 
         await addTaskCommentTrigger({
-            pathParameter : {
-                task_id : taskId
+            pathParameter: {
+                task_id: taskId
             },
-            body : {
-                comment_content : commentContent,
-                replying_to_task_comment_id : replyingToTaskComment?.task_comment_id || undefined
+            body: {
+                comment_content: commentContent,
+                replying_to_task_comment_id: replyingToTaskComment?.task_comment_id || undefined
             }
         })
 
     }
 
-    const handleReply = ( data : TTaskComment ) => {
+    const handleReply = (data: TTaskComment) => {
         setReplyingToTaskComment(data)
         editor.commands.focus()
     }
@@ -89,7 +89,7 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
                 }
                 {
                     comments &&
-                    comments.map( comment => <Comment key={comment.task_comment_id} data={comment} reply={handleReply} /> )
+                    comments.map(comment => <Comment key={comment.task_comment_id} data={comment} reply={handleReply} />)
                 }
             </div>
 
@@ -107,7 +107,7 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
                     disabled={isAddingTaskComment}
                 >
                     {
-                        isAddingTaskComment ? <Spinner/> : <SendHorizonalIcon/>
+                        isAddingTaskComment ? <Spinner /> : <SendHorizonalIcon />
                     }
                 </Button>
             </div>
@@ -119,40 +119,40 @@ const CommentSection_TaskboardTaskDialog : React.FC<TCommentSection_TaskboardTas
 export default CommentSection_TaskboardTaskDialog;
 
 type TCommentProps = {
-    data : TTaskComment,
-    reply : ( data : TTaskComment ) => void
+    data: TTaskComment,
+    reply: (data: TTaskComment) => void
 }
 
-const Comment : React.FC<TCommentProps> = ({ data, reply }) => {
+const Comment: React.FC<TCommentProps> = ({ data, reply }) => {
 
     const user = useGlobalsStore_user()
 
     const editor = useEditor({
-        extensions : [
+        extensions: [
             starterKitExtensions
         ],
-        content : data.comment_content,
-        editable : false
+        content: data.comment_content,
+        editable: false
     })
 
     const replyEditor = useEditor({
-        extensions : [
+        extensions: [
             starterKitExtensions
         ],
-        onCreate : ({editor}) => {
-            if ( editor.getHTML().length > 500 ) {
+        onCreate: ({ editor }) => {
+            if (editor.getHTML().length > 500) {
                 editor.commands.setContent(editor.getText().slice(0, 500) + "...")
             }
         },
-        content : data.replying_to_task_comment?.comment_content,
-        editorProps : {
-            attributes : {
-                class : cn(
+        content: data.replying_to_task_comment?.comment_content,
+        editorProps: {
+            attributes: {
+                class: cn(
                     `text-xs max-h-[4rem] overflow-hidden`
                 )
             }
         },
-        editable : false
+        editable: false
     })
 
     return (
@@ -163,7 +163,7 @@ const Comment : React.FC<TCommentProps> = ({ data, reply }) => {
                 `hover:bg-foreground/10`
             )}
             style={{
-                gridTemplateColumns : "min-content 1fr"
+                gridTemplateColumns: "min-content 1fr"
             }}
         >
             <UserAvatar
@@ -207,7 +207,7 @@ const Comment : React.FC<TCommentProps> = ({ data, reply }) => {
                         data.user?.email === user?.email && `bg-primary`
                     )}
                 >
-                    <EditorContent key={data.comment_content} editor={editor} className={cn( data.user?.email === user?.email && `text-primary-foreground` )} />
+                    <EditorContent key={data.comment_content} editor={editor} className={cn(data.user?.email === user?.email && `text-primary-foreground`)} />
                 </div>
                 <div
                     className={cn(
@@ -223,7 +223,7 @@ const Comment : React.FC<TCommentProps> = ({ data, reply }) => {
                         title="Reply"
                         onClick={() => reply(data)}
                     >
-                        <ReplyIcon/>
+                        <ReplyIcon />
                     </Button>
                     <Button
                         size={"icon"}
@@ -231,14 +231,14 @@ const Comment : React.FC<TCommentProps> = ({ data, reply }) => {
                         className="border shadow-lg"
                         title="Delete"
                     >
-                        <Trash2Icon/>
+                        <Trash2Icon />
                     </Button>
                 </div>
                 <div
                     className="w-full flex items-center gap-2 pt-2"
                 >
-                    <p className="text-xs text-muted-foreground" >{ dayjs(data.created_at).fromNow() }</p>
-                    <p className="text-xs text-muted-foreground" >{ data.user?.email === user?.email ? "• You" : `• ${data.user?.firstname} ${data.user?.lastname}` }</p>
+                    <p className="text-xs text-muted-foreground" >{dayjs(data.created_at).fromNow()}</p>
+                    <p className="text-xs text-muted-foreground" >{data.user?.email === user?.email ? "• You" : `• ${data.user?.firstname} ${data.user?.lastname}`}</p>
                 </div>
             </div>
         </div>

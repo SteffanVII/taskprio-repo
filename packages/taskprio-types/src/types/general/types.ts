@@ -2,7 +2,8 @@
 export type TElectronStoreType = {
     preferences : TElectronStorePreferencesType,
     lastFullModeWindowState : TElectronStoreLastFullWindowState,
-    lastFocusModeWindowState : TElectronStoreLastFocusModeWindowState
+    lastFocusModeWindowState : TElectronStoreLastFocusModeWindowState,
+    clientId : string
 }
 
 export type TElectronStorePreferencesType = {

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 import getHexLuminance from "@/lib/utils/hexColorLuminance"
-import { TTag, TTaskTag } from "@repo/taskprio-types/src"
+import { TTag, TTaskTag } from "@repo/taskprio-types"
 import React from "react"
 
 type TTagBadgeProps = {
@@ -19,7 +19,7 @@ const TagBadge: React.FC<TTagBadgeProps> = ({
         <div
             className={cn(
                 ` flex items-center `,
-                ` px-3 py-1 rounded `,
+                ` px-3 py-1 rounded border `,
                 ` !font-extralight `,
                 ` cursor-pointer `,
                 ` hover:z-10 `,
@@ -28,8 +28,9 @@ const TagBadge: React.FC<TTagBadgeProps> = ({
                 className
             )}
             style={{
-                backgroundColor: tag.tag_color,
-                color: getHexLuminance(tag.tag_color) > 0.5 ? "black" : "white"
+                borderColor: `${tag.tag_color}80`,
+                backgroundColor: `${tag.tag_color}1a`,
+                // color: getHexLuminance(tag.tag_color) > 0.5 ? "black" : "white"
             }}
             {...props}
         >

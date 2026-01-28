@@ -7,7 +7,7 @@ import { updateProjectStore } from "@/stores/project"
 import { updateTaskboardStore } from "@/stores/taskboard"
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 
-import { TAddProjectMembersResponseData, TDeactivateProjectMemberRequestBody, TDeactivateProjectRequestBody, TDropProjectRequestQueryParams, TProject, TProjectMember, TReactivateProjectMemberRequestBody, TReactivateProjectRequestBody, TUpdateProjectCustomizationResponseData } from "@repo/taskprio-types/src/index"
+import { TAddProjectMembersResponseData, TDeactivateProjectMemberRequestBody, TDeactivateProjectRequestBody, TDropProjectRequestQueryParams, TProject, TProjectMember, TReactivateProjectMemberRequestBody, TReactivateProjectRequestBody, TUpdateProjectCustomizationResponseData } from "@repo/taskprio-types"
 import { QueryKeys } from "@/services/enum"
 import { AxiosError } from "axios"
 import { useNavigate, useParams } from "react-router"
@@ -267,6 +267,9 @@ export const useDeactivateProjectMember = (options?: TUseDeactivateProjectMember
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id]
             })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_PROJECT_MEMBERS.split, variables.project_id]
+            })
             queryClient.setQueryData(
                 [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id],
                 (oldData: TProjectMember) => produce(oldData, (draft) => {
@@ -297,6 +300,9 @@ export const useReactivateProjectMember = (options?: TUseReactivateProjectMember
         onSuccess(data, variables, context) {
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id]
+            })
+            queryClient.invalidateQueries({
+                queryKey: [...QueryKeys.GET_PROJECT_MEMBERS.split, variables.project_id]
             })
             queryClient.setQueryData(
                 [...QueryKeys.GET_PROJECT_MEMBER.split, variables.project_id, variables.member_id],

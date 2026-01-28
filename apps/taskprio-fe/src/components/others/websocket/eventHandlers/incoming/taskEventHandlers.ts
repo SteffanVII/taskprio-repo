@@ -1,24 +1,26 @@
+import useLatest from "@/lib/hooks/useLates";
 import { QueryKeys } from "@/services/enum";
 import { TGetTaskboardSectionsResponse } from "@/services/private/tasksection/types";
 import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
 
-import { TTask, TTaskArrangedWebSocketMessage, TTaskAssigneeAddedWebSocketMessage, TTaskAssigneeRemovedWebSocketMessage, TTaskCreateWebSocketMessage, TTaskForCardView, TTaskSectionWithTasks, TTaskTagAddedWebSocketMessage, TTaskTagRemovedWebSocketMessage, TWebSocketMessage } from "@repo/taskprio-types/src";
+import { TTask, TTaskArrangedWebSocketMessage, TTaskAssigneeAddedWebSocketMessage, TTaskAssigneeRemovedWebSocketMessage, TTaskCreateWebSocketMessage, TTaskForCardView, TTaskSectionWithTasks, TTaskTagAddedWebSocketMessage, TTaskTagRemovedWebSocketMessage, TWebSocketMessage } from "@repo/taskprio-types";
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
-import { useCallback, useMemo } from "react";
 
 export const useTaskEventHandlers = () => {
 
     const queryClient = useQueryClient()
 
-    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
+    const selectedTaskboardState = useTaskboardStore_selectedTaskboard()
 
-    const taskCreatedWebSocketMessageHandler = useCallback((
+    const selectedTaskboard = useLatest(selectedTaskboardState)
+
+    const taskCreatedWebSocketMessageHandler = (
         message: TWebSocketMessage<TTaskCreateWebSocketMessage>
     ) => {
-        if (message.message.data.task_board_id === selectedTaskboard?.task_board_id) {
+        if (message.message.data.task_board_id === selectedTaskboard.current?.task_board_id) {
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.task_board_id, true],
+                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.current?.task_board_id, true],
                 (oldData: TTaskSectionWithTasks[]) => produce(oldData, draft => {
                     draft.forEach(section => {
                         if (section.task_section_id === message.message.data.task_section_id) {
@@ -28,13 +30,13 @@ export const useTaskEventHandlers = () => {
                 })
             )
         }
-    }, [
-        selectedTaskboard
-    ])
+    }
 
-    const taskUpdateWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TTask>) => {
+    const taskUpdateWebSocketMessageHandler = (
+        message: TWebSocketMessage<TTask>
+    ) => {
         queryClient.setQueryData(
-            ["get_taskboard_sections", selectedTaskboard?.task_board_id, true],
+            ["get_taskboard_sections", selectedTaskboard.current?.task_board_id, true],
             (oldData: TGetTaskboardSectionsResponse) => produce(oldData, draft => {
                 draft.forEach(section => {
                     if (section.task_section_id === message.message.task_section_id) {
@@ -51,14 +53,14 @@ export const useTaskEventHandlers = () => {
                 })
             })
         )
-    }, [queryClient, selectedTaskboard])
+    }
 
-    const taskArrangedWebSocketMessageHandler = useCallback((
+    const taskArrangedWebSocketMessageHandler = (
         message: TWebSocketMessage<TTaskArrangedWebSocketMessage>
     ) => {
-        if (message.message.taskboard_id === selectedTaskboard?.task_board_id) {
+        if (message.message.taskboard_id === selectedTaskboard.current?.task_board_id) {
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.task_board_id, true],
+                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.current?.task_board_id, true],
                 (oldData: TTaskSectionWithTasks[]) => {
 
                     if (oldData) {
@@ -114,16 +116,14 @@ export const useTaskEventHandlers = () => {
                 }
             )
         }
-    }, [
-        selectedTaskboard
-    ])
+    }
 
-    const taskAssigneeAddedWebSocketMessageHandler = useCallback((
+    const taskAssigneeAddedWebSocketMessageHandler = (
         message: TWebSocketMessage<TTaskAssigneeAddedWebSocketMessage>
     ) => {
-        if (message.message.taskboard_id === selectedTaskboard?.task_board_id) {
+        if (message.message.taskboard_id === selectedTaskboard.current?.task_board_id) {
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.task_board_id, true],
+                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.current?.task_board_id, true],
                 (oldData: TTaskSectionWithTasks[]) => {
                     if (oldData) {
                         return produce(oldData, draft => {
@@ -140,16 +140,14 @@ export const useTaskEventHandlers = () => {
                 }
             )
         }
-    }, [
-        selectedTaskboard
-    ])
+    }
 
-    const taskAssigneeRemoveWebSocketMessageHandler = useCallback((
+    const taskAssigneeRemoveWebSocketMessageHandler = (
         message: TWebSocketMessage<TTaskAssigneeRemovedWebSocketMessage>
     ) => {
-        if (message.message.taskboard_id === selectedTaskboard?.task_board_id) {
+        if (message.message.taskboard_id === selectedTaskboard.current?.task_board_id) {
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.task_board_id, true],
+                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.current?.task_board_id, true],
                 (oldData: TTaskSectionWithTasks[]) => {
                     if (oldData) {
                         return produce(oldData, draft => {
@@ -166,16 +164,14 @@ export const useTaskEventHandlers = () => {
                 }
             )
         }
-    }, [
-        selectedTaskboard
-    ])
+    }
 
-    const taskTagAddedWebSocketMessageHandler = useCallback((
+    const taskTagAddedWebSocketMessageHandler = (
         message: TWebSocketMessage<TTaskTagAddedWebSocketMessage>
     ) => {
-        if (message.message.taskboard_id === selectedTaskboard?.task_board_id) {
+        if (message.message.taskboard_id === selectedTaskboard.current?.task_board_id) {
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.task_board_id, true],
+                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.current?.task_board_id, true],
                 (oldData: TTaskSectionWithTasks[]) => {
                     if (oldData) {
                         return produce(oldData, draft => {
@@ -192,16 +188,14 @@ export const useTaskEventHandlers = () => {
                 }
             )
         }
-    }, [
-        selectedTaskboard
-    ])
+    }
 
-    const taskTagRemovedWebSocketMessageHandler = useCallback((
+    const taskTagRemovedWebSocketMessageHandler = (
         message: TWebSocketMessage<TTaskTagRemovedWebSocketMessage>
     ) => {
-        if (message.message.taskboard_id === selectedTaskboard?.task_board_id) {
+        if (message.message.taskboard_id === selectedTaskboard.current?.task_board_id) {
             queryClient.setQueryData(
-                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.task_board_id, true],
+                [...QueryKeys.GET_TASKBOARD_SECTIONS.split, selectedTaskboard.current?.task_board_id, true],
                 (oldData: TTaskSectionWithTasks[]) => {
                     if (oldData) {
                         return produce(oldData, draft => {
@@ -218,12 +212,10 @@ export const useTaskEventHandlers = () => {
                 }
             )
         }
-    }, [
-        selectedTaskboard
-    ])
+    }
 
 
-    return useMemo(() => ({
+    return {
         taskCreatedWebSocketMessageHandler,
         taskUpdateWebSocketMessageHandler,
         taskArrangedWebSocketMessageHandler,
@@ -231,14 +223,6 @@ export const useTaskEventHandlers = () => {
         taskAssigneeRemoveWebSocketMessageHandler,
         taskTagAddedWebSocketMessageHandler,
         taskTagRemovedWebSocketMessageHandler
-    }), [
-        taskCreatedWebSocketMessageHandler,
-        taskUpdateWebSocketMessageHandler,
-        taskArrangedWebSocketMessageHandler,
-        taskAssigneeAddedWebSocketMessageHandler,
-        taskAssigneeRemoveWebSocketMessageHandler,
-        taskTagAddedWebSocketMessageHandler,
-        taskTagRemovedWebSocketMessageHandler
-    ])
+    }
 
 }

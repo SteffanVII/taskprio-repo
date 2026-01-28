@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/services/axios"
-import { TGetInvitationInfoResponseData } from "@repo/taskprio-types/src"
+import { TGetInvitationInfoResponseData } from "@repo/taskprio-types"
 import { useQuery } from "@tanstack/react-query"
 
 export const useGetInvitationInfo = (invite_token?: string | null) => {

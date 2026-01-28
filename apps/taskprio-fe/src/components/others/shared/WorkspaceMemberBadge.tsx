@@ -1,17 +1,17 @@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { EWorkspaceRole } from "@repo/taskprio-types/src"
+import { EWorkspaceRole } from "@repo/taskprio-types"
 import React from "react"
 
 export type TWorkspaceMemberBadgeProps = {
-    role : EWorkspaceRole
+    role: EWorkspaceRole
 }
 
-const WorkspaceMemberBadge : React.FC<TWorkspaceMemberBadgeProps> = ({
+const WorkspaceMemberBadge: React.FC<TWorkspaceMemberBadgeProps> = ({
     role
 }) => {
 
-    if ( role === EWorkspaceRole.OWNER ) {
+    if (role === EWorkspaceRole.OWNER) {
         return (
             <Badge
                 variant="outline"
@@ -25,7 +25,7 @@ const WorkspaceMemberBadge : React.FC<TWorkspaceMemberBadgeProps> = ({
         )
     }
 
-    if ( role === EWorkspaceRole.MEMBER ) {
+    if (role === EWorkspaceRole.MEMBER) {
         return (
             <Badge
                 variant="outline"
@@ -39,7 +39,7 @@ const WorkspaceMemberBadge : React.FC<TWorkspaceMemberBadgeProps> = ({
         )
     }
 
-    if ( role === EWorkspaceRole.GUEST ) {
+    if (role === EWorkspaceRole.GUEST) {
         return (
             <Badge
                 variant="outline"
@@ -53,7 +53,7 @@ const WorkspaceMemberBadge : React.FC<TWorkspaceMemberBadgeProps> = ({
         )
     }
 
-    if ( role === EWorkspaceRole.ADMIN ) {
+    if (role === EWorkspaceRole.ADMIN) {
         return (
             <Badge
                 variant="outline"
@@ -66,7 +66,7 @@ const WorkspaceMemberBadge : React.FC<TWorkspaceMemberBadgeProps> = ({
             </Badge>
         )
     }
-    
+
 }
 
 export default WorkspaceMemberBadge;

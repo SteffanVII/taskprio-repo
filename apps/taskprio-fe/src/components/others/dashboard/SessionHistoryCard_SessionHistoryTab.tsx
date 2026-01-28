@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { TSessionHistoryWithTaskTodoStateSnapshots } from "@repo/taskprio-types/src";
+import { TSessionHistoryWithTaskTodoStateSnapshots } from "@repo/taskprio-types";
 import dayjs from "dayjs";
 import React, { useMemo } from "react";
 import TaskTodoStateSnapshot_SessionHistoryCard_SessioHistoryTab from "./TaskTodoStateSnapshot_SessionHistoryCard_SessioHistoryTab";
@@ -9,27 +9,27 @@ import UserAvatar from "../shared/UserAvatar";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type TSessionHistoryCard_SessionHistoryTabProps = {
-    data : TSessionHistoryWithTaskTodoStateSnapshots
+    data: TSessionHistoryWithTaskTodoStateSnapshots
 }
 
-const SessionHistoryCard_SessionHistoryTab : React.FC<TSessionHistoryCard_SessionHistoryTabProps> = ({
+const SessionHistoryCard_SessionHistoryTab: React.FC<TSessionHistoryCard_SessionHistoryTabProps> = ({
     data
 }) => {
 
     const totalWorkTime = useMemo(() => {
-        return data.snapshots.reduce( (acc, curr) => {
-            return acc + curr.timers.reduce( (acc2, curr2) => {
+        return data.snapshots.reduce((acc, curr) => {
+            return acc + curr.timers.reduce((acc2, curr2) => {
                 const start = dayjs(curr2.start)
                 const stop = dayjs(curr2.stop)
-                return acc2 + stop.diff( start, "second" )
-            }, 0 )
-        }, 0 )
+                return acc2 + stop.diff(start, "second")
+            }, 0)
+        }, 0)
     }, [data])
 
     const totalWorkTimeGoal = useMemo(() => {
-        return data.snapshots.reduce( (acc, curr) => {
+        return data.snapshots.reduce((acc, curr) => {
             return acc + Number(curr.work_time_goal)
-        }, 0 )
+        }, 0)
     }, [data])
 
     return (
@@ -70,7 +70,7 @@ const SessionHistoryCard_SessionHistoryTab : React.FC<TSessionHistoryCard_Sessio
 
                         <div className="flex items-center space-x-4" >
                             <UserAvatar user_id_or_email={data.user_id} size="md" />
-                            <Badge variant={"outline"} >{data.snapshots.filter( snapshot => snapshot.completed ).length}/{data.snapshots.length}</Badge>
+                            <Badge variant={"outline"} >{data.snapshots.filter(snapshot => snapshot.completed).length}/{data.snapshots.length}</Badge>
                             <NumberFlowGroup>
                                 <div className={cn(
                                     "text-lg font-bold",
@@ -78,22 +78,22 @@ const SessionHistoryCard_SessionHistoryTab : React.FC<TSessionHistoryCard_Sessio
                                 )} >
                                     <NumberFlow
                                         animated={false}
-                                        value={ Math.floor( totalWorkTime / 3600 ) }
-                                        />
+                                        value={Math.floor(totalWorkTime / 3600)}
+                                    />
                                     <NumberFlow
                                         animated={false}
                                         prefix=":"
                                         value={Math.floor((totalWorkTime % 3600) / 60)}
                                         digits={{ 1: { max: 5 } }}
                                         format={{ minimumIntegerDigits: 2 }}
-                                        />
+                                    />
                                     <NumberFlow
                                         animated={false}
                                         prefix=":"
                                         value={totalWorkTime % 60}
                                         digits={{ 1: { max: 5 } }}
                                         format={{ minimumIntegerDigits: 2 }}
-                                        />
+                                    />
                                 </div>
                             </NumberFlowGroup>
                             <span>-</span>
@@ -101,15 +101,15 @@ const SessionHistoryCard_SessionHistoryTab : React.FC<TSessionHistoryCard_Sessio
                                 <div className="text-lg font-bold text-muted-foreground text-nowrap" >
                                     <NumberFlow
                                         animated={false}
-                                        value={ Math.floor( totalWorkTimeGoal / 3600 ) }
-                                        />
+                                        value={Math.floor(totalWorkTimeGoal / 3600)}
+                                    />
                                     <NumberFlow
                                         animated={false}
                                         prefix=":"
                                         value={Math.floor((totalWorkTimeGoal % 3600) / 60)}
                                         digits={{ 1: { max: 5 } }}
                                         format={{ minimumIntegerDigits: 2 }}
-                                        />
+                                    />
                                 </div>
                             </NumberFlowGroup>
                         </div>
@@ -129,9 +129,9 @@ const SessionHistoryCard_SessionHistoryTab : React.FC<TSessionHistoryCard_Sessio
                 )}
             >
                 {
-                    data.snapshots.map( snapshot => (
+                    data.snapshots.map(snapshot => (
                         <TaskTodoStateSnapshot_SessionHistoryCard_SessioHistoryTab key={snapshot.task_todo_state_snapshot_id} data={snapshot} />
-                    ) )
+                    ))
                 }
             </AccordionContent>
         </AccordionItem>

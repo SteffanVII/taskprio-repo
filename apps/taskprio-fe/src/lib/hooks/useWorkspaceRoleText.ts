@@ -1,10 +1,10 @@
-import { EWorkspaceRole } from "@repo/taskprio-types/src"
+import { EWorkspaceRole } from "@repo/taskprio-types"
 
 const useWorkspaceRoleText = () => {
 
-    return ( role : EWorkspaceRole ) => {
+    return (role: EWorkspaceRole) => {
 
-        switch ( role ) {
+        switch (role) {
             case EWorkspaceRole.OWNER:
                 return "Workspace Owner"
             case EWorkspaceRole.MEMBER:

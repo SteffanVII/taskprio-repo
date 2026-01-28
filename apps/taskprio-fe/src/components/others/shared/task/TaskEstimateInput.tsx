@@ -30,6 +30,7 @@ const TaskEstimateInput : React.FC<TTaskEstimateInputProps> = ({
 
     const handleSave = () => {
         if ( !isValidEstimateText ) return
+        console.log( inputValue, parseDurationString( inputValue ) )
         setEstimate( parseDurationString( inputValue ) )
         setIsEditing( false )
     }
@@ -59,6 +60,12 @@ const TaskEstimateInput : React.FC<TTaskEstimateInputProps> = ({
                                 size={"icon"}
                                 onClick={() => setIsEditing( false )}
                             ><X className="size-[1rem]" /></Button>
+                        </div>
+                        <div className="flex justify-end gap-2 flex-wrap" >
+                            <Badge variant={"outline"} >mm/Month</Badge>
+                            <Badge variant={"outline"} >d/Day</Badge>
+                            <Badge variant={"outline"} >h/Hour</Badge>
+                            <Badge variant={"outline"} >m/Minute</Badge>
                         </div>
                     </div>
                 ) :

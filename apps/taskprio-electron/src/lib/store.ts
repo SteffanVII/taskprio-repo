@@ -1,5 +1,6 @@
 import { TElectronStoreType } from "@repo/taskprio-types";
 import Store, { Schema } from "electron-store";
+import { v4 as uuidv4 } from "uuid"
 
 const schema : Schema<TElectronStoreType> = {
     preferences : {
@@ -32,6 +33,10 @@ const schema : Schema<TElectronStoreType> = {
             y : { type : "number" },
             screenId : { type : "number" },
         }
+    },
+    clientId : {
+        type : "string",
+        default : uuidv4()
     }
 }
 

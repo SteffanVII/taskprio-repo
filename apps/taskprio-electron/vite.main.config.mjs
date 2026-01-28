@@ -7,5 +7,10 @@ export default defineConfig({
     alias: {
       'src': path.resolve(__dirname, './src')
     }
+  },
+  build: {
+    rollupOptions: {
+      external: ['utf-8-validate', 'bufferutil'] 
+    }
   }
 });

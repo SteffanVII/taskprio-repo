@@ -7,7 +7,7 @@ import { useGlobalsStore_taskTodoPageShowAvailableTasks } from "@/stores/globals
 import { ETaskTodoPageDragType, updateTaskboardDragStore, useTaskboardDragStore_taskboardTaskTodoDrag } from "@/stores/taskboardDrag";
 import { updateTaskTodoPageStore, useTaskTodoPageStore_taskTodoPageCompactMode } from "@/stores/taskTodoPage";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
-import { TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types/src";
+import { TUserAvailableTaskTodo, TUserTaskTodoState } from "@repo/taskprio-types";
 import { useEffect, useRef } from "react";
 import { useMoveTaskToTodo, useUpdateTaskTodoState } from "@/services/private/todo/mutation";
 
@@ -21,11 +21,11 @@ const TaskTodoPage = () => {
     const taskTodoPageTaskDrag = useTaskboardDragStore_taskboardTaskTodoDrag()
 
     const {
-        mutateAsync : moveTaskToTodoTrigger
+        mutateAsync: moveTaskToTodoTrigger
     } = useMoveTaskToTodo()
 
     const {
-        mutateAsync : updateTaskTodoStateTrigger
+        mutateAsync: updateTaskTodoStateTrigger
     } = useUpdateTaskTodoState()
 
     const sensors = useSensors(
@@ -51,28 +51,28 @@ const TaskTodoPage = () => {
 
         if (e.over?.data.current && e.active.data.current) {
             const displayOrder = e.over.data.current.displayOrder
-            if ( taskTodoPageTaskDrag.type === ETaskTodoPageDragType.AVAILABLE ) {
+            if (taskTodoPageTaskDrag.type === ETaskTodoPageDragType.AVAILABLE) {
                 const availableTask = e.active.data.current.data as TUserAvailableTaskTodo
                 moveTaskToTodoTrigger({
-                    pathParameters : {
-                        task_id : availableTask.task_id
+                    pathParameters: {
+                        task_id: availableTask.task_id
                     },
-                    body : {
-                        display_order : displayOrder
+                    body: {
+                        display_order: displayOrder
                     },
-                    optimisticHelpers : {
-                        task : availableTask
+                    optimisticHelpers: {
+                        task: availableTask
                     }
                 })
             } else {
                 const todoTask = e.active.data.current.data as TUserTaskTodoState
                 updateTaskTodoStateTrigger({
-                    pathParameters : {
-                        task_id : todoTask.task_id
+                    pathParameters: {
+                        task_id: todoTask.task_id
                     },
-                    body : {
-                        display_order : displayOrder,
-                        active : true
+                    body: {
+                        display_order: displayOrder,
+                        active: true
                     }
                 })
             }

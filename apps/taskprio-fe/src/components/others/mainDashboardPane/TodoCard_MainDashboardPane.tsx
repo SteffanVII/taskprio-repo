@@ -1,6 +1,6 @@
-import { 
-    useTaskTodoPageStore_sessionActive, 
-    useTaskTodoPageStore_timerCount 
+import {
+    useTaskTodoPageStore_sessionActive,
+    useTaskTodoPageStore_timerCount
 } from "@/stores/taskTodoPage";
 import { useContext, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import TagBadge from "../shared/tag/TagBadge";
 import { Slider } from "@/components/ui/slider";
 import getHexLuminance from "@/lib/utils/hexColorLuminance";
-import { TUserTaskTodoState } from "@repo/taskprio-types/src";
+import { TUserTaskTodoState } from "@repo/taskprio-types";
 import dayjs from "@/lib/dayjs";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
@@ -39,38 +39,38 @@ const TodoCard_MainDashboardPane = () => {
         switchToFocusModeFromFullMode
     } = useContext(StateManager_ElectronContext)
 
-    const [ loading, setLoading ] = useState<boolean>(false)
-    
-    const currentWorkTime = ( value : TUserTaskTodoState | null ) => {
-        if ( value ) {
-            return (value.timers || []).reduce( ( acc, curr ) => {
-                if ( curr.start && curr.stop ) {
+    const [loading, setLoading] = useState<boolean>(false)
+
+    const currentWorkTime = (value: TUserTaskTodoState | null) => {
+        if (value) {
+            return (value.timers || []).reduce((acc, curr) => {
+                if (curr.start && curr.stop) {
                     const start = dayjs(curr.start)
                     const stop = dayjs(curr.stop)
-                    return acc + stop.diff( start, "second" )
+                    return acc + stop.diff(start, "second")
                 }
                 return acc
-            }, 0 )
+            }, 0)
         }
         return 0
     }
 
     const workTimeExceeded = useMemo(() => {
-        if ( !topTaskTodo ) return false
-        return Math.floor( (currentWorkTime(topTaskTodo) + timerCount) ) > Number(topTaskTodo!.work_time_goal)
+        if (!topTaskTodo) return false
+        return Math.floor((currentWorkTime(topTaskTodo) + timerCount)) > Number(topTaskTodo!.work_time_goal)
     }, [topTaskTodo])
-    
+
     const handleSessionButtonOnClick = async () => {
         setLoading(true)
-        if ( sessionActive ) {
+        if (sessionActive) {
             await handlePauseSession()
         } else {
             await handleStartSession()
         }
         setLoading(false)
     }
-    
-    if ( !userTaskTodoState || userTaskTodoState.length === 0 || topTaskTodo === null || pathname.includes("/tt") ) return null
+
+    if (!userTaskTodoState || userTaskTodoState.length === 0 || topTaskTodo === null || pathname.includes("/tt")) return null
 
     return (
         <div
@@ -83,7 +83,7 @@ const TodoCard_MainDashboardPane = () => {
                 `bg-gradient-to-t from-secondary/50 to-transparent `,
                 `animate-in fade-in-0 duration-300 `,
             )}
-            >
+        >
             <div
                 className={cn(
                     `absolute bottom-full left-0 w-full`,
@@ -101,7 +101,7 @@ const TodoCard_MainDashboardPane = () => {
                                     variant={"outline"}
                                     size={"icon-sm"}
                                     onClick={switchToFocusModeFromFullMode}
-                                ><Eye/></Button>
+                                ><Eye /></Button>
                             }
                         />
                         <TooltipContent>Focus Mode</TooltipContent>
@@ -113,7 +113,7 @@ const TodoCard_MainDashboardPane = () => {
                                     variant={"outline"}
                                     size={"icon-sm"}
                                     onClick={switchToOverlayModeFromFullMode}
-                                ><Minimize2/></Button>
+                                ><Minimize2 /></Button>
                             }
                         />
                         <TooltipContent>Overlay Mode</TooltipContent>
@@ -134,7 +134,7 @@ const TodoCard_MainDashboardPane = () => {
                                 getHexLuminance(topTaskTodo?.project_color || "#ffffff") > 0.4 ? `text-black` : `text-white`
                             )}
                             style={{
-                                backgroundColor : topTaskTodo?.project_color === "#ffffff" ? undefined : topTaskTodo?.project_color
+                                backgroundColor: topTaskTodo?.project_color === "#ffffff" ? undefined : topTaskTodo?.project_color
                             }}
                         >{topTaskTodo?.project_abbreviation.toUpperCase()}-{topTaskTodo?.task_depth}</Badge>
                     </div>
@@ -160,12 +160,12 @@ const TodoCard_MainDashboardPane = () => {
                     }
                     {
                         loading ?
-                        <Spinner/>
-                        :
-                        sessionActive ?
-                        <PauseIcon/>
-                        :
-                        <PlayIcon/>
+                            <Spinner />
+                            :
+                            sessionActive ?
+                                <PauseIcon />
+                                :
+                                <PlayIcon />
                     }
                 </Button>
             </div>
@@ -182,14 +182,14 @@ const TodoCard_MainDashboardPane = () => {
                             )}
                         >
                             <NumberFlow
-                                value={ Math.floor( (currentWorkTime(topTaskTodo) + timerCount) / 3600 ) }
+                                value={Math.floor((currentWorkTime(topTaskTodo) + timerCount) / 3600)}
                             />
                             <NumberFlow
                                 prefix=":"
                                 value={Math.floor(((currentWorkTime(topTaskTodo) + timerCount) % 3600) / 60)}
                                 digits={{ 1: { max: 5 } }}
                                 format={{ minimumIntegerDigits: 2 }}
-                                />
+                            />
                             <NumberFlow
                                 prefix=":"
                                 value={(currentWorkTime(topTaskTodo) + timerCount) % 60}
@@ -202,14 +202,14 @@ const TodoCard_MainDashboardPane = () => {
                     <NumberFlowGroup>
                         <span className="text-2xl font-bold" >
                             <NumberFlow
-                                value={ Math.floor( Number(topTaskTodo?.work_time_goal) / 3600 ) }
+                                value={Math.floor(Number(topTaskTodo?.work_time_goal) / 3600)}
                             />
                             <NumberFlow
                                 prefix=":"
                                 value={Math.floor((Number(topTaskTodo?.work_time_goal) % 3600) / 60)}
                                 digits={{ 1: { max: 5 } }}
                                 format={{ minimumIntegerDigits: 2 }}
-                                />
+                            />
                         </span>
                     </NumberFlowGroup>
                 </p>
@@ -233,13 +233,13 @@ const TodoCard_MainDashboardPane = () => {
                         )}
                     >
                         {
-                            topTaskTodo!.tags.map( tag => (
+                            topTaskTodo!.tags.map(tag => (
                                 <TagBadge
                                     tag={tag}
                                     key={tag.tag_id}
                                     size="sm"
                                 />
-                            ) )
+                            ))
                         }
                     </div>
                 )

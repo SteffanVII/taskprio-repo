@@ -3,35 +3,40 @@ import { updateGlobalsStore, useGlobalsStore_user } from "@/stores/globals";
 import { updateTaskboardStore } from "@/stores/taskboard";
 import { updateProjectStore, useProjectStore_projects, useProjectStore_selectedProject } from "@/stores/project";
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
-import { TProject, TProjectCreatedWebSocketMessage, TProjectCustomizationUpdatedWebSocketMessage, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectMemberDeactivatedWebSocketMessage, TProjectMemberReactivatedWebSocketMessage, TProjectMemberRoleUpdatedWebSocketMessage, TProjectMembersAddedWebSocketMessage, TProjectReactivatedSocketMessage, TWebSocketMessage } from "@repo/taskprio-types/src";
+import { TProject, TProjectCreatedWebSocketMessage, TProjectCustomizationUpdatedWebSocketMessage, TProjectDeactivatedSocketMessage, TProjectDroppedSocketMessage, TProjectMemberDeactivatedWebSocketMessage, TProjectMemberReactivatedWebSocketMessage, TProjectMemberRoleUpdatedWebSocketMessage, TProjectMembersAddedWebSocketMessage, TProjectReactivatedSocketMessage, TWebSocketMessage } from "@repo/taskprio-types";
 import { useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
-import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import useLatest from "@/lib/hooks/useLates";
 
 const useProjectEventHandlers = () => {
 
     const queryClient = useQueryClient()
     const navigate = useNavigate()
 
-    const user = useGlobalsStore_user()
-    const projects = useProjectStore_projects()
-    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
-    const selectedProject = useProjectStore_selectedProject()
+    const userState = useGlobalsStore_user()
+    const projectsState = useProjectStore_projects()
+    const selectedWorkspaceState = useWorkspaceStore_selectedWorkspace()
+    const selectedProjectState = useProjectStore_selectedProject()
 
-    const projectDeactivatedWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TProjectDeactivatedSocketMessage>) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const user = useLatest(userState)
+    const projects = useLatest(projectsState)
+    const selectedWorkspace = useLatest(selectedWorkspaceState)
+    const selectedProject = useLatest(selectedProjectState)
+
+    const projectDeactivatedWebSocketMessageHandler = (message: TWebSocketMessage<TProjectDeactivatedSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace.current?.workspace_id]
             })
-            if (selectedProject?.project_id === message.message.project_id) {
+            if (selectedProject.current?.project_id === message.message.project_id) {
                 updateProjectStore({
                     selectedProject: null,
                 })
@@ -42,26 +47,23 @@ const useProjectEventHandlers = () => {
                     selectedTaskboard: null,
                     noTaskboards: false
                 })
-                navigate(`/p/w/${selectedWorkspace?.workspace_id}/d`)
+                navigate(`/p/w/${selectedWorkspace.current?.workspace_id}/d`)
             }
         }
-    }, [
-        selectedWorkspace?.workspace_id,
-        selectedProject?.project_id
-    ])
+    }
 
-    const projectDroppedWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TProjectDroppedSocketMessage>) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const projectDroppedWebSocketMessageHandler = (message: TWebSocketMessage<TProjectDroppedSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace.current?.workspace_id]
             })
-            if (selectedProject?.project_id === message.message.project_id) {
+            if (selectedProject.current?.project_id === message.message.project_id) {
                 updateProjectStore({
                     selectedProject: null,
                 })
@@ -72,34 +74,29 @@ const useProjectEventHandlers = () => {
                     selectedTaskboard: null,
                     noTaskboards: false
                 })
-                navigate(`/p/w/${selectedWorkspace?.workspace_id}/d`)
+                navigate(`/p/w/${selectedWorkspace.current?.workspace_id}/d`)
             }
         }
-    }, [
-        selectedWorkspace?.workspace_id,
-        selectedProject?.project_id
-    ])
+    }
 
-    const projectReactivatedWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TProjectReactivatedSocketMessage>) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const projectReactivatedWebSocketMessageHandler = (message: TWebSocketMessage<TProjectReactivatedSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace.current?.workspace_id]
             })
         }
-    }, [selectedWorkspace?.workspace_id])
+    }
 
-    const projectCustomizationUpdatedwebSocketMessageHandler = useCallback((
-        message: TWebSocketMessage<TProjectCustomizationUpdatedWebSocketMessage>
-    ) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const projectCustomizationUpdatedwebSocketMessageHandler = (message: TWebSocketMessage<TProjectCustomizationUpdatedWebSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             queryClient.setQueryData([
-                ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id
+                ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id
             ], (prevData: TProject[]) => {
                 return prevData.map((project) => {
                     if (project.project_id === message.message.data.project_id) {
@@ -113,20 +110,20 @@ const useProjectEventHandlers = () => {
                 })
             })
         }
-        if (message.message.data.project_id === selectedProject?.project_id) {
+        if (message.message.data.project_id === selectedProject.current?.project_id) {
             updateProjectStore({
                 selectedProject: {
-                    ...selectedProject,
+                    ...selectedProject.current,
                     ...message.message.data
                 }
             })
         }
-    }, [selectedWorkspace?.workspace_id, selectedProject])
+    }
 
-    const projectCreatedWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TProjectCreatedWebSocketMessage>) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const projectCreatedWebSocketMessageHandler = (message: TWebSocketMessage<TProjectCreatedWebSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             queryClient.setQueryData([
-                ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id
+                ...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id
             ], (prevData: TProject[]) => {
                 return [
                     ...prevData,
@@ -134,15 +131,13 @@ const useProjectEventHandlers = () => {
                 ]
             })
         }
-    }, [selectedWorkspace?.workspace_id])
+    }
 
-    const projectMembersAddedwebSocketMessage = useCallback((
-        message: TWebSocketMessage<TProjectMembersAddedWebSocketMessage>
-    ) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const projectMembersAddedwebSocketMessage = (message: TWebSocketMessage<TProjectMembersAddedWebSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             const projectId = message.message.members[0].project_id
             queryClient.setQueryData(
-                [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id],
+                [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id],
                 (prevData: TProject[]) => {
                     return produce(prevData, (draft) => {
                         const projectIndex = draft.findIndex((project) => project.project_id === projectId)
@@ -155,30 +150,27 @@ const useProjectEventHandlers = () => {
                     })
                 }
             )
-            if (selectedProject?.project_id === projectId) {
+            if (selectedProject.current?.project_id === projectId) {
                 updateProjectStore({
                     selectedProject: {
-                        ...selectedProject!,
+                        ...selectedProject.current!,
                         project_members: [
-                            ...selectedProject!.project_members,
+                            ...selectedProject.current!.project_members,
                             ...message.message.members
                         ]
                     }
                 })
             }
         }
-    }, [
-        selectedWorkspace,
-        selectedProject
-    ])
+    }
 
-    const projectMemberRoleUpdatedWebSocketMessage = useCallback((
+    const projectMemberRoleUpdatedWebSocketMessage = (
         message: TWebSocketMessage<TProjectMemberRoleUpdatedWebSocketMessage>
     ) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             const projectId = message.message.project_id
             queryClient.setQueryData(
-                [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id],
+                [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id],
                 (prevData: TProject[]) => {
                     return produce(prevData, (draft) => {
                         const projectIndex = draft.findIndex((project) => project.project_id === projectId)
@@ -197,11 +189,11 @@ const useProjectEventHandlers = () => {
                     })
                 }
             )
-            if (selectedProject?.project_id === projectId) {
+            if (selectedProject.current?.project_id === projectId) {
                 updateProjectStore({
                     selectedProject: {
-                        ...selectedProject!,
-                        project_members: selectedProject!.project_members.map((member) => {
+                        ...selectedProject.current!,
+                        project_members: selectedProject.current!.project_members.map((member) => {
                             if (member.user_id === message.message.member_id) {
                                 return {
                                     ...member,
@@ -215,31 +207,28 @@ const useProjectEventHandlers = () => {
                 })
             }
         }
-    }, [
-        selectedWorkspace,
-        selectedProject
-    ])
+    }
 
-    const projectMemberDeactivatedWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TProjectMemberDeactivatedWebSocketMessage>) => {
-        if (message.message.workspace_id === selectedWorkspace?.workspace_id) {
+    const projectMemberDeactivatedWebSocketMessageHandler = (message: TWebSocketMessage<TProjectMemberDeactivatedWebSocketMessage>) => {
+        if (message.message.workspace_id === selectedWorkspace.current?.workspace_id) {
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_PROJECT_MEMBERS.split, message.message.project_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, selectedWorkspace.current?.workspace_id]
             })
             queryClient.invalidateQueries({
-                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace?.workspace_id]
+                queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, selectedWorkspace.current?.workspace_id]
             })
-            if (message.message.project_id === selectedProject?.project_id) {
-                if (message.message.member_id === user?.user_id) {
-                    toast.warning(`You've been deactivated from ${selectedProject?.project_name} project`)
+            if (message.message.project_id === selectedProject.current?.project_id) {
+                if (message.message.member_id === user.current?.user_id) {
+                    toast.warning(`You've been deactivated from ${selectedProject.current?.project_name} project`)
                     let newProjects: TProject[] | undefined;
-                    if (projects) {
-                        newProjects = projects.filter(project => project.project_id !== message.message.project_id)
+                    if (projects.current) {
+                        newProjects = projects.current.filter(project => project.project_id !== message.message.project_id)
                     }
                     updateProjectStore({
                         projects: newProjects,
@@ -252,12 +241,12 @@ const useProjectEventHandlers = () => {
                         selectedTaskboard: null,
                         noTaskboards: false
                     })
-                    navigate(`/p/w/${selectedWorkspace?.workspace_id}/d`)
+                    navigate(`/p/w/${selectedWorkspace.current?.workspace_id}/d`)
                 } else {
                     let newProjects: TProject[] | undefined;
                     let newSelectedProject: TProject | null | undefined;
-                    if (projects) {
-                        newProjects = projects.map(project => {
+                    if (projects.current) {
+                        newProjects = projects.current.map(project => {
                             if (project.project_id === message.message.project_id) {
                                 return {
                                     ...project,
@@ -277,10 +266,10 @@ const useProjectEventHandlers = () => {
                             }
                         })
                     }
-                    if (selectedProject) {
+                    if (selectedProject.current) {
                         newSelectedProject = {
-                            ...selectedProject,
-                            project_members: selectedProject.project_members.map(member => {
+                            ...selectedProject.current,
+                            project_members: selectedProject.current.project_members.map(member => {
                                 if (member.user_id === message.message.member_id) {
                                     return {
                                         ...member,
@@ -299,21 +288,16 @@ const useProjectEventHandlers = () => {
                 }
             }
         }
-    }, [
-        selectedWorkspace?.workspace_id,
-        user,
-        selectedProject,
-        projects
-    ])
+    }
 
-    const projectMemberReactivatedWebSocketMessageHandler = useCallback((message: TWebSocketMessage<TProjectMemberReactivatedWebSocketMessage>) => {
+    const projectMemberReactivatedWebSocketMessageHandler = (message: TWebSocketMessage<TProjectMemberReactivatedWebSocketMessage>) => {
         queryClient.invalidateQueries({
             queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, message.message.workspace_id]
         })
         queryClient.invalidateQueries({
             queryKey: [...QueryKeys.GET_PROJECT_MEMBERS.split, message.message.project_id]
         })
-        if (message.message.member_id === user?.user_id) {
+        if (message.message.member_id === user.current?.user_id) {
             queryClient.invalidateQueries({
                 queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, message.message.workspace_id]
             })
@@ -321,12 +305,9 @@ const useProjectEventHandlers = () => {
                 queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, message.message.workspace_id]
             })
         }
-    }, [
-        user,
-        selectedWorkspace?.workspace_id
-    ])
+    }
 
-    return useMemo(() => ({
+    return {
         projectDeactivatedWebSocketMessageHandler,
         projectDroppedWebSocketMessageHandler,
         projectReactivatedWebSocketMessageHandler,
@@ -336,17 +317,7 @@ const useProjectEventHandlers = () => {
         projectMemberRoleUpdatedWebSocketMessage,
         projectMemberDeactivatedWebSocketMessageHandler,
         projectMemberReactivatedWebSocketMessageHandler
-    }), [
-        projectDeactivatedWebSocketMessageHandler,
-        projectDroppedWebSocketMessageHandler,
-        projectReactivatedWebSocketMessageHandler,
-        projectCustomizationUpdatedwebSocketMessageHandler,
-        projectCreatedWebSocketMessageHandler,
-        projectMembersAddedwebSocketMessage,
-        projectMemberRoleUpdatedWebSocketMessage,
-        projectMemberDeactivatedWebSocketMessageHandler,
-        projectMemberReactivatedWebSocketMessageHandler
-    ])
+    }
 
 }
 

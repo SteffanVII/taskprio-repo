@@ -4,17 +4,17 @@ import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from "@/stores/taskT
 import { useDroppable } from "@dnd-kit/core"
 
 import TaskCard from "./TaskCard_TaskTodoPage"
-import { TUserTaskTodoState } from "@repo/taskprio-types/src"
+import { TUserTaskTodoState } from "@repo/taskprio-types"
 
 type TTaskCardDropProps = {
-    displayOrder : number,
-    fullSize? : boolean,
-    topTaskId? : string,
-    bottomTaskId? : string,
-    noTodoMessage? : boolean;
+    displayOrder: number,
+    fullSize?: boolean,
+    topTaskId?: string,
+    bottomTaskId?: string,
+    noTodoMessage?: boolean;
 }
 
-const TaskCardDrop : React.FC<TTaskCardDropProps> = ( props ) => {
+const TaskCardDrop: React.FC<TTaskCardDropProps> = (props) => {
 
     const {
         displayOrder,
@@ -34,9 +34,9 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ( props ) => {
         setNodeRef,
         isOver
     } = useDroppable({
-        id : `${displayOrder}_${topTaskId}_${bottomTaskId}`,
-        data : props,
-        disabled : taskboardTaskTodo?.task_id === topTaskId || taskboardTaskTodo?.task_id === bottomTaskId
+        id: `${displayOrder}_${topTaskId}_${bottomTaskId}`,
+        data: props,
+        disabled: taskboardTaskTodo?.task_id === topTaskId || taskboardTaskTodo?.task_id === bottomTaskId
     })
 
     // const {
@@ -140,15 +140,15 @@ const TaskCardDrop : React.FC<TTaskCardDropProps> = ( props ) => {
                 {
                     (isOver && taskboardTaskTodo) && (
                         <TaskCard
-                            data={ {
+                            data={{
                                 ...taskboardTaskTodo,
-                                display_order : 0,
-                                active : false,
-                                completed : false,
-                                current_work_time : "0",
-                                work_time_goal : "0",
-                                timers : []
-                            } as TUserTaskTodoState }
+                                display_order: 0,
+                                active: false,
+                                completed: false,
+                                current_work_time: "0",
+                                work_time_goal: "0",
+                                timers: []
+                            } as TUserTaskTodoState}
                             dimensionFiller
                             preview
                         />

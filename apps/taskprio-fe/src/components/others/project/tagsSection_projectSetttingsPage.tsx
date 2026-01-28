@@ -42,6 +42,7 @@ const TagsSection_ProjectSettingsPage = () => {
                         )}
                     >
                         <Button
+                            variant={"outline"}
                             onClick={() => {
                                 updateDialogsStore({
                                     tagDialog: {

@@ -1,4 +1,4 @@
-import { TDisplay, TElectronStorePreferencesOverlayLocation, TElectronStorePreferencesType } from "@repo/taskprio-types/src"
+import { TDisplay, TElectronStorePreferencesOverlayLocation, TElectronStorePreferencesType } from "@repo/taskprio-types"
 
 declare global {
     interface Window {
@@ -27,7 +27,15 @@ declare global {
             makeWindowToFullMode: () => void,
             makeWindowToFocusMode: (fromOverlayMode?: boolean) => void,
             changeOverlayScreen: (screenId: number) => void,
-            changeOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void
+            changeOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void,
+
+            // Websocket
+            initializeWebsocket: () => Promise<void>,
+            closeWebsocket: () => void,
+            onWebsocketConnectionState: (callback: (value: EWebsocketConnectionState) => void) => void,
+            onWebsocketMessage: (callback: (message: TWebSocketMessage) => void) => void,
+            onPingServer: (callback : () => void) => void
+            
         }
     }
 }

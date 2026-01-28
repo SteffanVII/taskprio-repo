@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useGetTaskboardSections } from "@/services/private/tasksection/query";
 import { useTaskboardStore_selectedTaskboard, useTaskboardStore_taskboardsIsLoading } from "@/stores/taskboard";
 import TaskboardSection from "./TaskboardSection";
-import { TTaskForCardView, TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types/src/index";
+import { TTaskForCardView, TTaskSection, TTaskSectionWithTasks } from "@repo/taskprio-types";
 import TaskboardSectionCreator from "./TaskboardSectionCreator";
 import TaskboardSectionDrop, { TTaskboardSectionDropProps } from "./TaskboardSectionDrop";
 import { TaskboardTaskDialog } from "../dialogs/taskboardTaskDialog/TaskboardTaskdialog";

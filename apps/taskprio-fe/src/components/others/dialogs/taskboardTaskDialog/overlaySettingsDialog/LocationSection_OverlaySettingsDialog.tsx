@@ -3,7 +3,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { StateManager_ElectronContext } from "@/stateManagers/StateManager_Electron";
 import { useElectronStore_preferences } from "@/stores/electron";
-import { TElectronStorePreferencesOverlayLocation } from "@repo/taskprio-types/src";
+import { TElectronStorePreferencesOverlayLocation } from "@repo/taskprio-types";
 import { useContext } from "react";
 
 const LocationSection_OverlaySettingsDialog = () => {

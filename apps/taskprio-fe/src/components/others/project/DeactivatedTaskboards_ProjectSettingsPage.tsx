@@ -6,23 +6,23 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { useGetProjectDeactivateTaskboards } from "@/services/private/taskboard/query";
 import { updateDialogsStore } from "@/stores/dialogs";
-import { TTaskboardInactiveForTable } from "@repo/taskprio-types/src";
+import { TTaskboardInactiveForTable } from "@repo/taskprio-types";
 import { Delete, RefreshCcw } from "lucide-react";
 import React from "react";
 import { useParams } from "react-router";
 
-const DeactivatedTaskboards_ProjectSettingsPage : React.FC = () => {
+const DeactivatedTaskboards_ProjectSettingsPage: React.FC = () => {
 
     const {
         project_id
     } = useParams()
 
     const {
-        data : projectInactiveTaskboards,
-        isLoading : projectInactiveTaskboardsLoading,
-        isError : projectInactiveTaskboardsIsError
+        data: projectInactiveTaskboards,
+        isLoading: projectInactiveTaskboardsLoading,
+        isError: projectInactiveTaskboardsIsError
     } = useGetProjectDeactivateTaskboards({
-        project_id : project_id!
+        project_id: project_id!
     })
 
     return (
@@ -72,12 +72,12 @@ const DeactivatedTaskboards_ProjectSettingsPage : React.FC = () => {
                                 </TableRow>
                             }
                             {
-                                projectInactiveTaskboards?.map( taskboard => (
+                                projectInactiveTaskboards?.map(taskboard => (
                                     <DeactivateTaskboardRow
                                         key={taskboard.task_board_id}
                                         data={taskboard}
                                     />
-                                ) )
+                                ))
                             }
                         </TableBody>
                     </Table>
@@ -86,31 +86,31 @@ const DeactivatedTaskboards_ProjectSettingsPage : React.FC = () => {
             </div>
         </React.Fragment>
     )
-    
+
 }
 
 export default DeactivatedTaskboards_ProjectSettingsPage;
 
 type TDeactivateTaskboardRowProps = {
-    data : TTaskboardInactiveForTable
+    data: TTaskboardInactiveForTable
 }
 
-const DeactivateTaskboardRow : React.FC<TDeactivateTaskboardRowProps> = ({ data }) => {
+const DeactivateTaskboardRow: React.FC<TDeactivateTaskboardRowProps> = ({ data }) => {
 
     const handleShowReactivateTaskboardDialog = () => {
         updateDialogsStore({
-            reactivateTaskboardDialog : {
-                open : true,
-                taskboard : data
+            reactivateTaskboardDialog: {
+                open: true,
+                taskboard: data
             }
         })
     }
 
     const handleShowDropTaskboardDialog = () => [
         updateDialogsStore({
-            dropTaskboardDialog : {
-                open : true,
-                taskboard : data
+            dropTaskboardDialog: {
+                open: true,
+                taskboard: data
             }
         })
     ]
@@ -124,7 +124,7 @@ const DeactivateTaskboardRow : React.FC<TDeactivateTaskboardRowProps> = ({ data 
                 <Tooltip>
                     <TooltipTrigger
                         render={
-                            <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateTaskboardDialog}><RefreshCcw/></Button>
+                            <Button size={"icon-sm"} variant={"outline"} onClick={handleShowReactivateTaskboardDialog}><RefreshCcw /></Button>
                         }
                     />
                     <TooltipContent>Restore Taskboard</TooltipContent>
@@ -132,7 +132,7 @@ const DeactivateTaskboardRow : React.FC<TDeactivateTaskboardRowProps> = ({ data 
                 <Tooltip>
                     <TooltipTrigger
                         render={
-                            <Button size={"icon-sm"} variant={"destructive"} onClick={handleShowDropTaskboardDialog}><Delete/></Button>
+                            <Button size={"icon-sm"} variant={"destructive"} onClick={handleShowDropTaskboardDialog}><Delete /></Button>
                         }
                     />
                     <TooltipContent>Drop Taskboard</TooltipContent>

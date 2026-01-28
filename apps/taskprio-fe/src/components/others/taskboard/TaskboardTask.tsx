@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { TTaskForCardView } from "@repo/taskprio-types/src/index"
+import { TTaskForCardView } from "@repo/taskprio-types"
 import { useGlobalsStore_selectedTask } from "@/stores/globals"
 
 import { useNavigate, useParams } from "react-router"
@@ -105,7 +105,7 @@ export const TaskboardTask: React.FC<TTaskboardTaskProps> = ({
                 key={mainKey}
                 className={cn(
                     `w-[20rem] min-w-[20rem] h-fit `,
-                    `bg-card border border-border transition-all duration-200 shadow `,
+                    `bg-card border border-border transition-all duration-200 `,
                     `rounded-md`,
                     `hover:border-primary`,
                     `pointer-events-auto`,

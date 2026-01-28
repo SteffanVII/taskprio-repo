@@ -8,7 +8,7 @@ import { updateTaskboardStore } from "@/stores/taskboard"
 import { updateProjectStore, useProjectStore_noProjects, useProjectStore_projects, useProjectStore_projectsIsLoading, useProjectStore_selectedProject } from "@/stores/project"
 import { useWorkspaceStore_workspaceRole, useWorkspaceStore_workspacesIsLoading } from "@/stores/workspace"
 
-import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types/src"
+import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types"
 import { Plus, Settings2 } from "lucide-react"
 import { useContext, useMemo } from "react"
 import { useLocation, useNavigate, useParams } from "react-router"
@@ -57,8 +57,10 @@ const ProjectsList_MainDashboardPane = () => {
             selectedTaskboard: null,
             noTaskboards: false,
         })
-        if (pathname.includes("/project_settings")) {
-            navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
+        if (selectedProject?.project_id === project.project_id) {
+            if (pathname.includes("/project_settings")) {
+                navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
+            }
         } else {
             navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
         }
@@ -113,13 +115,11 @@ const ProjectsList_MainDashboardPane = () => {
                     </Button>
                 </div>
             </div>
-            <Separator
-            // className="mb-2"
-            />
+            {/* <Separator/> */}
             <div
                 className={cn(
                     ` w-full h-fit `,
-                    ` flex flex-col `
+                    ` flex flex-col gap-1 `
                 )}
             >
                 {
@@ -141,25 +141,33 @@ const ProjectsList_MainDashboardPane = () => {
                             role="button"
                             key={project.project_id}
                             className={cn(
-                                ` relative w-full h-8 pl-2 pr-2 py-5 `,
+                                ` relative w-full h-8 pl-3 pr-1 py-4 `,
                                 ` flex justify-between items-center`,
-                                ` transition-all `,
-                                ` border-r-[0.6rem] `,
-                                ` hover:bg-border `,
+                                ` rounded-md `,
+                                ` transition-colors `,
+                                // ` border-r-[0.6rem] `,
+                                ` border border-transparent`,
+                                ` hover:bg-border/50 `,
                                 selectedProject?.project_id === project.project_id && !pathname.includes("/project_settings") && `pointer-events-none`,
-                                selectedProject?.project_id === project.project_id && ` bg-border overflow-hidden `,
+                                selectedProject?.project_id === project.project_id && ` duration-300 text-foreground overflow-hidden `,
                             )}
-                            style={{
-                                borderColor: project.project_color
-                            }}
+                            style={selectedProject?.project_id === project.project_id ? {
+                                borderColor: `${project.project_color}80`,
+                                backgroundColor: `${project.project_color}1a`
+                            } : undefined}
                             onClick={() => handleProjectButtonOnClick(project)}
                         >
-                            <p className=" text-sm font-medium text-foreground " >{project.project_name}</p>
+                            <p
+                                className={cn(
+                                    "text-sm font-medium text-foreground/50",
+                                    selectedProject?.project_id === project.project_id && `text-foreground`
+                                )}
+                            >{project.project_name}</p>
                             {
                                 selectedProject?.project_id === project.project_id &&
                                 <Button
-                                    size={"icon-sm"}
-                                    variant={selectedProject?.project_id === project.project_id && pathname.includes("/project_settings") ? "default" : "ghost"}
+                                    size={"icon-xs"}
+                                    variant={selectedProject?.project_id === project.project_id && pathname.includes("/project_settings") ? "outline" : "ghost"}
                                     className={cn(
                                         `pointer-events-auto cursor-pointer`
                                     )}

@@ -1,29 +1,29 @@
-import { TCreateTaskboardSectionRequestBody, TTaskSection, TTaskSectionWithTasks, TUpdateTaskboardSectionRequestBody } from "@repo/taskprio-types/src/index"
+import { TCreateTaskboardSectionRequestBody, TTaskSection, TTaskSectionWithTasks, TUpdateTaskboardSectionRequestBody } from "@repo/taskprio-types"
 
 // Query
 
 export type TGetTaskboardSectionsPayload = {
-    pathParameter : {
-        task_board_id? : string
+    pathParameter: {
+        task_board_id?: string
     },
-    pathQuery : {
-        include_tasks? : boolean
+    pathQuery: {
+        include_tasks?: boolean
     }
 }
 
-export type TGetTaskboardSectionsResponse = ( TTaskSectionWithTasks | TTaskSection )[]
+export type TGetTaskboardSectionsResponse = (TTaskSectionWithTasks | TTaskSection)[]
 
 // Mutation
 
 export type TCreateTaskboardSectionPayload = {
-    body : TCreateTaskboardSectionRequestBody
+    body: TCreateTaskboardSectionRequestBody
 }
 
 export type TCreateTaskboardSectionResponse = TTaskSection;
 
 export type TUpdateTaskboardSectionPayload = {
-    task_section_id : string,
-    body : TUpdateTaskboardSectionRequestBody
+    task_section_id: string,
+    body: TUpdateTaskboardSectionRequestBody
 }
 
 // export type TUpdateTaskboardSectionPayloadBody = {
@@ -38,7 +38,7 @@ export type TUpdateTaskboardSectionPayload = {
 //     task_section_name : string,
 //     task_board_id : string,
 //     display_order : number,
-//     created_at : string   
+//     created_at : string
 // }
 
 // export type TTaskSectionWithTasks = TTaskSection & {

@@ -1,4 +1,4 @@
-import { TWorkspaceMember } from "@repo/taskprio-types/src/index"
+import { TWorkspaceMember } from "@repo/taskprio-types"
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import { useCallback } from "react"
 

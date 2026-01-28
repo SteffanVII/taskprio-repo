@@ -1,5 +1,5 @@
 import { useProjectStore_projectRole } from "@/stores/project"
-import { EProjectRole } from "@repo/taskprio-types/src"
+import { EProjectRole } from "@repo/taskprio-types"
 
 
 const useIsUserProjectOwnerOrAdmin = () => {

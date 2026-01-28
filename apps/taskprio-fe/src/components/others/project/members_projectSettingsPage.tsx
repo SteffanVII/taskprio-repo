@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGetProjectMember, useGetProjectMembers } from "@/services/private/project/query";
-import { EProjectRole, TProjectMember, TWorkspaceMember } from "@repo/taskprio-types/src";
+import { EProjectRole, TProjectMember, TWorkspaceMember } from "@repo/taskprio-types";
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import UserAvatar from "../shared/UserAvatar";
@@ -53,11 +53,11 @@ const Members_ProjectSettingsPage = () => {
     const [showDeactivated, setShowDeactivated] = useState<boolean>(false)
 
     const activeMembers = useMemo(() => {
-        return projectMembers?.filter(member => member.is_active === true)
+        return (projectMembers || []).filter(member => member.is_active === true)
     }, [projectMembers])
 
     const deactivatedMembers = useMemo(() => {
-        return projectMembers?.filter(member => member.is_active === false)
+        return (projectMembers || []).filter(member => member.is_active === false)
     }, [projectMembers])
 
     return (
@@ -125,12 +125,15 @@ const Members_ProjectSettingsPage = () => {
                                 )}
                             >
                                 {
-                                    deactivatedMembers?.map(member => (
-                                        <MemberCard
-                                            key={member.user_id}
-                                            data={member}
-                                        />
-                                    ))
+                                    deactivatedMembers.length > 0 ?
+                                        deactivatedMembers.map(member => (
+                                            <MemberCard
+                                                data={member}
+                                                key={member.user_id}
+                                            />
+                                        ))
+                                        :
+                                        <p className="w-full text-center text-muted-foreground my-4" >No deactivated members</p>
                                 }
                             </div>
                         }
@@ -261,7 +264,7 @@ const AddProjectMemberDialog: React.FC<TAddProjectMemberDialogProps> = ({
         <Dialog>
             <DialogTrigger
                 render={
-                    <Button className="w-fit" ><PlusIcon />Add Member</Button>
+                    <Button variant={"outline"} className="w-fit" ><PlusIcon />Add Member</Button>
                 }
             />
             <DialogContent

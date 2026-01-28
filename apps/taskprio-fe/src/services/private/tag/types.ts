@@ -1,24 +1,24 @@
-import { TCreateProjectTagRequestBody, TUpdateProjectTagRequestBody } from "@repo/taskprio-types/src"
+import { TCreateProjectTagRequestBody, TUpdateProjectTagRequestBody } from "@repo/taskprio-types"
 
 
 export type TCreateProjectTagPayload = {
-    params : {
-        project_id : string
+    params: {
+        project_id: string
     },
-    body : TCreateProjectTagRequestBody
+    body: TCreateProjectTagRequestBody
 }
 
 export type TUpdateProjectTagPayload = {
-    params : {
-        project_id : string,
-        tag_id : string
+    params: {
+        project_id: string,
+        tag_id: string
     },
-    body : TUpdateProjectTagRequestBody
+    body: TUpdateProjectTagRequestBody
 }
 
 export type TDeleteProjectTagPayload = {
-    params : {
-        project_id : string,
-        tag_id : string
+    params: {
+        project_id: string,
+        tag_id: string
     }
 }

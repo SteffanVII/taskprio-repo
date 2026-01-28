@@ -1,4 +1,4 @@
-import { TGetAvailableTasksByProjectRequestQuery, TProjectWithUserAssignedTasks, TUserTaskTodoState } from "@repo/taskprio-types/src";
+import { TGetAvailableTasksByProjectRequestQuery, TProjectWithUserAssignedTasks, TUserTaskTodoState } from "@repo/taskprio-types";
 import { Store, useStore } from "@tanstack/react-store";
 
 export enum ETaskTodoPageUIMode {
@@ -8,83 +8,83 @@ export enum ETaskTodoPageUIMode {
 }
 
 type TTaskTodoPageStore = {
-    sessionActive : boolean,
+    sessionActive: boolean,
 
-    totalCurrentWorkTimeString : string,
-    totalWorkTimeGoalString : string,
-    totalCurrentWorkTimeNumber : number,
-    totalWorkTimeGoalNumber : number,
+    totalCurrentWorkTimeString: string,
+    totalWorkTimeGoalString: string,
+    totalCurrentWorkTimeNumber: number,
+    totalWorkTimeGoalNumber: number,
 
-    topTaskTodo : TUserTaskTodoState | null,
+    topTaskTodo: TUserTaskTodoState | null,
 
-    timerCount : number,
+    timerCount: number,
 
-    userTaskTodoStateIsLoading : boolean,
-    userTaskTodoStateIsFetching : boolean,
+    userTaskTodoStateIsLoading: boolean,
+    userTaskTodoStateIsFetching: boolean,
 
-    taskTodoPageCompactMode : boolean,
+    taskTodoPageCompactMode: boolean,
 
-    uIMode : ETaskTodoPageUIMode,
+    uIMode: ETaskTodoPageUIMode,
 
-    projectColumnsFilterState : Record<string, TGetAvailableTasksByProjectRequestQuery>,
+    projectColumnsFilterState: Record<string, TGetAvailableTasksByProjectRequestQuery>,
 
-    selectedProjectList_availableTaskDrawer : TProjectWithUserAssignedTasks | null
+    selectedProjectList_availableTaskDrawer: TProjectWithUserAssignedTasks | null
 }
 
-const taskTodoPageStoreDefaultState : TTaskTodoPageStore = {
-    sessionActive : false,
+const taskTodoPageStoreDefaultState: TTaskTodoPageStore = {
+    sessionActive: false,
 
-    totalCurrentWorkTimeString : "0s",
-    totalWorkTimeGoalString : "0m",
-    totalCurrentWorkTimeNumber : 0,
-    totalWorkTimeGoalNumber : 0,
+    totalCurrentWorkTimeString: "0s",
+    totalWorkTimeGoalString: "0m",
+    totalCurrentWorkTimeNumber: 0,
+    totalWorkTimeGoalNumber: 0,
 
-    topTaskTodo : null,
+    topTaskTodo: null,
 
-    timerCount : 0,
+    timerCount: 0,
 
-    userTaskTodoStateIsLoading : false,
-    userTaskTodoStateIsFetching : false,
+    userTaskTodoStateIsLoading: false,
+    userTaskTodoStateIsFetching: false,
 
-    taskTodoPageCompactMode : false,
+    taskTodoPageCompactMode: false,
 
-    uIMode : ETaskTodoPageUIMode.FULL,
+    uIMode: ETaskTodoPageUIMode.FULL,
 
-    projectColumnsFilterState : {},
+    projectColumnsFilterState: {},
 
-    selectedProjectList_availableTaskDrawer : null
-    
+    selectedProjectList_availableTaskDrawer: null
+
 }
 
 const TaskTodoPageStore = new Store<TTaskTodoPageStore>(taskTodoPageStoreDefaultState)
 
-export const updateTaskTodoPageStore = ( store : Partial<TTaskTodoPageStore> ) => {
-    TaskTodoPageStore.setState( prev => ({
+export const updateTaskTodoPageStore = (store: Partial<TTaskTodoPageStore>) => {
+    TaskTodoPageStore.setState(prev => ({
         ...prev,
         ...store
-    }) )
+    }))
 }
 
 const useTaskTodoPageStore = () => {
-    return useStore( TaskTodoPageStore )
+    return useStore(TaskTodoPageStore)
 }
 
 export const resetTaskTodoPageStore = () => {
     updateTaskTodoPageStore(taskTodoPageStoreDefaultState)
 }
 
-export const useTaskTodoPageStore_sessionActive = () => useStore( TaskTodoPageStore, store => store.sessionActive)
-export const useTaskTodoPageStore_totalCurrentWorkTimeString = () => useStore( TaskTodoPageStore, store => store.totalCurrentWorkTimeString)
-export const useTaskTodoPageStore_totalWorkTimeGoalString = () => useStore( TaskTodoPageStore, store => store.totalWorkTimeGoalString)
-export const useTaskTodoPageStore_totalCurrentWorkTimeNumber = () => useStore( TaskTodoPageStore, store => store.totalCurrentWorkTimeNumber)
-export const useTaskTodoPageStore_totalWorkTimeGoalNumber = () => useStore( TaskTodoPageStore, store => store.totalWorkTimeGoalNumber)
-export const useTaskTodoPageStore_timerCount = () => useStore( TaskTodoPageStore, store => store.timerCount)
-export const useTaskTodoPageStore_userTaskTodoStateIsLoading = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsLoading)
-export const useTaskTodoPageStore_userTaskTodoStateIsFetching = () => useStore( TaskTodoPageStore, store => store.userTaskTodoStateIsFetching)
-export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore( TaskTodoPageStore, store => store.taskTodoPageCompactMode)
-export const useTaskTodoPageStore_projectColumnsFilterState = () => useStore( TaskTodoPageStore, store => store.projectColumnsFilterState)
-export const useTaskTodoPageStore_topTaskTodo = () => useStore( TaskTodoPageStore, store => store.topTaskTodo)
-export const useTaskTodoPageStore_uIMode = () => useStore( TaskTodoPageStore, store => store.uIMode)
-export const useTaskTodoPageStore_selectedProjectList_availableTaskDrawer = () => useStore( TaskTodoPageStore, store => store.selectedProjectList_availableTaskDrawer)
+export const useTaskTodoPageStore_sessionActive = () => useStore(TaskTodoPageStore, store => store.sessionActive)
+export const useTaskTodoPageStore_totalCurrentWorkTimeString = () => useStore(TaskTodoPageStore, store => store.totalCurrentWorkTimeString)
+export const useTaskTodoPageStore_totalWorkTimeGoalString = () => useStore(TaskTodoPageStore, store => store.totalWorkTimeGoalString)
+export const useTaskTodoPageStore_totalCurrentWorkTimeNumber = () => useStore(TaskTodoPageStore, store => store.totalCurrentWorkTimeNumber)
+export const useTaskTodoPageStore_totalWorkTimeGoalNumber = () => useStore(TaskTodoPageStore, store => store.totalWorkTimeGoalNumber)
+export const useTaskTodoPageStore_timerCount = () => useStore(TaskTodoPageStore, store => store.timerCount)
+export const useTaskTodoPageStore_userTaskTodoStateIsLoading = () => useStore(TaskTodoPageStore, store => store.userTaskTodoStateIsLoading)
+export const useTaskTodoPageStore_userTaskTodoStateIsFetching = () => useStore(TaskTodoPageStore, store => store.userTaskTodoStateIsFetching)
+export const useTaskTodoPageStore_taskTodoPageCompactMode = () => useStore(TaskTodoPageStore, store => store.taskTodoPageCompactMode)
+export const useTaskTodoPageStore_projectColumnsFilterState = () => useStore(TaskTodoPageStore, store => store.projectColumnsFilterState)
+export const useTaskTodoPageStore_topTaskTodo = () => useStore(TaskTodoPageStore, store => store.topTaskTodo)
+export const useTaskTodoPageStore_uIMode = () => useStore(TaskTodoPageStore, store => store.uIMode)
+export const useTaskTodoPageStore_selectedProjectList_availableTaskDrawer = () => useStore(TaskTodoPageStore, store => store.selectedProjectList_availableTaskDrawer)
 
 export default useTaskTodoPageStore
