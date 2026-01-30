@@ -7,6 +7,7 @@ import ElectronCustomTitlebar from "@/components/others/shared/ElectronCustomTit
 import { useElectronStore_isElectron } from "@/stores/electron";
 import { ETaskTodoPageUIMode, useTaskTodoPageStore_uIMode } from "@/stores/taskTodoPage";
 import StateManager_Electron from "@/stateManagers/StateManager_Electron";
+import LoaderScreen from "@/components/others/LoaderScreen";
 
 const AuthLayout = () => {
 
@@ -63,7 +64,11 @@ const AuthLayout = () => {
                     (isElectron && (taskTodoPageUIMode !== ETaskTodoPageUIMode.OVERLAY && taskTodoPageUIMode !== ETaskTodoPageUIMode.WIDGET)) &&
                     <ElectronCustomTitlebar/>
                 }
-                <Outlet/>
+                <LoaderScreen
+                    render={
+                        <Outlet/>
+                    }
+                />
             </StateManager_Electron>
         </WebSocketProvider>
     )

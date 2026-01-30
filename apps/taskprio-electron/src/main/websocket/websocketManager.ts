@@ -69,7 +69,8 @@ class WebsocketManager {
             this.removeHealthCheckTimer()
             mainWindow.webContents.send(EEventListeners.WEBSOCKET_CONNECTION_STATE, 3)
         }
-        this.websocket.onerror = () => {
+        this.websocket.onerror = ( error ) => {
+            console.log(error)
             mainWindow.webContents.send(EEventListeners.WEBSOCKET_CONNECTION_STATE, 3)
             this.removeHealthCheckTimer()
             setTimeout(() => {

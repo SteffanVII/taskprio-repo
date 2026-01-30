@@ -28,7 +28,7 @@ const queryClient = new QueryClient()
 const routeObjects: RouteObject[] = [
 	{
 		path: "/",
-		element: <AuthLayout />,
+		element: <AuthLayout/>,
 		children: [
 			{
 				path: "login",

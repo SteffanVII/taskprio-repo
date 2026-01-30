@@ -1,15 +1,17 @@
 import { TWebSocketMessage } from "@repo/taskprio-types"
-import { IpcMain, ipcMain, IpcMainEvent, session } from "electron"
+import { ipcMain, session } from "electron"
 import { EEvents } from "src/lib/enums"
 import { websocketManager } from "./websocketManager"
+import dotenv from "dotenv"
+
+dotenv.config()
 
 export const websocketMain = () => {
 
-    ipcMain.on( EEvents.INITIALIZE_WEBSOCKET, async ( event : IpcMainEvent ) => {
+    ipcMain.on( EEvents.INITIALIZE_WEBSOCKET, async () => {
         const cookie = await session.defaultSession.cookies.get({
             name : "access_token",
-            // domain : "taskprio-repo.onrender.com"
-            domain : "localhost"
+            domain : process.env.COOKIE_DOMAIN
         })
         const accessToken = cookie[0]?.value;
         if ( !accessToken ) {

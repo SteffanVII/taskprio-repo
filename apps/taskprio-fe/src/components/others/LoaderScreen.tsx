@@ -21,7 +21,11 @@ const LoaderScreen : React.FC<TLoaderScreenProps> = ({ render }) => {
     const logoutIsPending = useGlobalsStore_logoutIsPending()
 
     const showLoadingScreen = useMemo(() => {
-        return ((!authenticated || authenticateIsPending || (webSocketConnectionState !== EWebsocketConnectionState.OPEN && webSocketInitialConnection)) && !logoutIsPending);
+        if ( !authenticated ) return true;
+        if ( authenticateIsPending ) return true;
+        if ( webSocketConnectionState !== EWebsocketConnectionState.OPEN && webSocketInitialConnection ) return true;
+        if ( logoutIsPending ) return true;
+        return false;
     }, [
         authenticated,
         webSocketConnectionState,
