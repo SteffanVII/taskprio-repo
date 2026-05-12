@@ -56,6 +56,10 @@ class WebsocketManager {
             this.websocket.close()
             this.websocket = null;
         }
+        mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, "Creating connection")
+        mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, clientId)
+        mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, accessToken)
+        mainWindow.webContents.send(EEventListeners.CONSOLE_LOG, process.env.SERVER_WS_URL)
         this.websocket = new WebSocket(
             `${process.env.SERVER_WS_URL}?connection_type=electron&client_id=${clientId}&access_token=${accessToken}`
         )

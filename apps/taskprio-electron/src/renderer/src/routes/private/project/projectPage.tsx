@@ -1,0 +1,20 @@
+import { cn } from "@/lib/utils";
+import { Outlet } from "react-router";
+
+const ProjectPage = () => {
+
+    return (
+        <div
+            className={cn(
+                `relative`,
+                `size-full min-w-0 min-h-0 max-h-full max-w-full overflow-hidden`,
+                `grow`
+            )}
+        >
+            <Outlet/>
+        </div>
+    )
+
+}
+
+export default ProjectPage;

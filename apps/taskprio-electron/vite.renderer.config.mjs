@@ -6,7 +6,12 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vitejs.dev/config
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  root: path.resolve(__dirname, '../../apps/taskprio-fe'),
+  root: path.resolve(__dirname, './src/renderer'),
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src/renderer/src'),
+    }
+  },
   server: {
     port: 5001,
     strictPort: true,
@@ -20,9 +25,5 @@ export default defineConfig({
       ]
     }
   },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, '../../apps/taskprio-fe/src'),
-    }
-  }
+  base: "./",
 });

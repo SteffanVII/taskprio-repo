@@ -1,0 +1,118 @@
+import { TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { useGetWorkspaceSessionHistories } from "@/services/private/todo/query";
+import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
+import SessionHistoryCard_SessionHistoryTab from "./SessionHistoryCard_SessionHistoryTab";
+import { Accordion } from "@/components/ui/accordion";
+import { updateSessionHistoryTabStore, useSessionHistoryTabStore_dateRange, useSessionHistoryTabStore_dateRangeState, useSessionHistoryTabStore_selectedMembers } from "@/stores/sessionHistoryTab";
+import dayjs from "dayjs";
+import MemberSelector_SessionHistoryTab from "./MemberSelector_SessionHistoryTab";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import DateRangePicker_SessionHistoryTab from "./DateRangePicker_SessionHistoryTab";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { History } from "lucide-react";
+
+const SessionHistoryTab = () => {
+
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const dateRangeState = useSessionHistoryTabStore_dateRangeState()
+    const dateRange = useSessionHistoryTabStore_dateRange()
+    const selectedMembers = useSessionHistoryTabStore_selectedMembers()
+
+    const {
+        data: sessionHistories,
+    } = useGetWorkspaceSessionHistories(
+        {
+            query: {
+                workspace_id: selectedWorkspace?.workspace_id,
+                user_ids: selectedMembers,
+                date_range: dateRange
+            }
+        },
+        {
+            enabled: !!selectedWorkspace?.workspace_id
+        }
+    )
+
+    const handleFixedRangeButtonOnClick = (days: number) => {
+        if (days === 0) {
+            updateSessionHistoryTabStore({ dateRangeState: days, dateRange: [] })
+        } else if (days === 1) {
+            updateSessionHistoryTabStore({ dateRangeState: days, dateRange: [dayjs().endOf("day").toISOString(), dayjs().startOf("day").toISOString()] })
+        } else if (days === -1) {
+            updateSessionHistoryTabStore({ dateRangeState: days })
+        } else {
+            updateSessionHistoryTabStore({ dateRangeState: days, dateRange: [dayjs().endOf("day").toISOString(), dayjs().subtract(days, "day").startOf("day").toISOString()] })
+        }
+    }
+
+    return (
+        <TabsContent
+            value={"session_history"}
+            className={cn(
+                `grid`,
+                `size-full min-h-0`
+            )}
+            style={{
+                gridTemplateRows: "min-content 1fr"
+            }}
+        >
+            <div
+                className={cn(
+                    `flex gap-4`,
+                    `p-2 px-4`
+                )}
+            >
+                <ToggleGroup
+                    variant={"outline"}
+                    value={[dateRangeState.toString()]}
+                    onValueChange={value => {
+                        handleFixedRangeButtonOnClick(Number(value[0]))
+                    }}
+                >
+                    <ToggleGroupItem value={"1"} >Today</ToggleGroupItem>
+                    <ToggleGroupItem value={"7"} >Last 7 days</ToggleGroupItem>
+                    <ToggleGroupItem value={"31"} >Last 31 days</ToggleGroupItem>
+                    <ToggleGroupItem value={"63"} >6M</ToggleGroupItem>
+                    <ToggleGroupItem value={"365"} >1Y</ToggleGroupItem>
+                    <ToggleGroupItem value={"0"} >All time</ToggleGroupItem>
+                    <ToggleGroupItem value={"-1"} >Custom</ToggleGroupItem>
+                </ToggleGroup>
+                <DateRangePicker_SessionHistoryTab />
+                <MemberSelector_SessionHistoryTab />
+            </div>
+
+            {
+                (sessionHistories && sessionHistories.length === 0) &&
+                <div className="size-full min-h-0 flex justify-center items-center" >
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon" >
+                                <History />
+                            </EmptyMedia>
+                            <EmptyTitle>No session history found</EmptyTitle>
+                            <EmptyDescription>Start a session to see your history here.</EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
+                </div>
+            }
+            {
+                (sessionHistories && sessionHistories.length > 0) &&
+                <Accordion
+                    multiple
+                    className={cn(
+                        `flex flex-col p-4`,
+                        `overflow-x-hidden`
+                    )}
+                >
+                    {
+                        sessionHistories && sessionHistories.map(sessionHistory => <SessionHistoryCard_SessionHistoryTab data={sessionHistory} />)
+                    }
+                </Accordion>
+            }
+        </TabsContent>
+    )
+
+}
+
+export default SessionHistoryTab;

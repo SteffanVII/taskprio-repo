@@ -1,0 +1,236 @@
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { updateDialogsStore } from "@/stores/dialogs";
+import { useGlobalsStore_authenticateIsPending, useGlobalsStore_user } from "@/stores/globals";
+import { updateProjectStore } from "@/stores/project";
+import { updateTaskboardStore } from "@/stores/taskboard";
+import { updateWorkspaceStore, useWorkspaceStore_selectedWorkspace, useWorkspaceStore_workspaces, useWorkspaceStore_workspacesIsLoading } from "@/stores/workspace";
+
+import { ChevronDown, MessageCircleWarningIcon, Plus } from "lucide-react";
+import { useContext, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types";
+import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StateManager_TaskTodoPageContext } from "@/stateManagers/StateManager_TaskTodoPage";
+import { WebSocketContext } from "../websocket/WebsocketProvider";
+
+const ignoreTodoSessionIsActiveLocalStorageName = import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME;
+
+type TTodoSessionActiveWarning = {
+    state: boolean,
+    workspace: TWorkspace | null
+}
+
+const WorkspaceDropdown_MainDashboardPane = () => {
+
+    const navigate = useNavigate()
+    const { pathname } = useLocation()
+
+    const {
+        channelActions
+    } = useContext(WebSocketContext)
+
+    const {
+        handlePauseSession,
+        invalidateUseGetUserTaskTodoState
+    } = useContext(StateManager_TaskTodoPageContext)
+
+    const sessionActive = useTaskTodoPageStore_sessionActive()
+
+    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+    const workspaces = useWorkspaceStore_workspaces()
+    const authenticating = useGlobalsStore_authenticateIsPending()
+    const workspacesIsLoading = useWorkspaceStore_workspacesIsLoading()
+    const user = useGlobalsStore_user()
+
+    const [showTodoSessionIsActiveWarning, setTodoSessionIsActiveWarning] = useState<TTodoSessionActiveWarning>({
+        state: false,
+        workspace: null
+    })
+    const [ignoreTodoSessionActiveWarning, setIgnoreTodoSessionActiveWarning] = useState<boolean>(Boolean(localStorage.getItem(ignoreTodoSessionIsActiveLocalStorageName + "_" + user?.user_id)) || false)
+
+    const handleWorkspaceOnClick = (workspace: TWorkspace) => {
+        if (selectedWorkspace?.workspace_id === workspace.workspace_id) return
+        if (sessionActive && !ignoreTodoSessionActiveWarning) {
+            setTodoSessionIsActiveWarning({
+                state: true,
+                workspace
+            })
+            return
+        }
+        handleWorkspaceNavigate(workspace)
+    }
+
+    const handleNavigateAnywayOnClick = () => {
+        if (showTodoSessionIsActiveWarning.workspace && showTodoSessionIsActiveWarning.state === true) {
+            handleWorkspaceNavigate(showTodoSessionIsActiveWarning.workspace)
+            setTodoSessionIsActiveWarning({
+                state: false,
+                workspace: null
+            })
+        }
+    }
+
+    const handleWorkspaceNavigate = (workspace: TWorkspace) => {
+        if (sessionActive) {
+            handlePauseSession()
+            invalidateUseGetUserTaskTodoState()
+        }
+        const workspaceRole: EWorkspaceRole | null = workspace.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null
+        updateWorkspaceStore({
+            selectedWorkspace: workspace,
+            workspaceRole,
+            noWorkspaces: false
+        })
+        updateProjectStore({
+            selectedProject: null,
+            noProjects: false,
+        })
+        updateTaskboardStore({
+            selectedTaskboard: null,
+            noTaskboards: false
+        })
+        if (pathname.includes("/tt")) {
+            navigate(`/p/w/${workspace.workspace_id}/tt`)
+        }
+        else if (pathname.includes("/workspace_settings")) {
+            navigate(`/p/w/${workspace.workspace_id}/workspace_settings`)
+        } else {
+            navigate(`/p/w/${workspace.workspace_id}`)
+        }
+        localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspace.workspace_id)
+        channelActions.joinWorkspaceChannel(workspace.workspace_id)
+    }
+
+    const handleIgnoreTodoSessionActiveWarningCheckbox = (value: boolean) => {
+        setIgnoreTodoSessionActiveWarning(value)
+        localStorage.setItem(ignoreTodoSessionIsActiveLocalStorageName + "_" + user?.user_id, value ? "true" : "false")
+    }
+
+    return (
+        <>
+            <Popover>
+                <PopoverTrigger
+                    render={
+                        <div
+                            className={cn(
+                                ` bg-primary/20 border border-primary/80 text-sidebar-foreground px-3 py-2 rounded-md`,
+                                `cursor-pointer flex items-center justify-between`
+                            )}
+                        >
+                            {
+                                (workspacesIsLoading || authenticating) ?
+                                    <Skeleton className="bg-primary/20 w-[16rem] h-[1.8rem]" />
+                                    :
+                                    <>
+                                        {
+                                            (workspaces && workspaces?.length === 0) &&
+                                            <p className=" text-center text-muted-foreground" >No Workspaces Found</p>
+                                        }
+                                        <p
+                                            className={cn(
+                                                " max-w-[16rem] truncate ",
+                                                " text-xl font-semibold "
+                                            )}
+                                            title={selectedWorkspace?.workspace_name}
+                                        >{selectedWorkspace?.workspace_name}</p>
+                                    </>
+                            }
+                            <ChevronDown className=" size-4 " />
+                        </div>
+                    }
+                >
+                </PopoverTrigger>
+                <PopoverContent
+                    className=" w-[20rem] p-0 overflow-hidden"
+                >
+                    <div
+                        className={cn(
+                            ` flex flex-col `
+                        )}
+                    >
+                        <div
+                            className={cn(
+                                ` p-0`,
+                                ` flex flex-col overflow-hidden `
+                            )}
+                        >
+                            {
+                                (workspaces && workspaces?.length === 0) &&
+                                <p className="text-center font-bold" >No Workspaces Found</p>
+                            }
+                            {
+                                workspaces?.map(workspace => (
+                                    <Button
+                                        key={workspace.workspace_id}
+                                        variant={selectedWorkspace?.workspace_id === workspace.workspace_id ? "default" : "ghost"}
+                                        className=" justify-between font-normal gap-2 border-0 rounded-none "
+                                        onClick={() => handleWorkspaceOnClick(workspace)}
+                                    >
+                                        {workspace.workspace_name}
+                                        {/* { selectedWorkspace?.workspace_id === workspace.workspace_id && <CheckCircle2Icon className="size-4" /> } */}
+                                    </Button>
+                                ))
+                            }
+                        </div>
+                        <Separator />
+                        <button
+                            onClick={() => {
+                                updateDialogsStore({
+                                    createWorkspaceDialog: {
+                                        open: true
+                                    }
+                                })
+                            }}
+                            className={cn(
+                                " p-2 ",
+                                " flex justify-center items-center gap-2 rounded-b-md ",
+                                " text-sm ",
+                                " hover:bg-muted-foreground/10 active:bg-muted-foreground/20 "
+                            )}
+                        >Create New Workspace <Plus className="size-4" /></button>
+                    </div>
+                </PopoverContent>
+            </Popover>
+            <Dialog
+                open={showTodoSessionIsActiveWarning.state}
+                onOpenChange={open => {
+                    if (!open) {
+                        setTodoSessionIsActiveWarning({
+                            state: false,
+                            workspace: null
+                        })
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex gap-2 items-center" ><MessageCircleWarningIcon /> Todo timer is currently running</DialogTitle>
+                        <DialogDescription>Switching workspace would pause the active todo timer</DialogDescription>
+                    </DialogHeader>
+                    <div className=" flex gap-2 py-4 " >
+                        <Checkbox
+                            id="ignoreInFuture"
+                            checked={ignoreTodoSessionActiveWarning}
+                            onCheckedChange={handleIgnoreTodoSessionActiveWarningCheckbox}
+                        /><Label htmlFor="ignoreInFuture" >Ignore this message in the future.</Label>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            onClick={handleNavigateAnywayOnClick}
+                        >Navigate anyway</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    )
+
+}
+
+export default WorkspaceDropdown_MainDashboardPane;
