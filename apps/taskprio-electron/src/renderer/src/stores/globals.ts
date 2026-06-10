@@ -3,7 +3,6 @@ import { TTask } from "@repo/taskprio-types"
 import { Store, useStore } from "@tanstack/react-store"
 
 export type TGlobalsStore = {
-
     authenticated: boolean,
     authenticateIsPending: boolean,
     logoutIsPending: boolean,

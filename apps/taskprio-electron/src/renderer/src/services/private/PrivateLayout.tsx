@@ -9,29 +9,29 @@ import { axiosInstance } from "../axios";
 
 export const PrivateLayout = () => {
 
-    return  (
-        <StateManager_Workspace>
-            <StateManager_TaskTodoPage>
-                <StateManager_Project>
-                    <StateManager_Taskboard>
-                        <Outlet/>
-                    </StateManager_Taskboard>
-                </StateManager_Project>
-            </StateManager_TaskTodoPage>
-        </StateManager_Workspace>
-    )
+  return (
+    <StateManager_Workspace>
+      <StateManager_TaskTodoPage>
+        <StateManager_Project>
+          <StateManager_Taskboard>
+            <Outlet />
+          </StateManager_Taskboard>
+        </StateManager_Project>
+      </StateManager_TaskTodoPage>
+    </StateManager_Workspace>
+  )
 
 }
 
 export const usePingServer = () => {
-    return useMutation({
-        mutationFn : async () => {
-            const response = await axiosInstance.post(
-                `/private/ping`
-            )
-            return response.data
-        }
-    })
+  return useMutation({
+    mutationFn: async () => {
+      const response = await axiosInstance.post(
+        `/private/ping`
+      )
+      return response.data
+    }
+  })
 }
 
 export default PrivateLayout;

@@ -1,7 +1,6 @@
 import { IUserBase64Table, IUserTable } from "./schemas/user.js";
 import { IWorkspaceBase64Table, IWorkspaceMembersBase64Table, IWorkspaceMembersTable, IWorkspaceRoleTable, IWorkspaceTable } from "./schemas/workspace.js";
 
-
 export interface ITaskprioDatabase {
     
     "tp_user.user" : IUserTable,

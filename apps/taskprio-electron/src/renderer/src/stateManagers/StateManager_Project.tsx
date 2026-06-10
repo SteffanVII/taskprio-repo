@@ -49,6 +49,7 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
 
     // If no project_id is selected, navigate to the first project once the projects data are available
     useLayoutEffect(() => {
+      
         // If the user is on the task todo page, don't navigate to the first project
         if (
             pathname.includes("/tt") ||

@@ -31,10 +31,6 @@ const routeObjects: RouteObject[] = [
 		element: <AuthLayout/>,
 		children: [
 			{
-				path: "login",
-				element: <Suspense><LoginRoute /></Suspense>
-			},
-			{
 				path: "accept",
 				element: <Suspense><AcceptRoute /></Suspense>
 			},
@@ -85,7 +81,11 @@ const routeObjects: RouteObject[] = [
 				]
 			}
 		]
-	}
+	},
+  {
+    path: "login",
+    element: <Suspense><LoginRoute /></Suspense>
+  }
 ]
 
 function App() {

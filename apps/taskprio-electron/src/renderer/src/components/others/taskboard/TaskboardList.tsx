@@ -17,233 +17,233 @@ import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const TaskboardList = () => {
 
-    const taskboards = useTaskboardStore_taskboards()
-    const taskboardsIsLoading = useTaskboardStore_taskboardsIsLoading()
-    const noTaskboards = useTaskboardStore_noTaskboards()
-    const projectsIsLoading = useProjectStore_projectsIsLoading()
+  const taskboards = useTaskboardStore_taskboards()
+  const taskboardsIsLoading = useTaskboardStore_taskboardsIsLoading()
+  const noTaskboards = useTaskboardStore_noTaskboards()
+  const projectsIsLoading = useProjectStore_projectsIsLoading()
 
-    const showSkeleton = useMemo(() => {
-        return (taskboardsIsLoading || projectsIsLoading)
-    }, [taskboardsIsLoading, projectsIsLoading])
+  const showSkeleton = useMemo(() => {
+    return (taskboardsIsLoading || projectsIsLoading)
+  }, [taskboardsIsLoading, projectsIsLoading])
 
-    const handleOpenCreateTaskboardDialog = () => {
-        updateDialogsStore({
-            createTaskboardDialog: {
-                open: true
+  const handleOpenCreateTaskboardDialog = () => {
+    updateDialogsStore({
+      createTaskboardDialog: {
+        open: true
+      }
+    })
+  }
+
+  return (
+    <div
+      className="grow grid w-full h-fit min-h-[2rem] mt-auto items-center z-10 bg-secondary"
+      style={{
+        gridTemplateColumns: "min-content 1fr"
+      }}
+    >
+      {
+        !noTaskboards &&
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant={"ghost"}
+                size={"icon-sm"}
+                className={"my-auto"}
+                onClick={handleOpenCreateTaskboardDialog}
+              >
+                <Plus />
+              </Button>
             }
-        })
-    }
-
-    return (
+          />
+          <TooltipContent>Create Taskboard</TooltipContent>
+        </Tooltip>
+      }
+      <ScrollArea className="min-w-0 h-fit" >
         <div
-            className="grow grid w-full h-fit min-h-[2rem] ml-1 translate-y-[1px] mt-auto items-center z-10"
-            style={{
-                gridTemplateColumns: "min-content 1fr"
-            }}
+          className="w-full max-w-full flex"
         >
-            {
-                !noTaskboards &&
-                <Tooltip>
-                    <TooltipTrigger
-                        render={
-                            <Button
-                                variant={"ghost"}
-                                size={"icon-sm"}
-                                className={"my-auto"}
-                                onClick={handleOpenCreateTaskboardDialog}
-                            >
-                                <Plus />
-                            </Button>
-                        }
-                    />
-                    <TooltipContent>Create Taskboard</TooltipContent>
-                </Tooltip>
-            }
-            <ScrollArea className="min-w-0 h-fit" >
-                <div
-                    className="w-full max-w-full flex"
-                >
-                    {
-                        (showSkeleton && !taskboards) &&
-                        <TaskboardListSkeleton />
-                    }
-                    {
-                        (!showSkeleton && taskboards) &&
-                        taskboards?.map(taskboard => (
-                            <TaskboardTabsTrigger
-                                key={taskboard.task_board_id}
-                                taskboard={taskboard}
-                            />
-                        ))
-                    }
-                    <div className="electron-custom-titlebar-drag-area flex w-full h-[2.7rem] grow" ></div>
-                </div>
-                <ScrollBar className="z-10" orientation="horizontal" />
-            </ScrollArea>
-
+          {
+            (showSkeleton && !taskboards) &&
+            <TaskboardListSkeleton />
+          }
+          {
+            (!showSkeleton && taskboards) &&
+            taskboards?.map(taskboard => (
+              <TaskboardTabsTrigger
+                key={taskboard.task_board_id}
+                taskboard={taskboard}
+              />
+            ))
+          }
+          <div className="electron-custom-titlebar-drag-area flex w-full h-[2.7rem] grow" ></div>
         </div>
-    )
+        <ScrollBar className="z-10" orientation="horizontal" />
+      </ScrollArea>
+
+    </div>
+  )
 
 }
 
 export default TaskboardList;
 
 type TTaskboardTabsTrigger = {
-    taskboard: TTaskboard
+  taskboard: TTaskboard
 }
 
 const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
-    taskboard
+  taskboard
 }) => {
 
-    const navigate = useNavigate()
-    const {
-        channelActions
-    } = useContext(WebSocketContext)
+  const navigate = useNavigate()
+  const {
+    channelActions
+  } = useContext(WebSocketContext)
 
-    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
-    const selectedProject = useProjectStore_selectedProject()
-    const selectedTaskboard = useTaskboardStore_selectedTaskboard()
-    const projectRole = useProjectStore_projectRole()
+  const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+  const selectedProject = useProjectStore_selectedProject()
+  const selectedTaskboard = useTaskboardStore_selectedTaskboard()
+  const projectRole = useProjectStore_projectRole()
 
-    const handleTaskboardTabOnClick = () => {
-        if (selectedTaskboard?.task_board_id === taskboard.task_board_id) return
-        updateTaskboardStore({
-            selectedTaskboard: taskboard,
-            noTaskboards: false
-        })
-        navigate(`/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}`)
-        channelActions.joinTaskboardChannel(taskboard.task_board_id)
-    }
+  const handleTaskboardTabOnClick = () => {
+    if (selectedTaskboard?.task_board_id === taskboard.task_board_id) return
+    updateTaskboardStore({
+      selectedTaskboard: taskboard,
+      noTaskboards: false
+    })
+    navigate(`/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}`)
+    channelActions.joinTaskboardChannel(taskboard.task_board_id)
+  }
 
-    const handleOpenRenameTaskboardDialog = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        e.preventDefault()
-        updateDialogsStore({
-            renameTaskboardDialog: {
-                open: true,
-                taskboard
+  const handleOpenRenameTaskboardDialog = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    updateDialogsStore({
+      renameTaskboardDialog: {
+        open: true,
+        taskboard
+      }
+    })
+  }
+
+  const handleOpenTrashTaskboardDialog = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    updateDialogsStore({
+      taskboardTaskTrashSheet: {
+        open: true
+      }
+    })
+  }
+
+  const handleOpenDropTaskboardDialog = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    updateDialogsStore({
+      dropTaskboardDialog: {
+        open: true,
+        taskboard
+      }
+    })
+  }
+
+  const handleOpenDeactivateTaskboardDialog = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    updateDialogsStore({
+      deactivateTaskboardDialog: {
+        open: true,
+        taskboard
+      }
+    })
+  }
+
+  const selected = useMemo(() => {
+    return selectedTaskboard?.task_board_id === taskboard.task_board_id
+  }, [
+    selectedTaskboard?.task_board_id,
+    taskboard.task_board_id,
+  ])
+
+  const taskboardMenuVisible = useMemo(() => {
+    return selectedTaskboard?.task_board_id === taskboard.task_board_id && [EProjectRole.ADMIN, EProjectRole.OWNER].includes(projectRole || EProjectRole.GUEST)
+  }, [
+    selectedTaskboard?.task_board_id,
+    taskboard.task_board_id,
+    projectRole
+  ])
+
+  return (
+    <div
+      className={cn(
+        `relative flex items-center gap-2`,
+        "h-fit min-h-[2.55rem] mt-auto p-1 pl-5 rounded-t-md cursor-pointer",
+        `border border-b-0 border-transparent`,
+        `first:ml-2`,
+        !taskboardMenuVisible && `pr-5`,
+        !selected && `pr-5 transition-colors hover:bg-foreground/5 hover:z-5`,
+        selected && `bg-background border-foreground/15 z-10`,
+      )}
+      onClick={handleTaskboardTabOnClick}
+    >
+      {
+        selected &&
+        <>
+          <svg className="absolute bottom-0 left-0 -translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
+            <path d="M 8 8 H 0 A 8 8 0 0 0 8 0 V 8 Z" />
+            <path d="M 0 8 A 8 8 0 0 0 8 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
+          </svg>
+          <svg className="absolute bottom-0 right-0 translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
+            <path d="M 0 8 H 8 A 8 8 0 0 1 0 0 V 8 Z" />
+            <path d="M 8 8 A 8 8 0 0 1 0 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
+          </svg>
+        </>
+      }
+      <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
+      {
+        taskboardMenuVisible &&
+        <DropdownMenu modal={false} >
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant={"ghost"}
+                size={"icon-sm"}
+                className="mr-[0.1rem]"
+              >
+                <EllipsisVertical />
+              </Button>
             }
-        })
-    }
-
-    const handleOpenTrashTaskboardDialog = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        e.preventDefault()
-        updateDialogsStore({
-            taskboardTaskTrashSheet: {
-                open: true
-            }
-        })
-    }
-
-    const handleOpenDropTaskboardDialog = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        e.preventDefault()
-        updateDialogsStore({
-            dropTaskboardDialog: {
-                open: true,
-                taskboard
-            }
-        })
-    }
-
-    const handleOpenDeactivateTaskboardDialog = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        e.preventDefault()
-        updateDialogsStore({
-            deactivateTaskboardDialog: {
-                open: true,
-                taskboard
-            }
-        })
-    }
-
-    const selected = useMemo(() => {
-        return selectedTaskboard?.task_board_id === taskboard.task_board_id
-    }, [
-        selectedTaskboard?.task_board_id,
-        taskboard.task_board_id,
-    ])
-
-    const taskboardMenuVisible = useMemo(() => {
-        return selectedTaskboard?.task_board_id === taskboard.task_board_id && [EProjectRole.ADMIN, EProjectRole.OWNER].includes(projectRole || EProjectRole.GUEST)
-    }, [
-        selectedTaskboard?.task_board_id,
-        taskboard.task_board_id,
-        projectRole
-    ])
-
-    return (
-        <div
-            className={cn(
-                `relative flex items-center gap-2`,
-                "h-fit min-h-[2.55rem] mt-auto p-1 pl-5 rounded-t-md cursor-pointer",
-                `border border-b-0 border-transparent`,
-                `first:ml-2`,
-                !taskboardMenuVisible && `pr-5`,
-                !selected && `pr-5 transition-colors hover:bg-foreground/5 hover:z-5`,
-                selected && `bg-background border-foreground/15 z-10`,
-            )}
-            onClick={handleTaskboardTabOnClick}
-        >
-            {
-                selected &&
-                <>
-                    <svg className="absolute bottom-0 left-0 -translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
-                        <path d="M 8 8 H 0 A 8 8 0 0 0 8 0 V 8 Z" />
-                        <path d="M 0 8 A 8 8 0 0 0 8 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
-                    </svg>
-                    <svg className="absolute bottom-0 right-0 translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
-                        <path d="M 0 8 H 8 A 8 8 0 0 1 0 0 V 8 Z" />
-                        <path d="M 8 8 A 8 8 0 0 1 0 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
-                    </svg>
-                </>
-            }
-            <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
-            {
-                taskboardMenuVisible &&
-                <DropdownMenu modal={false} >
-                    <DropdownMenuTrigger
-                        render={
-                            <Button
-                                variant={"ghost"}
-                                size={"icon-sm"}
-                                className="mr-[0.1rem]"
-                            >
-                                <EllipsisVertical />
-                            </Button>
-                        }
-                    />
-                    <DropdownMenuContent className="w-[14rem]" >
-                        <DropdownMenuItem
-                            onClick={handleOpenRenameTaskboardDialog}
-                        >
-                            Rename
-                            <DropdownMenuShortcut><Pencil /></DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={handleOpenTrashTaskboardDialog}
-                        >
-                            Task Trash
-                            <DropdownMenuShortcut><Trash2 /></DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuLabel className="text-destructive" >Danger Zone</DropdownMenuLabel>
-                            <DropdownMenuItem variant="destructive" onClick={handleOpenDeactivateTaskboardDialog} >
-                                Deactivate
-                                <DropdownMenuShortcut><StopCircle className="text-destructive" /></DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem variant="destructive" onClick={handleOpenDropTaskboardDialog} >
-                                Drop
-                                <DropdownMenuShortcut><Trash2 className="text-destructive" /></DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            }
-        </div>
-    )
+          />
+          <DropdownMenuContent className="w-[14rem]" >
+            <DropdownMenuItem
+              onClick={handleOpenRenameTaskboardDialog}
+            >
+              Rename
+              <DropdownMenuShortcut><Pencil /></DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleOpenTrashTaskboardDialog}
+            >
+              Task Trash
+              <DropdownMenuShortcut><Trash2 /></DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-destructive" >Danger Zone</DropdownMenuLabel>
+              <DropdownMenuItem variant="destructive" onClick={handleOpenDeactivateTaskboardDialog} >
+                Deactivate
+                <DropdownMenuShortcut><StopCircle className="text-destructive" /></DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={handleOpenDropTaskboardDialog} >
+                Drop
+                <DropdownMenuShortcut><Trash2 className="text-destructive" /></DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
+    </div>
+  )
 
 }

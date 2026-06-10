@@ -34,7 +34,8 @@ const createWindow = () => {
         autoHideMenuBar: true,
         width: width - 40,
         height: height - 40,
-        titleBarStyle: "hidden",
+        titleBarStyle: "default",
+        // ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         }
@@ -50,7 +51,7 @@ const createWindow = () => {
 
     mainWindow.setPosition(20, 20)
 
-    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools()
 
     return mainWindow
 };

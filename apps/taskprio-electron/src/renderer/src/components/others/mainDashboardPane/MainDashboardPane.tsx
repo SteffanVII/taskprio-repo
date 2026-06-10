@@ -13,57 +13,57 @@ import { useElectronStore_isElectron } from "@/stores/electron";
 
 const MainDashboardPane = () => {
 
-    const {
-        theme,
-        setTheme
-    } = useTheme()
+  const {
+    theme,
+    setTheme
+  } = useTheme()
 
-    const isElectron = useElectronStore_isElectron()
-    const noWorkspaces = useWorkspaceStore_noWorkspaces()
+  // const isElectron = useElectronStore_isElectron()
+  const noWorkspaces = useWorkspaceStore_noWorkspaces()
 
-    return (
-        <>
-            <Sidebar
-                electron={isElectron}
-                className=" z-10 overflow-hidden"
+  return (
+    <>
+      <Sidebar
+        electron={false}
+        className=" z-10 overflow-hidden"
+      >
+        {
+          !noWorkspaces ?
+            <>
+              <SidebarHeader className="p-2 pb-0" >
+                <WorkspaceDropdown_MainDashboardPane />
+              </SidebarHeader>
+              <SidebarContent>
+                <GeneralButtons />
+                <ProjectsList_MainDashboardPane />
+              </SidebarContent>
+            </>
+            :
+            <p className="font-semibold text-lg m-auto" >No Workspaces Found</p>
+        }
+        <SidebarFooter className="mt-auto" >
+          <TodoCard_MainDashboardPane />
+          <div
+            className={cn(
+              ` w-full p-2 `,
+              ` flex items-center justify-between gap-2 z-20 `,
+            )}
+          >
+            <UserPopoverMenu />
+            <Button
+              size={"icon"}
+              variant={"outline"}
+              onClick={() => {
+                setTheme(theme === "dark" ? "light" : "dark")
+              }}
             >
-                {
-                    !noWorkspaces ?
-                        <>
-                            <SidebarHeader className="p-2 pb-0" >
-                                <WorkspaceDropdown_MainDashboardPane />
-                            </SidebarHeader>
-                            <SidebarContent>
-                                <GeneralButtons />
-                                <ProjectsList_MainDashboardPane />
-                            </SidebarContent>
-                        </>
-                        :
-                        <p className="font-semibold text-lg m-auto" >No Workspaces Found</p>
-                }
-                <SidebarFooter className="mt-auto" >
-                    <TodoCard_MainDashboardPane />
-                    <div
-                        className={cn(
-                            ` w-full p-2 `,
-                            ` flex items-center justify-between gap-2 z-20 `,
-                        )}
-                    >
-                        <UserPopoverMenu />
-                        <Button
-                            size={"icon"}
-                            variant={"outline"}
-                            onClick={() => {
-                                setTheme(theme === "dark" ? "light" : "dark")
-                            }}
-                        >
-                            <Sun className=" size-4 " />
-                        </Button>
-                    </div>
-                </SidebarFooter>
-            </Sidebar>
-        </>
-    )
+              <Sun className=" size-4 " />
+            </Button>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+    </>
+  )
 
 }
 

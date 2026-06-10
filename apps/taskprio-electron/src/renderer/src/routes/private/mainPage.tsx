@@ -21,61 +21,60 @@ import TaskboardTaskAssignerDialog from "@/components/others/dialogs/TaskboardTa
 import TaskboardTrashSheet from "@/components/others/taskboard/TaskboardTrashSheet";
 import AcceptInvitationDialog from "@/components/others/dialogs/AcceptInvitationDialog";
 import ProfileDialog from "@/components/others/dialogs/profileDialog/profileDialog";
-import LoaderScreen from "@/components/others/LoaderScreen";
 
 const MainPage = () => {
 
-    const noProjects = useProjectStore_noProjects()
-    const projectsIsLoading = useProjectStore_projectsIsLoading()
-    const noWorkspaces = useWorkspaceStore_noWorkspaces()
-    const workspacesIsLoading = useWorkspaceStore_workspacesIsLoading()
+  const noProjects = useProjectStore_noProjects()
+  const projectsIsLoading = useProjectStore_projectsIsLoading()
+  const noWorkspaces = useWorkspaceStore_noWorkspaces()
+  const workspacesIsLoading = useWorkspaceStore_workspacesIsLoading()
 
-    return (
-        <>
-            <MainDashboardPane />
-            <main
-                className={cn(
-                    `relative w-full min-w-0 min-h-0 max-h-screen pt-[3rem] overflow-hidden `,
-                    `flex flex-col grow`
-                )}
-            >
-                {
-                    (noWorkspaces && !workspacesIsLoading) ?
-                        // Show no workspaces stage
-                        <NoWorkspaceStage />
-                        :
-                        // Show main page
-                        <>
-                            {
-                                (noProjects && !projectsIsLoading) ?
-                                    // Show no projects stage
-                                    <NoProjectStage />
-                                    :
-                                    <>
-                                        <Outlet />
-                                    </>
-                            }
-                        </>
-                }
-            </main>
-            <CreateProjectDialog />
-            <CreateWorkspaceDialog />
-            <CreateTaskboardDialog />
-            <RenameTaskboardDialog />
-            <DropTaskboardDialog />
-            <DeactivateTaskboardDialog />
-            <ReactivateTaskboardDialog />
-            <DropProjectDialog />
-            <DeactivateProjectDialog />
-            <ReactivateProjectDialog />
-            <WorkspaceInvitationDialog />
-            <ProfileDialog />
-            <TagDialog />
-            <TaskboardTaskAssignerDialog />
-            <TaskboardTrashSheet />
-            <AcceptInvitationDialog />
-        </>
-    )
+  return (
+    <>
+      <MainDashboardPane/>
+      <main
+        className={cn(
+          `relative w-full min-w-0 min-h-0 max-h-screen overflow-hidden `,
+          `flex flex-col grow`
+        )}
+      >
+        {
+          (noWorkspaces && !workspacesIsLoading) ?
+            // Show no workspaces stage
+            <NoWorkspaceStage />
+            :
+            // Show main page
+            <>
+              {
+                (noProjects && !projectsIsLoading) ?
+                  // Show no projects stage
+                  <NoProjectStage />
+                  :
+                  <>
+                    <Outlet />
+                  </>
+              }
+            </>
+        }
+      </main>
+      <CreateProjectDialog />
+      <CreateWorkspaceDialog />
+      <CreateTaskboardDialog />
+      <RenameTaskboardDialog />
+      <DropTaskboardDialog />
+      <DeactivateTaskboardDialog />
+      <ReactivateTaskboardDialog />
+      <DropProjectDialog />
+      <DeactivateProjectDialog />
+      <ReactivateProjectDialog />
+      <WorkspaceInvitationDialog />
+      <ProfileDialog />
+      <TagDialog />
+      <TaskboardTaskAssignerDialog />
+      <TaskboardTrashSheet />
+      <AcceptInvitationDialog />
+    </>
+  )
 
 }
 

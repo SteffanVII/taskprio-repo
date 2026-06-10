@@ -95,7 +95,7 @@ const ElectronCustomTitlebar = () => {
                 <div className="electron-custom-titlebar-drag-area size-full" />
             }
 
-            <div className=" w-[10rem] h-full grid grid-cols-3 items-center z-50" >
+            {/* <div className=" w-[10rem] h-full grid grid-cols-3 items-center z-50" >
                 <Tooltip>
                     <TooltipTrigger
                         delay={1000}
@@ -165,7 +165,7 @@ const ElectronCustomTitlebar = () => {
                     />
                     <TooltipContent>Close</TooltipContent>
                 </Tooltip>
-            </div>
+            </div> */}
             {/* <div
                 className={cn(
                     `absolute size-full h-[3rem]`,

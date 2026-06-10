@@ -9,114 +9,114 @@ import { EWebsocketConnectionState, WebSocketContext } from "@/components/others
 import { useGlobalsStore_user } from "@/stores/globals";
 
 type TStateManager_Workspace = {
-    children: React.ReactNode
+  children: React.ReactNode
 }
 
 const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children }) => {
 
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
-    const { pathname } = useLocation()
-    const { workspace_id } = useParams()
+  const { pathname } = useLocation()
+  const { workspace_id } = useParams()
 
-    const user = useGlobalsStore_user()
-    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+  const user = useGlobalsStore_user()
+  const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
 
-    const {
-        connectionState: webSocketConnectionState,
-        channelActions
-    } = useContext(WebSocketContext)
+  const {
+    connectionState: webSocketConnectionState,
+    channelActions
+  } = useContext(WebSocketContext);
 
-    const {
-        data: workspaces,
-        isFetching: workspacesIsFetching,
-        isLoading: workspacesIsLoading,
-        isError: workspacesIsError
-    } = useGetUserWorkspaces({
-        enabled: webSocketConnectionState === EWebsocketConnectionState.OPEN
+  const {
+    data: workspaces,
+    isFetching: workspacesIsFetching,
+    isLoading: workspacesIsLoading,
+    isError: workspacesIsError
+  } = useGetUserWorkspaces({
+    enabled: webSocketConnectionState === EWebsocketConnectionState.OPEN
+  })
+
+  useEffect(() => {
+    updateWorkspaceStore({
+      workspaces,
+      workspacesIsFetching,
+      workspacesIsLoading,
+      workspacesIsError,
+      noWorkspaces: (workspaces && workspaces.length < 1) ?? false
     })
+  }, [
+    workspaces,
+    workspacesIsFetching,
+    workspacesIsLoading,
+    workspacesIsError
+  ])
 
-    useEffect(() => {
-        updateWorkspaceStore({
-            workspaces,
-            workspacesIsFetching,
-            workspacesIsLoading,
-            workspacesIsError,
-            noWorkspaces: (workspaces && workspaces.length < 1) ?? false
-        })
-    }, [
-        workspaces,
-        workspacesIsFetching,
-        workspacesIsLoading,
-        workspacesIsError
-    ])
-
-    // If no workspace_id is selected, navigate to the first workspace once the workspaces data are available
-    useLayoutEffect(() => {
-        // If the user is on the workspace settings page or task todo apge, don't navigate to the first workspace
-        if (
-            pathname.includes("/workspace_settings") ||
-            pathname.includes("/tt") ||
-            pathname.includes("/profile") ||
-            pathname.includes("/task_todo_overlay") ||
-            pathname.includes("/statistics")
-        ) return
+  // If no workspace_id is selected, navigate to the first workspace once the workspaces data are available
+  useLayoutEffect(() => {
+    // If the user is on the workspace settings page or task todo apge, don't navigate to the first workspace
+    if (
+      pathname.includes("/workspace_settings") ||
+      pathname.includes("/tt") ||
+      pathname.includes("/profile") ||
+      pathname.includes("/task_todo_overlay") ||
+      pathname.includes("/statistics")
+    ) return
 
 
-        if (!workspace_id) {
-            console.log("No Workspace Selected");
-            if (workspaces && workspaces.length > 0) {
-                const lastVisitedWorkspaceId = localStorage.getItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
-                if (lastVisitedWorkspaceId) {
-                    const foundWorkspace = workspaces.find(workspace => workspace.workspace_id === lastVisitedWorkspaceId)
-                    if (foundWorkspace) {
-                        localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, foundWorkspace.workspace_id)
-                        navigate(`/p/w/${foundWorkspace.workspace_id}`)
-                        return
-                    }
-                }
-                localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspaces[0].workspace_id)
-                navigate(`/p/w/${workspaces[0].workspace_id}`)
-            }
+    if (!workspace_id) {
+      console.log("No Workspace Selected");
+      if (workspaces && workspaces.length > 0) {
+        const lastVisitedWorkspaceId = localStorage.getItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
+        if (lastVisitedWorkspaceId) {
+          const foundWorkspace = workspaces.find(workspace => workspace.workspace_id === lastVisitedWorkspaceId)
+          if (foundWorkspace) {
+            localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, foundWorkspace.workspace_id)
+            navigate(`/p/w/${foundWorkspace.workspace_id}`)
+            return
+          }
         }
-    }, [workspaces, workspace_id])
+        localStorage.setItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME!, workspaces[0].workspace_id)
+        navigate(`/p/w/${workspaces[0].workspace_id}`)
+      }
+    }
+  }, [workspaces, workspace_id])
 
-    useLayoutEffect(() => {
-        // If selectedWorkspace is null or selectedWorkspace doesn't match the workspace_id
-        // Try to find the workspace in workspaces data to be set as selectedWorkspace
-        // This doesn't set to other the first workspace if workspace isn't found
-        // This is only for when the webapp is loaded already in a workspace route but doesn't have selectedWorkspace data set yet
-        if (!selectedWorkspace && workspace_id) {
-            const foundWorkspace = workspaces?.find(workspace => workspace.workspace_id === workspace_id) ?? null;
-            const workspaceRole: EWorkspaceRole | null = foundWorkspace?.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null;
-            updateWorkspaceStore({
-                selectedWorkspace: foundWorkspace,
-                workspaceRole,
-            })
-            updateProjectStore({
-                noProjects: false,
-            })
-            updateTaskboardStore({
-                noTaskboards: false
-            })
-            if (foundWorkspace) {
-                channelActions.joinWorkspaceChannel(foundWorkspace.workspace_id)
-            }
-        }
-    }, [
-        workspace_id,
-        workspaces,
-        selectedWorkspace
-    ])
+  useLayoutEffect(() => {
+    // If selectedWorkspace is null or selectedWorkspace doesn't match the workspace_id
+    // Try to find the workspace in workspaces data to be set as selectedWorkspace
+    // This doesn't set to other the first workspace if workspace isn't found
+    // This is only for when the webapp is loaded already in a workspace route but doesn't have selectedWorkspace data set yet
+    if (!selectedWorkspace && workspace_id) {
+      const foundWorkspace = workspaces?.find(workspace => workspace.workspace_id === workspace_id) ?? null;
+      const workspaceRole: EWorkspaceRole | null = foundWorkspace?.workspace_members.find(member => member.user_id === user?.user_id)?.workspace_role ?? null;
+      updateWorkspaceStore({
+        selectedWorkspace: foundWorkspace,
+        workspaceRole,
+      })
+      updateProjectStore({
+        noProjects: false,
+      })
+      updateTaskboardStore({
+        noTaskboards: false
+      })
+      if (foundWorkspace) {
+        channelActions.joinWorkspaceChannel(foundWorkspace.workspace_id)
+      }
+    }
+  }, [
+    workspace_id,
+    workspaces,
+    selectedWorkspace
+  ])
 
-    // Set noWorkspaces global store state
-    useLayoutEffect(() => {
-        updateWorkspaceStore({
-            noWorkspaces: (workspaces && !workspacesIsFetching && workspaces.length < 1)
-        })
-    }, [workspaces, workspacesIsFetching])
+  // Set noWorkspaces global store state
+  useLayoutEffect(() => {
+    updateWorkspaceStore({
+      noWorkspaces: (workspaces && !workspacesIsFetching && workspaces.length < 1)
+    })
+  }, [workspaces, workspacesIsFetching])
 
-    return children
+  return children
 
 }
 
