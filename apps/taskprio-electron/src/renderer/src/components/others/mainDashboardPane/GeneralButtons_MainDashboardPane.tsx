@@ -104,7 +104,7 @@ const GeneralButtons = () => {
     return (
         <div
             className={cn(
-                ` flex flex-col p-2 gap-1 `
+                ` flex flex-col p-2 `
             )}
         >
             {

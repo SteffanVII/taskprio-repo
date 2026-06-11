@@ -47,7 +47,7 @@ const TaskboardList = () => {
           <TooltipTrigger
             render={
               <Button
-                variant={"ghost"}
+                variant={"outline"}
                 size={"icon-sm"}
                 className={"my-auto"}
                 onClick={handleOpenCreateTaskboardDialog}
@@ -116,6 +116,51 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
     channelActions.joinTaskboardChannel(taskboard.task_board_id)
   }
 
+  const selected = useMemo(() => {
+    return selectedTaskboard?.task_board_id === taskboard.task_board_id
+  }, [
+    selectedTaskboard?.task_board_id,
+    taskboard.task_board_id,
+  ])
+
+  const taskboardMenuVisible = useMemo(() => {
+    return selectedTaskboard?.task_board_id === taskboard.task_board_id && [EProjectRole.ADMIN, EProjectRole.OWNER].includes(projectRole || EProjectRole.GUEST)
+  }, [
+    selectedTaskboard?.task_board_id,
+    taskboard.task_board_id,
+    projectRole
+  ])
+
+  return (
+    <div
+      className={cn(
+        `relative flex items-center gap-2`,
+        "h-fit min-h-[2.55rem] mt-auto p-1 pl-5 rounded-t-md cursor-pointer",
+        `first:ml-2`,
+        !taskboardMenuVisible && `pr-5`,
+        !selected && `pr-5 transition-colors hover:bg-foreground/5 hover:z-5`,
+        selected && `bg-background z-10`,
+      )}
+      onClick={handleTaskboardTabOnClick}
+    >
+      <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
+      {
+        taskboardMenuVisible &&
+        <TaskboardTriggerDropdownMenu taskboard={taskboard}/>
+      }
+    </div>
+  )
+
+}
+
+type TTaskboardTriggerDropdownMenuProps = {
+  taskboard: TTaskboard
+}
+
+const TaskboardTriggerDropdownMenu : React.FC<TTaskboardTriggerDropdownMenuProps> = ({
+  taskboard
+}) => {
+
   const handleOpenRenameTaskboardDialog = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
@@ -159,91 +204,46 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
     })
   }
 
-  const selected = useMemo(() => {
-    return selectedTaskboard?.task_board_id === taskboard.task_board_id
-  }, [
-    selectedTaskboard?.task_board_id,
-    taskboard.task_board_id,
-  ])
-
-  const taskboardMenuVisible = useMemo(() => {
-    return selectedTaskboard?.task_board_id === taskboard.task_board_id && [EProjectRole.ADMIN, EProjectRole.OWNER].includes(projectRole || EProjectRole.GUEST)
-  }, [
-    selectedTaskboard?.task_board_id,
-    taskboard.task_board_id,
-    projectRole
-  ])
-
   return (
-    <div
-      className={cn(
-        `relative flex items-center gap-2`,
-        "h-fit min-h-[2.55rem] mt-auto p-1 pl-5 rounded-t-md cursor-pointer",
-        `border border-b-0 border-transparent`,
-        `first:ml-2`,
-        !taskboardMenuVisible && `pr-5`,
-        !selected && `pr-5 transition-colors hover:bg-foreground/5 hover:z-5`,
-        selected && `bg-background border-foreground/15 z-10`,
-      )}
-      onClick={handleTaskboardTabOnClick}
-    >
-      {
-        selected &&
-        <>
-          <svg className="absolute bottom-0 left-0 -translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
-            <path d="M 8 8 H 0 A 8 8 0 0 0 8 0 V 8 Z" />
-            <path d="M 0 8 A 8 8 0 0 0 8 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
-          </svg>
-          <svg className="absolute bottom-0 right-0 translate-x-full w-2 h-2 fill-background pointer-events-none overflow-visible" viewBox="0 0 8 8" >
-            <path d="M 0 8 H 8 A 8 8 0 0 1 0 0 V 8 Z" />
-            <path d="M 8 8 A 8 8 0 0 1 0 0" fill="none" className="stroke-foreground/5" strokeWidth="1px" />
-          </svg>
-        </>
-      }
-      <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
-      {
-        taskboardMenuVisible &&
-        <DropdownMenu modal={false} >
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant={"ghost"}
-                size={"icon-sm"}
-                className="mr-[0.1rem]"
-              >
-                <EllipsisVertical />
-              </Button>
-            }
-          />
-          <DropdownMenuContent className="w-[14rem]" >
-            <DropdownMenuItem
-              onClick={handleOpenRenameTaskboardDialog}
-            >
-              Rename
-              <DropdownMenuShortcut><Pencil /></DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={handleOpenTrashTaskboardDialog}
-            >
-              Task Trash
-              <DropdownMenuShortcut><Trash2 /></DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-destructive" >Danger Zone</DropdownMenuLabel>
-              <DropdownMenuItem variant="destructive" onClick={handleOpenDeactivateTaskboardDialog} >
-                Deactivate
-                <DropdownMenuShortcut><StopCircle className="text-destructive" /></DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive" onClick={handleOpenDropTaskboardDialog} >
-                Drop
-                <DropdownMenuShortcut><Trash2 className="text-destructive" /></DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      }
-    </div>
+    <DropdownMenu modal={false} >
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant={"ghost"}
+            size={"icon-sm"}
+            className="mr-[0.1rem]"
+          >
+            <EllipsisVertical />
+          </Button>
+        }
+      />
+      <DropdownMenuContent className="w-[14rem]" >
+        <DropdownMenuItem
+          onClick={handleOpenRenameTaskboardDialog}
+        >
+          Rename
+          <DropdownMenuShortcut><Pencil /></DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleOpenTrashTaskboardDialog}
+        >
+          Task Trash
+          <DropdownMenuShortcut><Trash2 /></DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-destructive" >Danger Zone</DropdownMenuLabel>
+          <DropdownMenuItem variant="destructive" onClick={handleOpenDeactivateTaskboardDialog} >
+            Deactivate
+            <DropdownMenuShortcut><StopCircle className="text-destructive" /></DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" onClick={handleOpenDropTaskboardDialog} >
+            Drop
+            <DropdownMenuShortcut><Trash2 className="text-destructive" /></DropdownMenuShortcut>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 
 }

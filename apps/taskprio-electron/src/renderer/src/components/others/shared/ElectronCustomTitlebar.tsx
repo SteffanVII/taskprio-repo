@@ -1,8 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useElectronStore_windowMaximize } from "@/stores/electron";
-import { Minimize, Slash, SquareIcon, X } from "lucide-react";
 import TaskboardList from "../taskboard/TaskboardList";
 import { useContext, useMemo } from "react";
 import { useLocation } from "react-router";
@@ -18,7 +14,7 @@ const ElectronCustomTitlebar = () => {
     const { pathname } = useLocation()
 
     const authenticated = useGlobalsStore_authenticated()
-    const windowMaximized = useElectronStore_windowMaximize()
+    // const windowMaximized = useElectronStore_windowMaximize()
     const selectedProject = useProjectStore_selectedProject()
     const taskboards = useTaskboardStore_taskboards()
 
@@ -47,23 +43,23 @@ const ElectronCustomTitlebar = () => {
         showTaskTodoPageHeader
     ])
 
-    const handleCloseWindow = () => {
-        const electronApi = window.electronAPI;
-        if (electronApi) electronApi.closeWindow()
-    }
-    const handleMaximizeWindow = () => {
-        const electronApi = window.electronAPI;
-        if (electronApi) electronApi.maximizeWindow()
-    }
-    const handleUnmaximizeWindow = () => {
-        const electronApi = window.electronAPI;
-        if (electronApi) electronApi.unmaximizeWindow()
-    }
+    // const handleCloseWindow = () => {
+    //     const electronApi = window.electronAPI;
+    //     if (electronApi) electronApi.closeWindow()
+    // }
+    // const handleMaximizeWindow = () => {
+    //     const electronApi = window.electronAPI;
+    //     if (electronApi) electronApi.maximizeWindow()
+    // }
+    // const handleUnmaximizeWindow = () => {
+    //     const electronApi = window.electronAPI;
+    //     if (electronApi) electronApi.unmaximizeWindow()
+    // }
 
-    const handleMinimizeWindow = () => {
-        const electronApi = window.electronAPI;
-        if (electronApi) electronApi.minimizeWindow()
-    }
+    // const handleMinimizeWindow = () => {
+    //     const electronApi = window.electronAPI;
+    //     if (electronApi) electronApi.minimizeWindow()
+    // }
 
     return (
         <div

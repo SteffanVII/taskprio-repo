@@ -9,8 +9,7 @@ import { useNavigate } from "react-router"
 import { z } from "zod"
 import Spinner from "../Spinner"
 import { Separator } from "@/components/ui/separator"
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google"
-import { useElectronStore_isElectron } from "@/stores/electron"
+import { useGoogleLogin } from "@react-oauth/google"
 
 type TLoginFormProps = {
     setRegisterFormOpen: (isRegister: boolean) => void,
@@ -28,8 +27,6 @@ const LoginForm: React.FC<TLoginFormProps> = ({
     dontNavigate = false,
     invitationPurpose = false
 }) => {
-
-    const isElectron = useElectronStore_isElectron()
 
     const navigate = useNavigate()
 
@@ -54,7 +51,6 @@ const LoginForm: React.FC<TLoginFormProps> = ({
     })
 
     const {
-        mutateAsync: googleLoginT,
         isPending: isGoogleLoginPending
     } = useGoogleLoginT(() => {
         if (!dontNavigate) {

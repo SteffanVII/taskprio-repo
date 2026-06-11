@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item"
+import { Item, ItemContent, ItemTitle } from "@/components/ui/item"
 import dayjs from "@/lib/dayjs"
 import { cn } from "@/lib/utils"
 import { formatTaskTodoTimeSeconds } from "@/lib/utils/durationFormatter"

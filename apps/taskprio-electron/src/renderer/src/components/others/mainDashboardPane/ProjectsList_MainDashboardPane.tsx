@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { updateDialogsStore } from "@/stores/dialogs"
@@ -145,7 +144,6 @@ const ProjectsList_MainDashboardPane = () => {
                                 ` flex justify-between items-center`,
                                 ` rounded-md `,
                                 ` transition-colors `,
-                                // ` border-r-[0.6rem] `,
                                 ` border border-transparent`,
                                 ` hover:bg-border/50 `,
                                 selectedProject?.project_id === project.project_id && !pathname.includes("/project_settings") && `pointer-events-none`,
