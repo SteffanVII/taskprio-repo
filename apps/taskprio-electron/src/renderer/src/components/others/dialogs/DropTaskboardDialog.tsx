@@ -34,7 +34,8 @@ const DropTaskboardDialog = () => {
           taskboard: null
         }
       })
-      navigate(`/p/w/${selectedProject!.workspace_id}/${selectedProject?.project_id}`)
+      navigate(`/p/w/${selectedProject!.workspace_id}/d/${selectedProject?.project_id}/t`)
+      form.reset()
     }
   })
 

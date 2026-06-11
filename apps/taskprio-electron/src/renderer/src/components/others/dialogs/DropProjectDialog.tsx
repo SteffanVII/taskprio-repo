@@ -33,6 +33,8 @@ const DropProjectDialog = () => {
           project: null
         }
       })
+      navigate(`/p/w/${selectedWorkspace?.workspace_id}/d`)
+      form.reset()
     }
   })
 

@@ -10,7 +10,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { HexColorPicker } from "react-colorful";
 import { useCreateProjectTag, useUpdateProjectTag } from "@/services/private/tag/mutation";
-import getHexLuminance from "@/lib/utils/hexColorLuminance";
 import { useLayoutEffect } from "react";
 import { useProjectStore_selectedProject } from "@/stores/project";
 import TagDeleteDialog from "./TagDeleteDialog";

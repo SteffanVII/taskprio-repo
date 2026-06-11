@@ -1,11 +1,8 @@
-import TaskboardList from "@/components/others/taskboard/TaskboardList";
+import ProjectHeader from "@/components/others/project/ProjectHeader";
 import { cn } from "@/lib/utils";
-import { useTaskboardStore_noTaskboards } from "@/stores/taskboard";
 import { Outlet } from "react-router";
 
 const ProjectPage = () => {
-
-  const noTaskboards = useTaskboardStore_noTaskboards()
 
   return (
     <div
@@ -15,10 +12,7 @@ const ProjectPage = () => {
         `grow`
       )}
     >
-      {
-        !noTaskboards &&
-        <TaskboardList />
-      }
+      <ProjectHeader/>
       <Outlet />
     </div>
   )

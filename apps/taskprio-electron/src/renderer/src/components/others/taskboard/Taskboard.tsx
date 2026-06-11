@@ -239,7 +239,7 @@ export const Taskboard = () => {
 
         <div
             className={cn(
-                `relative grow grid h-full min-w-0 min-h-0 max-h-full bg-background`
+                `relative grow grid h-full min-w-0 min-h-0 max-h-full bg-muted`
             )}
             style={{
                 gridTemplateColumns: "1fr"

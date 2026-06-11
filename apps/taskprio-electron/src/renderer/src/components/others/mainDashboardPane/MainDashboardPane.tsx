@@ -9,7 +9,6 @@ import TodoCard_MainDashboardPane from "./TodoCard_MainDashboardPane";
 import UserPopoverMenu from "../mainDashboardHeader/UserPopoverMenu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { useWorkspaceStore_noWorkspaces } from "@/stores/workspace";
-import { useElectronStore_isElectron } from "@/stores/electron";
 
 const MainDashboardPane = () => {
 

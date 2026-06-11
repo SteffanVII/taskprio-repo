@@ -1,12 +1,12 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "base-vega",
+  "style": "base-sera",
   "rsc": false,
   "tsx": true,
   "tailwind": {
     "config": "",
-    "css": "src/index.css",
-    "baseColor": "zinc",
+    "css": "src/renderer/src/index.css",
+    "baseColor": "mist",
     "cssVariables": true,
     "prefix": ""
   },
@@ -19,6 +19,7 @@
     "hooks": "@/hooks"
   },
   "menuColor": "default",
-  "menuAccent": "bold",
+  "menuAccent": "subtle",
+  "rtl": false,
   "registries": {}
 }
