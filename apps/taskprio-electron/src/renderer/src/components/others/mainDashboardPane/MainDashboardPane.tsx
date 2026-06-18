@@ -23,14 +23,13 @@ const MainDashboardPane = () => {
   return (
     <>
       <Sidebar
-        electron={false}
         className=" z-10 overflow-hidden"
       >
         {
           !noWorkspaces ?
             <>
               <SidebarHeader className="p-2 pb-0" >
-                <WorkspaceDropdown_MainDashboardPane />
+                <WorkspaceDropdown_MainDashboardPane/>
               </SidebarHeader>
               <SidebarContent>
                 <GeneralButtons />

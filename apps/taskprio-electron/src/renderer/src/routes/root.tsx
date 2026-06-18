@@ -1,8 +1,8 @@
-import { Outlet } from "react-router";
+import { Outlet } from "@tanstack/react-router";
 
 
 const Root = () => {
-    return <Outlet/>
+  return <Outlet />
 }
 
 export default Root;

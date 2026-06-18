@@ -51,7 +51,7 @@ const createWindow = () => {
 
     mainWindow.setPosition(20, 20)
 
-    // mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools()
 
     return mainWindow
 };

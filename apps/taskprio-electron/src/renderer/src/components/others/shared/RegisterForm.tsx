@@ -5,12 +5,12 @@ import { useRegister } from "@/services/authentication"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router"
 import z from "zod"
 import Spinner from "../Spinner"
+import { useNavigate } from "@tanstack/react-router"
 
 type TRegisterFormProps = {
-    setRegisterFormOpen : ( isRegister : boolean ) => void,
+    setRegisterFormOpen? : ( isRegister : boolean ) => void,
     dontNavigate? : boolean,
     invitationPurpose? : boolean
 }
@@ -52,7 +52,7 @@ const RegisterForm : React.FC<TRegisterFormProps> = ({ setRegisterFormOpen, dont
         error: registerError,
     } = useRegister( () => {
         if ( !dontNavigate ) {
-            navigate("/p/w")
+            navigate({ to: "/workspace" })
         }
     } )
 
@@ -153,8 +153,12 @@ const RegisterForm : React.FC<TRegisterFormProps> = ({ setRegisterFormOpen, dont
                     <span 
                         className="text-primary font-medium hover:underline cursor-pointer transition-colors" 
                         onClick={() => {
-                            registerForm.reset()
-                            setRegisterFormOpen(false)
+                            if (setRegisterFormOpen) {
+                                registerForm.reset()
+                                setRegisterFormOpen(false)
+                            } else {
+                                navigate({ to: "/login" })
+                            }
                         }}
                     >
                         Login

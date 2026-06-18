@@ -29,4 +29,8 @@ export const getHexLuminance = (hex: string): number => {
   return 0.2126 * linearR + 0.7152 * linearG + 0.0722 * linearB;
 };
 
+export const getTextColorByHexLuminance = (hex: string): string => {
+  return getHexLuminance(hex) > 0.5 ? "black" : "white"
+}
+
 export default getHexLuminance;

@@ -1,233 +1,150 @@
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { updateDialogsStore } from "@/stores/dialogs"
-import { updateGlobalsStore, useGlobalsStore_user } from "@/stores/globals"
-import { updateTaskboardStore } from "@/stores/taskboard"
-import { updateProjectStore, useProjectStore_noProjects, useProjectStore_projects, useProjectStore_projectsIsLoading, useProjectStore_selectedProject } from "@/stores/project"
-import { useWorkspaceStore_workspaceRole, useWorkspaceStore_workspacesIsLoading } from "@/stores/workspace"
+import { useGlobalsStore, useGlobalsStore_user } from "@/stores/globals"
+import { useProjectStore, useProjectStore_noProjects, useProjectStore_selectedProject } from "@/stores/project"
+import { useWorkspaceStore_workspaceRole } from "@/stores/workspace"
 
 import { EProjectRole, EWorkspaceRole, TProject } from "@repo/taskprio-types"
 import { Plus, Settings2 } from "lucide-react"
 import { useContext, useMemo } from "react"
-import { useLocation, useNavigate, useParams } from "react-router"
+import { useLocation, useNavigate, useParams } from "@tanstack/react-router"
 import { WebSocketContext } from "../websocket/WebsocketProvider"
+import { useGetUserWorkspaces } from "@/services/private/workspace/query"
+import { useGetUserProjectsByWorkspace } from "@/services/private/project/query"
+import { useTaskboardStore } from "@/stores/taskboard"
+import { useDialogsStore } from "@/stores/dialogs"
+import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 
 const ProjectsList_MainDashboardPane = () => {
 
-    const navigate = useNavigate()
-    const { workspace_id } = useParams()
-    const { pathname } = useLocation()
-    const {
-        channelActions
-    } = useContext(WebSocketContext)
+  const navigate = useNavigate()
+  const { workspace_id } = useParams({ strict: false })
+  const { pathname } = useLocation()
+  const {
+    channelActions
+  } = useContext(WebSocketContext)
 
-    const user = useGlobalsStore_user()
-    const workspaceRole = useWorkspaceStore_workspaceRole()
-    const workspacesIsLoading = useWorkspaceStore_workspacesIsLoading()
-    const projectsIsLoading = useProjectStore_projectsIsLoading()
-    const selectedProject = useProjectStore_selectedProject()
-    const projects = useProjectStore_projects()
-    const noProjects = useProjectStore_noProjects()
+  const user = useGlobalsStore_user()
+  const workspaceRole = useWorkspaceStore_workspaceRole()
+  const selectedProject = useProjectStore_selectedProject()
+  const noProjects = useProjectStore_noProjects()
+  const setSelectedProject = useProjectStore(state => state.setSelectedProject)
+  const setProjectRole = useProjectStore(state => state.setProjectRole)
+  const setNoProjects = useProjectStore(state => state.setNoProjects)
+  const setSelectedTask = useGlobalsStore(state => state.setSelectedTask)
+  const setSelectedTaskboard = useTaskboardStore(state => state.setSelectedTaskboard)
+  const setNoTaskboards = useTaskboardStore(state => state.setNoTaskboards)
+  const setCreateProjectDialog = useDialogsStore(state => state.setCreateProjectDialog)
 
-    const showSkeleton = useMemo(() => {
-        return (projectsIsLoading || workspacesIsLoading)
-    }, [projectsIsLoading, workspacesIsLoading])
+  const {
+    isLoading: workspacesIsLoading
+  } = useGetUserWorkspaces()
 
-    const showNoProjectsState = useMemo(() => {
-        return (!projectsIsLoading && !workspacesIsLoading && noProjects)
-    }, [projectsIsLoading, workspacesIsLoading, noProjects])
+  const {
+    data: projects,
+    isLoading: projectsIsLoading
+  } = useGetUserProjectsByWorkspace()
 
-    const showProjectsButtons = useMemo(() => {
-        return (!projectsIsLoading && !workspacesIsLoading && !!projects)
-    }, [projectsIsLoading, workspacesIsLoading, projects])
+  const showSkeleton = useMemo(() => {
+    return (projectsIsLoading || workspacesIsLoading)
+  }, [projectsIsLoading, workspacesIsLoading])
 
-    const handleProjectButtonOnClick = (project: TProject) => {
-        const projectRole: EProjectRole | null = project.project_members.find(member => member.user_id === user?.user_id)?.project_role ?? null
-        updateProjectStore({
-            selectedProject: project,
-            projectRole,
-            noProjects: false
+  const showNoProjectsState = useMemo(() => {
+    return (!projectsIsLoading && !workspacesIsLoading && noProjects)
+  }, [projectsIsLoading, workspacesIsLoading, noProjects])
+
+  const showProjectsButtons = useMemo(() => {
+    return (!projectsIsLoading && !workspacesIsLoading && !!projects)
+  }, [projectsIsLoading, workspacesIsLoading, projects])
+
+  const handleProjectButtonOnClick = (project: TProject) => {
+    const projectRole: EProjectRole | null = project.project_members.find(member => member.user_id === user?.user_id)?.project_role ?? null
+    setSelectedProject(project)
+    setProjectRole(projectRole)
+    setNoProjects(false)
+    setSelectedTask(null)
+    setSelectedTaskboard(null)
+    setNoTaskboards(false)
+    if (selectedProject?.project_id === project.project_id) {
+      if (pathname.includes("/project_settings")) {
+        // navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
+        navigate({
+          to: "/workspace/$workspace_id/project/$project_id/taskboard/$taskboard_id",
+          params: {
+            workspace_id: workspace_id!,
+            project_id: project.project_id,
+            taskboard_id: project.project_id
+          }
         })
-        updateGlobalsStore({
-            selectedTask: null,
-        })
-        updateTaskboardStore({
-            selectedTaskboard: null,
-            noTaskboards: false,
-        })
-        if (selectedProject?.project_id === project.project_id) {
-            if (pathname.includes("/project_settings")) {
-                navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
-            }
-        } else {
-            navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
+      }
+    } else {
+      // navigate(`/p/w/${workspace_id}/d/${project.project_id}/t`)
+      navigate({
+        to: "/workspace/$workspace_id/project/$project_id",
+        params: {
+          workspace_id: workspace_id!,
+          project_id: project.project_id,
+          // taskboard_id : project.project_id
         }
-        localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id)
-        channelActions.joinProjectChannel(project.project_id)
-
+      })
     }
+    localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, project.project_id)
+    channelActions.joinProjectChannel(project.project_id)
 
-    const handleProjectSettingsButtonOnClick = (project: TProject) => {
-        navigate(`/p/w/${workspace_id}/d/${project.project_id}/project_settings`)
-        updateGlobalsStore({
-            selectedTask: null
-        })
-        updateTaskboardStore({
-            selectedTaskboard: null
-        })
-    }
+  }
 
-    return (
-        <div
-            className={cn(
-                ` w-full h-fit p-2 py-0 `,
-                ` overflow-hidden`,
-            )}
+  const handleCreateProjectButtonOnClick = () => {
+    setCreateProjectDialog(true)
+  }
+
+  return (
+    <>
+      <SidebarGroup>
+        <SidebarGroupLabel>
+          Projects
+        </SidebarGroupLabel>
+        <SidebarGroupAction
+          onClick={handleCreateProjectButtonOnClick}
         >
-            <div
-                className={cn(
-                    ` w-full h-fit py-2 pl-2 `,
-                    ` flex items-center justify-between `
-                )}
-            >
-                <p className="font-bold" >Projects</p>
-                <div
-                    className=" flex items-center gap-2 "
+          <Plus />
+        </SidebarGroupAction>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {
+              showSkeleton &&
+              Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className={cn(
+                    `w-full h-[2rem]`
+                  )}
+                />
+              ))
+            }
+            {
+              showNoProjectsState &&
+              <p className="font-bold text-center py-[1rem]" >No Projects Found</p>
+            }
+            {
+              showProjectsButtons &&
+              projects!.map(project => (
+                <SidebarMenuItem
+                  key={project.project_id}
                 >
-                    <Button
-                        size={"icon-sm"}
-                        variant={"outline"}
-                        onClick={() => {
-                            updateDialogsStore({
-                                createProjectDialog: {
-                                    open: true
-                                }
-                            })
-                        }}
-                        className={cn(
-                            `opacity-0 pointer-events-none`,
-                            (workspaceRole === EWorkspaceRole.OWNER || workspaceRole === EWorkspaceRole.ADMIN) && `opacity-100 pointer-events-auto`
-                        )}
-                    >
-                        <Plus />
-                    </Button>
-                </div>
-            </div>
-            {/* <Separator/> */}
-            <div
-                className={cn(
-                    ` w-full h-fit `,
-                    ` flex flex-col gap-1 `
-                )}
-            >
-                {
-                    showSkeleton &&
-                    Array.from({ length: 5 }).map((_, index) => (
-                        <Skeleton key={index} className={cn(
-                            ` w-full h-[1rem] !rounded-none `
-                        )} />
-                    ))
-                }
-                {
-                    showNoProjectsState &&
-                    <p className="font-bold text-center py-[1rem]" >No Projects Found</p>
-                }
-                {
-                    showProjectsButtons &&
-                    projects!.map((project) =>
-                        <div
-                            role="button"
-                            key={project.project_id}
-                            className={cn(
-                                ` relative w-full h-8 pl-3 pr-1 py-4 `,
-                                ` flex justify-between items-center`,
-                                ` rounded-md `,
-                                ` transition-colors `,
-                                ` border border-transparent`,
-                                ` hover:bg-border/50 `,
-                                selectedProject?.project_id === project.project_id && !pathname.includes("/project_settings") && `pointer-events-none`,
-                                selectedProject?.project_id === project.project_id && ` duration-300 text-foreground overflow-hidden `,
-                            )}
-                            style={selectedProject?.project_id === project.project_id ? {
-                                borderColor: `${project.project_color}80`,
-                                backgroundColor: `${project.project_color}1a`
-                            } : undefined}
-                            onClick={() => handleProjectButtonOnClick(project)}
-                        >
-                            <p
-                                className={cn(
-                                    "text-sm font-medium text-foreground/50",
-                                    selectedProject?.project_id === project.project_id && `text-foreground`
-                                )}
-                            >{project.project_name}</p>
-                            {
-                                selectedProject?.project_id === project.project_id &&
-                                <Button
-                                    size={"icon-xs"}
-                                    variant={selectedProject?.project_id === project.project_id && pathname.includes("/project_settings") ? "outline" : "ghost"}
-                                    className={cn(
-                                        `pointer-events-auto cursor-pointer`
-                                    )}
-                                    onClick={e => {
-                                        e.stopPropagation()
-                                        handleProjectSettingsButtonOnClick(project)
-                                    }}
-                                >
-                                    <Settings2 />
-                                </Button>
-                            }
-                        </div>
-                    )
-                }
-            </div>
-        </div>
-    )
+                  <SidebarMenuButton
+                    isActive={selectedProject?.project_id === project.project_id}
+                    onClick={() => handleProjectButtonOnClick(project)}
+                  >{project.project_name}</SidebarMenuButton>
+                </SidebarMenuItem>
+              ))
+            }
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </>
+  )
 
 }
-
-// type TProjectButtonProps = {
-//     data : TProject,
-//     handleProjectButtonOnClick : ( project : TProject ) => void
-// }
-
-// const ProjectButton : React.FC<TProjectButtonProps> = ({
-//     data,
-//     handleProjectButtonOnClick
-// }) => {
-
-//     const selectedProject = useGlobalsStore_selectedProject()
-
-//     return (
-//         <Collapsible>
-//             <CollapsibleTrigger
-//                 render={
-//                     <button
-//                         key={data.project_id}
-//                         className={cn(
-//                             ` relative w-full h-8 px-4 `,
-//                             ` flex items-center gap-4 `,
-//                             ` transition-all `,
-//                             ` border-r-[0.6rem] rounded-md rounded-r-none `,
-//                             ` hover:bg-border `,
-//                             selectedProject?.project_id === data.project_id && ` text-primary bg-border overflow-hidden `,
-//                             getHexLuminance(data.project_color) > 0.4 ?
-//                             `text-black` :
-//                             `text-white`
-//                         )}
-//                         style={{
-//                             borderColor : data.project_color
-//                         }}
-//                         disabled={selectedProject?.project_id === data.project_id}
-//                         onClick={() => handleProjectButtonOnClick(data)}
-//                     >
-//                         <p className=" text-sm font-medium text-foreground " >{data.project_name}</p>
-//                     </button>
-//                 }
-//             />
-//         </Collapsible>
-//     )
-
-// }
 
 export default ProjectsList_MainDashboardPane;

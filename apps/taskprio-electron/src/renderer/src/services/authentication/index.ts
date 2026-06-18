@@ -2,7 +2,8 @@ import { useMutation, UseMutationOptions } from "@tanstack/react-query"
 import { TAuthenticateResponse, TLoginPayload, TLoginResponse, TRegisterPayload, TRegisterResponse } from "./types"
 import { axiosInstance } from "../axios"
 import { AxiosResponse } from "axios"
-import { updateGlobalsStore } from "@/stores/globals"
+import { AUTH_TOKEN_KEY, USER_DATA_KEY } from "@/lib/globals"
+import { useGlobalsStore } from "@/stores/globals"
 
 /**
  * @description Login mutation. On success, it updates the globals store to set the authenticated state to true.
@@ -10,6 +11,10 @@ import { updateGlobalsStore } from "@/stores/globals"
  * @returns A mutation object with the login mutation function
  */
 export const useLogin = (successCallback: (data: TLoginResponse) => void) => {
+
+  const setAuthenticated = useGlobalsStore(state => state.setAuthenticated)
+  const setUser = useGlobalsStore(state => state.setUser)
+  const setInvitationRecipient = useGlobalsStore(state => state.setInvitationRecipient)
 
   return useMutation<TLoginResponse, any, TLoginPayload>({
     mutationFn: async (payload) => {
@@ -28,14 +33,11 @@ export const useLogin = (successCallback: (data: TLoginResponse) => void) => {
     },
     onSuccess: (data, variables) => {
       if (!variables.body.for_invitation_purpose) {
-        updateGlobalsStore({
-          authenticated: true,
-          user: data.user
-        })
+        localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+        setAuthenticated(true)
+        setUser(data.user)
       } else {
-        updateGlobalsStore({
-          invitationRecipient: data.user
-        })
+        setInvitationRecipient(data.user)
       }
     }
   })
@@ -48,6 +50,10 @@ export const useLogin = (successCallback: (data: TLoginResponse) => void) => {
  * @returns A mutation object with the google login mutation function
  */
 export const useGoogleLoginT = (successCallback: (data: TLoginResponse) => void) => {
+  const setAuthenticated = useGlobalsStore(state => state.setAuthenticated)
+  const setUser = useGlobalsStore(state => state.setUser)
+  const setInvitationRecipient = useGlobalsStore(state => state.setInvitationRecipient)
+
   return useMutation<TLoginResponse, any, { proofKey: string, clientId: string, for_invitation_purpose?: boolean }>({
     mutationFn: async (payload: { proofKey: string, clientId: string, for_invitation_purpose?: boolean }) => {
       const response = await axiosInstance.post<TLoginResponse>(
@@ -61,17 +67,15 @@ export const useGoogleLoginT = (successCallback: (data: TLoginResponse) => void)
       return response.data
     },
     onSuccess: (data, variables) => {
-      successCallback(data)
       if (!variables.for_invitation_purpose) {
-        updateGlobalsStore({
-          authenticated: true,
-          user: data.user
-        })
+        localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user))
+        setAuthenticated(true)
+        setUser(data.user)
       } else {
-        updateGlobalsStore({
-          invitationRecipient: data.user
-        })
+        setInvitationRecipient(data.user)
       }
+      successCallback(data)
     }
   })
 }
@@ -82,6 +86,10 @@ export const useGoogleLoginT = (successCallback: (data: TLoginResponse) => void)
  * @returns A mutation object with the register mutation function
  */
 export const useRegister = (successCallback: (data: TRegisterResponse) => void) => {
+
+  const setAuthenticated = useGlobalsStore(state => state.setAuthenticated)
+  const setUser = useGlobalsStore(state => state.setUser)
+  const setInvitationRecipient = useGlobalsStore(state => state.setInvitationRecipient)
 
   return useMutation<TRegisterResponse, any, TRegisterPayload>({
     mutationFn: async (payload) => {
@@ -99,14 +107,10 @@ export const useRegister = (successCallback: (data: TRegisterResponse) => void) 
     },
     onSuccess: (data, variables) => {
       if (!variables.body.for_invitation_purpose) {
-        updateGlobalsStore({
-          authenticated: true,
-          user: data.user
-        })
+        setAuthenticated(true)
+        setUser(data.user)
       } else {
-        updateGlobalsStore({
-          invitationRecipient: data.user
-        })
+        setInvitationRecipient(data.user)
       }
     }
   })
@@ -124,6 +128,8 @@ export const useAuthenticate = (
   errorCallback?: () => void
 ) => {
 
+  const setUser = useGlobalsStore(state => state.setUser)
+
   return useMutation<TAuthenticateResponse>({
     mutationFn: async () => {
       const response = await axiosInstance.post(
@@ -133,9 +139,7 @@ export const useAuthenticate = (
     },
     onSuccess: (data) => {
       if (successCallback) {
-        updateGlobalsStore({
-          user: data.user
-        })
+        setUser(data.user)
         successCallback()
       }
     },
@@ -156,6 +160,7 @@ type TUseLogoutRequestOptions = Partial<UseMutationOptions>
  */
 export const useLogoutRequest = (options?: TUseLogoutRequestOptions) => {
   return useMutation({
+    mutationKey: ["logout"],
     mutationFn: async () => {
       const response = await axiosInstance.post(
         `/logout`

@@ -1,9 +1,8 @@
-import { useGlobalsStore_authenticated, useGlobalsStore_authenticateIsPending, useGlobalsStore_logoutIsPending } from "@/stores/globals";
-import Spinner from "./Spinner";
-import { LockKeyhole, Rocket } from "lucide-react";
+import { useGlobalsStore_authenticated } from "@/stores/globals";
 import { cn } from "@/lib/utils";
 import React, { useContext, useMemo } from "react";
 import { EWebsocketConnectionState, WebSocketContext } from "./websocket/WebsocketProvider";
+import { useLogoutRequest } from "@/services/authentication";
 
 type TLoaderScreenProps = {
   render: React.ReactNode
@@ -17,19 +16,19 @@ const LoaderScreen: React.FC<TLoaderScreenProps> = ({ render }) => {
   } = useContext(WebSocketContext)
 
   const authenticated = useGlobalsStore_authenticated()
-  const authenticateIsPending = useGlobalsStore_authenticateIsPending()
-  const logoutIsPending = useGlobalsStore_logoutIsPending()
+
+  const {
+    isPending : logoutIsPending
+  } = useLogoutRequest()
 
   const showLoadingScreen = useMemo(() => {
     if (!authenticated) return true;
-    if (authenticateIsPending) return true;
     if (webSocketConnectionState !== EWebsocketConnectionState.OPEN && webSocketInitialConnection) return true;
     if (logoutIsPending) return true;
     return false;
   }, [
     authenticated,
     webSocketConnectionState,
-    authenticateIsPending,
     logoutIsPending
   ])
 
@@ -45,7 +44,7 @@ const LoaderScreen: React.FC<TLoaderScreenProps> = ({ render }) => {
       )}
     >
       <div className="flex gap-[4rem]" >
-        <div className="relative flex gap-4 items-center" >
+        {/* <div className="relative flex gap-4 items-center" >
           {
             authenticateIsPending &&
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" >
@@ -58,8 +57,8 @@ const LoaderScreen: React.FC<TLoaderScreenProps> = ({ render }) => {
               authenticated && `text-green-400`
             )}
           />
-        </div>
-        <div className="relative flex flex-col gap-4 items-center" >
+        </div> */}
+        {/* <div className="relative flex flex-col gap-4 items-center" >
           {
             webSocketConnectionState !== EWebsocketConnectionState.OPEN &&
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" >
@@ -72,7 +71,7 @@ const LoaderScreen: React.FC<TLoaderScreenProps> = ({ render }) => {
               webSocketConnectionState === EWebsocketConnectionState.OPEN && `text-green-400`
             )}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   )

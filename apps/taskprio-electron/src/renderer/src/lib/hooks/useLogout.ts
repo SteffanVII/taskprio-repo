@@ -1,74 +1,77 @@
 import { EWebsocketConnectionState, WebSocketContext } from "@/components/others/websocket/WebsocketProvider"
 import { useLogoutRequest } from "@/services/authentication"
-import { resetDialogsStore } from "@/stores/dialogs"
-import { resetGlobalsStore, updateGlobalsStore } from "@/stores/globals"
-import { resetSessionHistoryTabStore } from "@/stores/sessionHistoryTab"
-import { resetTaskboardDragStore } from "@/stores/taskboardDrag"
-import { resetProjectStore } from "@/stores/project"
-import { resetTaskTodoPageStore } from "@/stores/taskTodoPage"
-import { resetTaskboardStore } from "@/stores/taskboard"
-import { resetWorkspaceStore } from "@/stores/workspace"
 import { useQueryClient } from "@tanstack/react-query"
 import Cookies from "js-cookie"
 import { useContext, useLayoutEffect } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate } from "@tanstack/react-router"
+import { useGlobalsStore } from "@/stores/globals"
+import { useTaskboardDragStore, useTaskboardDragStore_taskboardSectionDrag } from "@/stores/taskboardDrag"
+import { useSessionHistoryTabStore } from "@/stores/sessionHistoryTab"
+import { useTaskTodoPageStore } from "@/stores/taskTodoPage"
+import { useDialogsStore } from "@/stores/dialogs"
+import { useWorkspaceStore } from "@/stores/workspace"
+import { useProjectStore } from "@/stores/project"
+import { useTaskboardStore } from "@/stores/taskboard"
+import { AUTH_TOKEN_KEY } from "../globals"
 
 export type TUseLogout = {
-    logout: () => Promise<void>
-    isLogoutPending: boolean
-    isLogoutError: boolean
+  logout: () => Promise<void>
+  isLogoutPending: boolean
+  isLogoutError: boolean
 }
 
 export const useLogout = (): TUseLogout => {
 
-    const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-    const queryClient = useQueryClient()
+  const resetGlobalsStore = useGlobalsStore(state => state.resetStore)
+  const resetTaskboardDragStore = useTaskboardDragStore(state => state.resetStore)
+  const resetSessionHistoryTabStore = useSessionHistoryTabStore(state => state.resetStore)
+  const resetTaskTodoPageStore = useTaskTodoPageStore(state => state.resetStore)
+  const resetDialogsStore = useDialogsStore(state => state.resetDialogsStore)
+  const resetWorkspaceStore = useWorkspaceStore(state => state.resetStore)
+  const resetProjectStore = useProjectStore(state => state.resetStore)
+  const resetTaskboardStore = useTaskboardStore(state => state.resetStore)
 
-    const {
-        connectionState,
-        closeWebSocketConnection
-    } = useContext(WebSocketContext)
+  const {
+    connectionState,
+    closeWebSocketConnection
+  } = useContext(WebSocketContext)
 
-    const {
-        mutateAsync: logout,
-        isPending: isLogoutPending,
-        isError: isLogoutError
-    } = useLogoutRequest({
-        onSuccess: () => {
-            if (connectionState === EWebsocketConnectionState.OPEN) closeWebSocketConnection()
-            Cookies.remove("access_token")
-            localStorage.removeItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
-            localStorage.removeItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME)
-            localStorage.removeItem(import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME)
-            navigate("/login")
-            setTimeout(() => {
-                resetGlobalsStore()
-                resetTaskboardDragStore()
-                resetSessionHistoryTabStore()
-                resetTaskTodoPageStore()
-                resetDialogsStore()
-                resetWorkspaceStore()
-                resetProjectStore()
-                resetTaskboardStore()
-                queryClient.clear()
-            }, 300)
-        }
-    })
-
-    useLayoutEffect(() => {
-        updateGlobalsStore({
-            logoutIsPending: isLogoutPending
-        })
-    }, [isLogoutPending])
-
-    return {
-        logout: async () => {
-            console.log("logging out");
-            await logout()
-        },
-        isLogoutPending,
-        isLogoutError
+  const {
+    mutateAsync: logout,
+    isPending: isLogoutPending,
+    isError: isLogoutError
+  } = useLogoutRequest({
+    onSuccess: () => {
+      if (connectionState === EWebsocketConnectionState.OPEN) closeWebSocketConnection()
+      Cookies.remove("access_token")
+      localStorage.removeItem(AUTH_TOKEN_KEY)
+      localStorage.removeItem(import.meta.env.VITE_LAST_WORKSPACE_VISTED_COOKIE_NAME)
+      localStorage.removeItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME)
+      localStorage.removeItem(import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME)
+      // navigate("/login")
+      setTimeout(() => {
+        resetGlobalsStore()
+        resetTaskboardDragStore()
+        resetSessionHistoryTabStore()
+        resetTaskTodoPageStore()
+        resetDialogsStore()
+        resetWorkspaceStore()
+        resetProjectStore()
+        resetTaskboardStore()
+        queryClient.clear()
+      }, 300)
     }
+  })
+
+  return {
+    logout: async () => {
+      console.log("logging out");
+      await logout()
+    },
+    isLogoutPending,
+    isLogoutError
+  }
 
 }

@@ -1,37 +1,42 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { updateDialogsStore } from "@/stores/dialogs";
-import { updateTaskboardStore, useTaskboardStore_noTaskboards, useTaskboardStore_selectedTaskboard, useTaskboardStore_taskboards, useTaskboardStore_taskboardsIsLoading } from "@/stores/taskboard";
-import { useProjectStore_projectRole, useProjectStore_projectsIsLoading, useProjectStore_selectedProject } from "@/stores/project";
+import { useTaskboardStore, useTaskboardStore_noTaskboards, useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
+import { useProjectStore_projectRole, useProjectStore_selectedProject } from "@/stores/project";
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 
 import { EProjectRole, TTaskboard } from "@repo/taskprio-types";
 import { EllipsisVertical, Pencil, Plus, StopCircle, Trash2 } from "lucide-react";
 import React, { useContext, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 import TaskboardListSkeleton from "./TaskboardListSkeleton";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { WebSocketContext } from "../websocket/WebsocketProvider";
+import { useGetProjectTaskboards } from "@/services/private/taskboard/query";
+import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
+import { useDialogsStore } from "@/stores/dialogs";
 
 const TaskboardList = () => {
 
-  const taskboards = useTaskboardStore_taskboards()
-  const taskboardsIsLoading = useTaskboardStore_taskboardsIsLoading()
   const noTaskboards = useTaskboardStore_noTaskboards()
-  const projectsIsLoading = useProjectStore_projectsIsLoading()
+  const setCreateTaskboardDialog = useDialogsStore(state => state.setCreateTaskboardDialog)
+
+  const {
+    data : taskboards,
+    isLoading : taskboardsIsLoading
+  } = useGetProjectTaskboards()
+
+  const {
+    isLoading : projectsIsLoading
+  } = useGetUserProjectsByWorkspace()
 
   const showSkeleton = useMemo(() => {
     return (taskboardsIsLoading || projectsIsLoading)
   }, [taskboardsIsLoading, projectsIsLoading])
 
   const handleOpenCreateTaskboardDialog = () => {
-    updateDialogsStore({
-      createTaskboardDialog: {
-        open: true
-      }
-    })
+    setCreateTaskboardDialog(true)
   }
 
   return (
@@ -105,14 +110,21 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
   const selectedProject = useProjectStore_selectedProject()
   const selectedTaskboard = useTaskboardStore_selectedTaskboard()
   const projectRole = useProjectStore_projectRole()
+  const setSelectedTaskboard = useTaskboardStore(state => state.setSelectedTaskboard)
+  const setNoTaskboards = useTaskboardStore(state => state.setNoTaskboards)
 
   const handleTaskboardTabOnClick = () => {
     if (selectedTaskboard?.task_board_id === taskboard.task_board_id) return
-    updateTaskboardStore({
-      selectedTaskboard: taskboard,
-      noTaskboards: false
+    setSelectedTaskboard(taskboard)
+    setNoTaskboards(false)
+    navigate({
+      to : "/workspace/$workspace_id/project/$project_id/taskboard/$taskboard_id",
+      params : {
+        taskboard_id : taskboard.task_board_id,
+        project_id : selectedProject?.project_id!,
+        workspace_id : selectedWorkspace?.workspace_id!
+      }
     })
-    navigate(`/p/w/${selectedWorkspace?.workspace_id}/d/${selectedProject?.project_id}/t/${taskboard.task_board_id}`)
     channelActions.joinTaskboardChannel(taskboard.task_board_id)
   }
 
@@ -146,7 +158,7 @@ const TaskboardTabsTrigger: React.FC<TTaskboardTabsTrigger> = ({
       <p className="text-sm text-nowrap" >{taskboard.task_board_name}</p>
       {
         taskboardMenuVisible &&
-        <TaskboardTriggerDropdownMenu taskboard={taskboard}/>
+        <TaskboardTriggerDropdownMenu taskboard={taskboard} />
       }
     </div>
   )
@@ -157,51 +169,37 @@ type TTaskboardTriggerDropdownMenuProps = {
   taskboard: TTaskboard
 }
 
-const TaskboardTriggerDropdownMenu : React.FC<TTaskboardTriggerDropdownMenuProps> = ({
+const TaskboardTriggerDropdownMenu: React.FC<TTaskboardTriggerDropdownMenuProps> = ({
   taskboard
 }) => {
+
+  const setRenameTaskboardDialog = useDialogsStore(state => state.setRenameTaskboardDialog)
+  const setTaskboardTaskTrashSheet = useDialogsStore(state => state.setTaskboardTaskTrashSheet)
+  const setDropTaskboardDialog = useDialogsStore(state => state.setDropTaskboardDialog)
+  const setDeactivateTaskboardDialog = useDialogsStore(state => state.setDeactivateTaskboardDialog)
 
   const handleOpenRenameTaskboardDialog = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    updateDialogsStore({
-      renameTaskboardDialog: {
-        open: true,
-        taskboard
-      }
-    })
+    setRenameTaskboardDialog( taskboard, true )
   }
 
   const handleOpenTrashTaskboardDialog = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    updateDialogsStore({
-      taskboardTaskTrashSheet: {
-        open: true
-      }
-    })
+    setTaskboardTaskTrashSheet(true)
   }
 
   const handleOpenDropTaskboardDialog = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    updateDialogsStore({
-      dropTaskboardDialog: {
-        open: true,
-        taskboard
-      }
-    })
+    setDropTaskboardDialog( taskboard, true )
   }
 
   const handleOpenDeactivateTaskboardDialog = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    updateDialogsStore({
-      deactivateTaskboardDialog: {
-        open: true,
-        taskboard
-      }
-    })
+    setDeactivateTaskboardDialog( taskboard, true )
   }
 
   return (

@@ -74,8 +74,6 @@ function reigsterAuthenticationRoutes() {
 
   APP.post(
     "/login/google",
-    // This middleware is used to verify the google credential.
-    // It is used to add the user object to the request object
     verifyGoogleCredentialdMiddleware,
     async (req: IGoogleLoginRequest, res: Response) => {
       const { user, body } = req;
@@ -90,10 +88,12 @@ function reigsterAuthenticationRoutes() {
         const existingUser = await getUserByGoogleUserIdKysely(user.google_user_id)
 
         if (existingUser) {
+
           const accessToken = jwt.sign({
             email: existingUser.email,
             user_id: existingUser.user_id
           }, process.env.JSONWEBTOKEN_SECRET);
+
           res.cookie(
             body.for_invitation_purpose ? process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME : process.env.ACCESS_TOKEN_COOKIE_NAME,
             accessToken,

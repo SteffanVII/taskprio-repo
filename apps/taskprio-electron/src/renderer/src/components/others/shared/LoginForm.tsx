@@ -5,14 +5,16 @@ import { useGoogleLoginT, useLogin } from "@/services/authentication"
 import { zodResolver } from "@hookform/resolvers/zod"
 import React, { useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router"
 import { z } from "zod"
 import Spinner from "../Spinner"
 import { Separator } from "@/components/ui/separator"
 import { useGoogleLogin } from "@react-oauth/google"
+import { useNavigate } from "@tanstack/react-router"
+
+// TODO : remove setRegisterFormOpen
 
 type TLoginFormProps = {
-    setRegisterFormOpen: (isRegister: boolean) => void,
+    setRegisterFormOpen?: (isRegister: boolean) => void,
     dontNavigate?: boolean,
     invitationPurpose?: boolean
 }
@@ -46,7 +48,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({
         error: loginError,
     } = useLogin(() => {
         if (!dontNavigate) {
-            navigate("/p/w")
+            navigate({ to: "/workspace" })
         }
     })
 
@@ -54,7 +56,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({
         isPending: isGoogleLoginPending
     } = useGoogleLoginT(() => {
         if (!dontNavigate) {
-            navigate("/p/w")
+            navigate({ to: "/workspace" })
         }
     })
 
@@ -120,8 +122,12 @@ const LoginForm: React.FC<TLoginFormProps> = ({
                     <span
                         className="text-primary font-medium hover:underline cursor-pointer transition-colors"
                         onClick={() => {
-                            loginForm.reset()
-                            setRegisterFormOpen(true)
+                            if (setRegisterFormOpen) {
+                                setRegisterFormOpen(true)
+                                loginForm.reset()
+                            } else {
+                                navigate({ to: "/register" })
+                            }
                         }}
                     >
                         Register
