@@ -10,7 +10,7 @@ import NoProjectStage from "@/components/others/mainPageComponents/NoProjectStag
 import { cn } from "@/lib/utils";
 import { useProjectStore_noProjects, useProjectStore_projectsIsLoading } from "@/stores/project";
 import { useWorkspaceStore_noWorkspaces, useWorkspaceStore_workspacesIsLoading } from "@/stores/workspace";
-import { Outlet } from "react-router";
+import { Outlet } from "@tanstack/react-router";
 import DeactivateTaskboardDialog from "@/components/others/dialogs/DeactivateTaskboardDialog";
 import ReactivateTaskboardDialog from "@/components/others/dialogs/ReactivateTaskboardDialog";
 import DeactivateProjectDialog from "@/components/others/dialogs/DeactivateProjectDialog";
@@ -31,7 +31,7 @@ const MainPage = () => {
 
   return (
     <>
-      <MainDashboardPane/>
+      <MainDashboardPane />
       <main
         className={cn(
           `relative w-full min-w-0 min-h-0 max-h-screen overflow-hidden `,

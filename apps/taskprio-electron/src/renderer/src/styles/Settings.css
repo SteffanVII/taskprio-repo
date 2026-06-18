@@ -3,7 +3,7 @@
 }
 
 .SettingsBodyContainer {
-  @apply relative grow size-full min-h-0 min-w-0 max-w-full max-h-full overflow-auto bg-background;
+  @apply relative grow size-full min-h-0 min-w-0 max-w-full max-h-full overflow-auto bg-muted;
 }
 
 .SettingsHeader {

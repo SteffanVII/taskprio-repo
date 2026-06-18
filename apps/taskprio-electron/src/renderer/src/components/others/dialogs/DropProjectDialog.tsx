@@ -3,19 +3,20 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useDropProject } from "@/services/private/project/mutation";
-import { updateDialogsStore, useDialogsStore_dropProjectDialog } from "@/stores/dialogs";
+import { useDialogsStore, useDialogsStore_dropProjectDialog } from "@/stores/dialogs";
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Spinner from "../Spinner";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 const DropProjectDialog = () => {
 
   const navigate = useNavigate();
 
   const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+  const setDropProjectDialog = useDialogsStore(state => state.setDropProjectDialog)
 
   const {
     open,
@@ -27,13 +28,13 @@ const DropProjectDialog = () => {
     isPending: dropProjectIsPending
   } = useDropProject({
     onSuccess: () => {
-      updateDialogsStore({
-        dropProjectDialog: {
-          open: false,
-          project: null
+      setDropProjectDialog(null, false)
+      navigate({
+        to: "/workspace/$workspace_id/project",
+        params: {
+          workspace_id: selectedWorkspace!.workspace_id
         }
       })
-      navigate(`/p/w/${selectedWorkspace?.workspace_id}/d`)
       form.reset()
     }
   })
@@ -67,12 +68,7 @@ const DropProjectDialog = () => {
           form.reset()
         }
         if (!dropProjectIsPending) {
-          updateDialogsStore({
-            dropProjectDialog: {
-              open: !open,
-              project
-            }
-          })
+          setDropProjectDialog(project, !open)
         }
       }}
     >

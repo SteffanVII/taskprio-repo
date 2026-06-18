@@ -11,16 +11,23 @@ import { EWorkspaceRole } from "@repo/taskprio-types";
 import DeactivatedTaskboards_ProjectSettingsPage from "@/components/others/project/DeactivatedTaskboards_ProjectSettingsPage";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import useGoToProjectPage from "@/lib/hooks/useGoToProjectPage";
+import { useNavigate } from "@tanstack/react-router";
 
 const ProjectSettingsPage = () => {
+
+  const navigate = useNavigate()
 
   const workspaceRole = useWorkspaceStore_workspaceRole()
 
   const isUserProjectOwnerOrAdmin = useIsUserProjectOwnerOrAdmin()
   const isUserWorkspaceOwnerOrAdmin = useIsUserWorkspaceOwnerOrAdmin()
 
-  const goToProjectPage = useGoToProjectPage()
+  const handleCloseProjectSettings = () => {
+    navigate({
+      from : "/workspace/$workspace_id/project/$project_id/projectSettings/",
+      to : "/workspace/$workspace_id/project/$project_id"
+    })
+  }
 
   return (
     <div
@@ -40,10 +47,10 @@ const ProjectSettingsPage = () => {
         >
           <h2 className={` SettingsHeader `} >Project Settings</h2>
           <Button
-            variant={"ghost"}
+            variant={"outline"}
             size={"icon-lg"}
-            onClick={goToProjectPage}
-          ><X/></Button>
+            onClick={handleCloseProjectSettings}
+          ><X /></Button>
         </div>
         <div
           className={cn(

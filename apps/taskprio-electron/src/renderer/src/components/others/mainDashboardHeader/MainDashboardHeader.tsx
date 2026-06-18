@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useContext, useMemo } from "react";
 import { Menu, Settings2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -10,81 +10,87 @@ import { WebSocketContext } from "../websocket/WebsocketProvider";
 
 const MainDashboardHeader = () => {
 
-    const { task_board_id } = useParams()
-    const { pathname } = useLocation()
-    const navigate = useNavigate()
-    const {
-        channelActions
-    } = useContext(WebSocketContext)
+  const { workspace_id, project_id, taskboard_id } = useParams({ strict : false })
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const {
+    channelActions
+  } = useContext(WebSocketContext)
 
-    const sidebar = useSidebar()
-    
-    const projectRoute = useMemo(() => {
-        if ( pathname.includes("/t") ) {
-            return "boards"
-        }
-        if ( pathname.includes("/project_settings/") || pathname.includes("/project_settings") ) {
-            return "project_settings"
-        }
-    }, [ pathname ])
+  const sidebar = useSidebar()
 
-    return (
-        <>
-            <div
-                className={cn(
-                    ` relative w-full p-3 `,
-                    ` flex items-center gap-4 bg-muted `
-                )}
-            >
-                {
-                    // Show sidebar button when in mobile mode
-                    sidebar.isMobile &&
-                    <Button
-                        variant={"ghost"}
-                        size={"icon"}
-                        onClick={() => {
-                            sidebar.toggleSidebar()
-                        }}
-                    ><Menu/></Button>
+  const projectRoute = useMemo(() => {
+    if (pathname.includes("/t")) {
+      return "boards"
+    }
+    if (pathname.includes("/project_settings/") || pathname.includes("/project_settings")) {
+      return "project_settings"
+    }
+  }, [pathname])
+
+  return (
+    <>
+      <div
+        className={cn(
+          ` relative w-full p-3 `,
+          ` flex items-center gap-4 bg-muted `
+        )}
+      >
+        {
+          // Show sidebar button when in mobile mode
+          sidebar.isMobile &&
+          <Button
+            variant={"ghost"}
+            size={"icon"}
+            onClick={() => {
+              sidebar.toggleSidebar()
+            }}
+          ><Menu /></Button>
+        }
+        <Tabs
+          value={projectRoute}
+        >
+          <TabsList className="border z-10">
+            <TabsTrigger
+              value="boards"
+              onClick={() => {
+                // navigate({ to : "" })
+              }}
+            >Boards</TabsTrigger>
+            <TabsTrigger
+              value="project_settings"
+              onClick={() => {
+                navigate({
+                  to : "/workspace/$workspace_id/project/$project_id/projectSettings",
+                  params : {
+                    workspace_id : workspace_id!,
+                    project_id : project_id!
+                  }
+                })
+                if (taskboard_id) {
+                  channelActions.leaveTaskboardChannel(taskboard_id)
                 }
-                <Tabs
-                    value={projectRoute}
+              }}
+            >
+              <Tooltip>
+                <TooltipTrigger render={
+                  <div>
+                    <Settings2 />
+                  </div>
+                } />
+                <TooltipContent
+                  side="bottom"
                 >
-                    <TabsList className="border z-10">
-                        <TabsTrigger
-                            value="boards"
-                            onClick={() => {
-                                navigate(`t`)
-                            }}
-                        >Boards</TabsTrigger>
-                        <TabsTrigger
-                            value="project_settings"
-                            onClick={() => {
-                                navigate( "project_settings" )
-                                if ( task_board_id ) {
-                                    channelActions.leaveTaskboardChannel(task_board_id)
-                                }
-                            }}
-                        >
-                            <Tooltip>
-                                <TooltipTrigger render={
-                                    <div>
-                                        <Settings2/>
-                                    </div>
-                                }/>
-                                <TooltipContent
-                                    side="bottom"
-                                >
-                                    Project Settings
-                                </TooltipContent>
-                            </Tooltip>
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-                <div className=" ml-auto " ></div>
-            </div>
-        </>
-    )
+                  Project Settings
+                </TooltipContent>
+              </Tooltip>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className=" ml-auto " ></div>
+      </div>
+    </>
+  )
 
 }
 

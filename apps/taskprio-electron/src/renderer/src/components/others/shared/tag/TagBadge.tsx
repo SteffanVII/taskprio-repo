@@ -18,7 +18,7 @@ const TagBadge: React.FC<TTagBadgeProps> = ({
         <div
             className={cn(
                 ` flex items-center `,
-                ` px-3 py-1 rounded border `,
+                ` px-3 py-1 border-l-4 `,
                 ` !font-extralight `,
                 ` cursor-pointer `,
                 ` hover:z-10 `,
@@ -27,7 +27,7 @@ const TagBadge: React.FC<TTagBadgeProps> = ({
                 className
             )}
             style={{
-                borderColor: `${tag.tag_color}80`,
+                borderColor: `${tag.tag_color}`,
                 backgroundColor: `${tag.tag_color}1a`,
                 // color: getHexLuminance(tag.tag_color) > 0.5 ? "black" : "white"
             }}

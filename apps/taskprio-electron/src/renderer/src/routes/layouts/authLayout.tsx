@@ -1,5 +1,5 @@
 import { useLayoutEffect } from "react";
-import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "@tanstack/react-router";
 import { useAuthenticate } from "@/services/authentication";
 import { updateGlobalsStore, useGlobalsStore_authenticated } from "@/stores/globals";
 import { WebSocketProvider } from "@/components/others/websocket/WebsocketProvider";

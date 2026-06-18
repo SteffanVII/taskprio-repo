@@ -1,97 +1,100 @@
 import { cn } from "@/lib/utils";
 import TaskboardList from "../taskboard/TaskboardList";
 import { useContext, useMemo } from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "@tanstack/react-router";
 import { useGlobalsStore_authenticated } from "@/stores/globals";
-import { useTaskboardStore_taskboards } from "@/stores/taskboard";
 import { useProjectStore_selectedProject } from "@/stores/project";
 import TaskTodoPageHeader from "../taskTodo/TaskTodoPageHeader";
 import { EWebsocketConnectionState, WebSocketContext } from "../websocket/WebsocketProvider";
+import { useGetProjectTaskboards } from "@/services/private/taskboard/query";
 
 
 const ElectronCustomTitlebar = () => {
 
-    const { pathname } = useLocation()
+  const { pathname } = useLocation()
 
-    const authenticated = useGlobalsStore_authenticated()
-    // const windowMaximized = useElectronStore_windowMaximize()
-    const selectedProject = useProjectStore_selectedProject()
-    const taskboards = useTaskboardStore_taskboards()
+  const authenticated = useGlobalsStore_authenticated()
+  // const windowMaximized = useElectronStore_windowMaximize()
+  const selectedProject = useProjectStore_selectedProject()
 
-    const {
-        connectionState: webSocketConnectionState,
-    } = useContext(WebSocketContext)
+  const {
+    data : taskboards
+  } = useGetProjectTaskboards()
 
-    const showTaskboardList = useMemo(() => {
-        return authenticated && webSocketConnectionState === EWebsocketConnectionState.OPEN && pathname.includes("/p") && selectedProject && pathname.includes("/d") && !pathname.includes("/project_settings") && taskboards && taskboards.length > 0
-    }, [
-        pathname,
-        selectedProject,
-        taskboards
-    ])
+  const {
+    connectionState: webSocketConnectionState,
+  } = useContext(WebSocketContext)
 
-    const showTaskTodoPageHeader = useMemo(() => {
-        return authenticated && webSocketConnectionState === EWebsocketConnectionState.OPEN && pathname.includes("/p") && pathname.includes("/tt")
-    }, [
-        pathname
-    ])
+  const showTaskboardList = useMemo(() => {
+    return authenticated && webSocketConnectionState === EWebsocketConnectionState.OPEN && pathname.includes("/p") && selectedProject && pathname.includes("/d") && !pathname.includes("/project_settings") && taskboards && taskboards.length > 0
+  }, [
+    pathname,
+    selectedProject,
+    taskboards
+  ])
 
-    const tabOccupied = useMemo(() => {
-        return showTaskboardList || showTaskTodoPageHeader
-    }, [
-        showTaskboardList,
-        showTaskTodoPageHeader
-    ])
+  const showTaskTodoPageHeader = useMemo(() => {
+    return authenticated && webSocketConnectionState === EWebsocketConnectionState.OPEN && pathname.includes("/p") && pathname.includes("/tt")
+  }, [
+    pathname
+  ])
 
-    // const handleCloseWindow = () => {
-    //     const electronApi = window.electronAPI;
-    //     if (electronApi) electronApi.closeWindow()
-    // }
-    // const handleMaximizeWindow = () => {
-    //     const electronApi = window.electronAPI;
-    //     if (electronApi) electronApi.maximizeWindow()
-    // }
-    // const handleUnmaximizeWindow = () => {
-    //     const electronApi = window.electronAPI;
-    //     if (electronApi) electronApi.unmaximizeWindow()
-    // }
+  const tabOccupied = useMemo(() => {
+    return showTaskboardList || showTaskTodoPageHeader
+  }, [
+    showTaskboardList,
+    showTaskTodoPageHeader
+  ])
 
-    // const handleMinimizeWindow = () => {
-    //     const electronApi = window.electronAPI;
-    //     if (electronApi) electronApi.minimizeWindow()
-    // }
+  // const handleCloseWindow = () => {
+  //     const electronApi = window.electronAPI;
+  //     if (electronApi) electronApi.closeWindow()
+  // }
+  // const handleMaximizeWindow = () => {
+  //     const electronApi = window.electronAPI;
+  //     if (electronApi) electronApi.maximizeWindow()
+  // }
+  // const handleUnmaximizeWindow = () => {
+  //     const electronApi = window.electronAPI;
+  //     if (electronApi) electronApi.unmaximizeWindow()
+  // }
 
-    return (
-        <div
-            className={cn(
-                `fixed top-0 z-[50]`,
-                `w-full h-[3rem]`,
-                `grid items-start justify-between`,
-                `bg-secondary border-b`
-            )}
-            style={{
-                gridTemplateColumns: "min-content 1fr min-content"
-            }}
-        >
+  // const handleMinimizeWindow = () => {
+  //     const electronApi = window.electronAPI;
+  //     if (electronApi) electronApi.minimizeWindow()
+  // }
 
-            <div className="electron-custom-titlebar-drag-area flex items-center h-full px-4 w-[22rem]" >
-                <p className="font-bold" >Taskprio</p>
-            </div>
+  return (
+    <div
+      className={cn(
+        `fixed top-0 z-[50]`,
+        `w-full h-[3rem]`,
+        `grid items-start justify-between`,
+        `bg-secondary border-b`
+      )}
+      style={{
+        gridTemplateColumns: "min-content 1fr min-content"
+      }}
+    >
 
-            {
-                showTaskboardList &&
-                <TaskboardList />
-            }
-            {
-                showTaskTodoPageHeader &&
-                <TaskTodoPageHeader />
-            }
-            {
-                !tabOccupied &&
-                <div className="electron-custom-titlebar-drag-area size-full" />
-            }
+      <div className="electron-custom-titlebar-drag-area flex items-center h-full px-4 w-[22rem]" >
+        <p className="font-bold" >Taskprio</p>
+      </div>
 
-            {/* <div className=" w-[10rem] h-full grid grid-cols-3 items-center z-50" >
+      {
+        showTaskboardList &&
+        <TaskboardList />
+      }
+      {
+        showTaskTodoPageHeader &&
+        <TaskTodoPageHeader />
+      }
+      {
+        !tabOccupied &&
+        <div className="electron-custom-titlebar-drag-area size-full" />
+      }
+
+      {/* <div className=" w-[10rem] h-full grid grid-cols-3 items-center z-50" >
                 <Tooltip>
                     <TooltipTrigger
                         delay={1000}
@@ -162,14 +165,14 @@ const ElectronCustomTitlebar = () => {
                     <TooltipContent>Close</TooltipContent>
                 </Tooltip>
             </div> */}
-            {/* <div
+      {/* <div
                 className={cn(
                     `absolute size-full h-[3rem]`,
                     `bg-gradient-to-b from-secondary to-background/20 -z-1`,
                 )}
             ></div> */}
-        </div>
-    )
+    </div>
+  )
 
 }
 

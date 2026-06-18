@@ -3,7 +3,7 @@ import StateManager_Taskboard from "@/stateManagers/StateManager_Taskboard";
 import StateManager_TaskTodoPage from "@/stateManagers/StateManager_TaskTodoPage";
 import StateManager_Workspace from "@/stateManagers/StateManager_Workspace";
 import { useMutation } from "@tanstack/react-query";
-import { Outlet } from "react-router"
+import { Outlet } from "@tanstack/react-router"
 import { axiosInstance } from "../axios";
 
 

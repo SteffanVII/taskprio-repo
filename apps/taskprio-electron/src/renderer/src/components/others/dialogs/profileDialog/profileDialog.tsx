@@ -3,11 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useGetUserProfile } from "@/services/private/profile/query";
-import { updateDialogsStore, useDialogsStore_profileDialog } from "@/stores/dialogs";
+import { useDialogsStore, useDialogsStore_profileDialog } from "@/stores/dialogs";
 
 const ProfileDialog = () => {
 
     const { open } = useDialogsStore_profileDialog()
+    const setProfileDialog = useDialogsStore(state => state.setProfileDialog)
 
     const {
         data: profileData,
@@ -18,11 +19,7 @@ const ProfileDialog = () => {
         <Dialog
             open={open}
             onOpenChange={(val) => {
-                updateDialogsStore({
-                    profileDialog: {
-                        open: val
-                    }
-                })
+                setProfileDialog(val)
             }}
         >
             <DialogContent

@@ -9,13 +9,13 @@ const TaskboardSkeleton = () => {
       {skeletonSections.map((count, sectionIndex) => (
         <div key={sectionIndex} className="w-[20rem] flex-shrink-0 space-y-3">
           {/* Section Header */}
-          <Skeleton className="h-10 w-full" />
+          <Skeleton className="bg-card h-10 w-full" />
           
           {/* Task Cards */}
           <div className="space-y-4">
             {Array.from({ length: count })
               .map((_, cardIndex) => (
-              <Skeleton key={cardIndex} className="h-28 w-full rounded-md" />
+              <Skeleton key={cardIndex} className="bg-card h-28 w-full rounded-md" />
             ))}
           </div>
         </div>

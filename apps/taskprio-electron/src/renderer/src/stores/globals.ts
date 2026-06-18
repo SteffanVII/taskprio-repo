@@ -1,76 +1,70 @@
 import { TUserSecure } from "@repo/taskprio-types"
 import { TTask } from "@repo/taskprio-types"
-import { Store, useStore } from "@tanstack/react-store"
+import { create } from "zustand";
 
-export type TGlobalsStore = {
-    authenticated: boolean,
-    authenticateIsPending: boolean,
-    logoutIsPending: boolean,
+export type TGlobalsStoreValues = {
+  authenticated: boolean,
 
-    user: TUserSecure | null,
+  user: TUserSecure | null,
 
-    invitationRecipient: TUserSecure | null,
-    selectedTask: TTask | null,
+  invitationRecipient: TUserSecure | null,
+  selectedTask: TTask | null,
 
-    taskTodoPageShowAvailableTasks: boolean
+  taskTodoPageShowAvailableTasks: boolean
 }
 
-const initialState: TGlobalsStore = {
-    authenticated: false,
-    authenticateIsPending: false,
-    logoutIsPending: false,
-
-    user: null,
-
-    invitationRecipient: null,
-    selectedTask: null,
-
-    taskTodoPageShowAvailableTasks: false
+export type TGlobalsStoreActions = {
+  setAuthenticated : ( value: boolean ) => void,
+  setUser : ( value : TUserSecure | null ) => void,
+  setInvitationRecipient : ( value : TUserSecure | null ) => void,
+  setSelectedTask : ( value : TTask | null ) => void,
+  setTaskTodoPageShowAvailableTasks : ( value : boolean ) => void,
+  resetStore : () => void
 }
 
-const GlobalsStore = new Store<TGlobalsStore>(initialState)
+export type TGlobalsStore = TGlobalsStoreValues & TGlobalsStoreActions
 
-export const updateGlobalsStore = (store: Partial<TGlobalsStore>) => {
-    GlobalsStore.setState((prev) => ({
-        ...prev,
-        ...store
-    }))
+const initialState: TGlobalsStoreValues = {
+  authenticated: false,
+
+  user: null,
+
+  invitationRecipient: null,
+  selectedTask: null,
+
+  taskTodoPageShowAvailableTasks: false
 }
 
-export const resetGlobalsStore = () => {
-    GlobalsStore.setState(() => ({ ...initialState }))
-}
-
-export const useGlobalsStore = () => {
-    return useStore(GlobalsStore)
-}
+export const useGlobalsStore = create<TGlobalsStore>((set) => ({
+  ...initialState,
+  setAuthenticated : ( value: boolean ) => {
+    set({
+      authenticated: value
+    })
+  },
+  setUser : ( value : TUserSecure | null ) => set({ user : value }),
+  setInvitationRecipient : ( value : TUserSecure | null ) => set({ invitationRecipient : value }),
+  setSelectedTask : ( value : TTask | null ) => set({ selectedTask : value }),
+  setTaskTodoPageShowAvailableTasks : ( value : boolean ) => set({ taskTodoPageShowAvailableTasks : value }),
+  resetStore : () => set({...initialState})
+}))
 
 export const useGlobalsStore_authenticated = () => {
-    return useStore(GlobalsStore, store => store.authenticated)
-}
-
-export const useGlobalsStore_authenticateIsPending = () => {
-    return useStore(GlobalsStore, store => store.authenticateIsPending)
-}
-
-export const useGlobalsStore_logoutIsPending = () => {
-    return useStore(GlobalsStore, store => store.logoutIsPending)
+  return useGlobalsStore(state => state.authenticated)
 }
 
 export const useGlobalsStore_user = () => {
-    return useStore(GlobalsStore, store => store.user)
+  return useGlobalsStore(state => state.user)
 }
 
 export const useGlobalsStore_invitationRecipient = () => {
-    return useStore(GlobalsStore, store => store.invitationRecipient)
+  return useGlobalsStore(state => state.invitationRecipient)
 }
 
 export const useGlobalsStore_selectedTask = () => {
-    return useStore(GlobalsStore, store => store.selectedTask)
+  return useGlobalsStore(state => state.selectedTask)
 }
 
 export const useGlobalsStore_taskTodoPageShowAvailableTasks = () => {
-    return useStore(GlobalsStore, store => store.taskTodoPageShowAvailableTasks)
+  return useGlobalsStore(state => state.taskTodoPageShowAvailableTasks)
 }
-
-export default GlobalsStore

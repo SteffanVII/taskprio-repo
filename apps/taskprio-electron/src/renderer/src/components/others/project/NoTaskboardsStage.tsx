@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCreateTaskboard } from "@/services/private/taskboard/mutation"
-import { updateTaskboardStore } from "@/stores/taskboard"
 import { useProjectStore_selectedProject } from "@/stores/project"
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form"
-import { useNavigate } from "react-router"
+import { useNavigate } from "@tanstack/react-router"
 import Spinner from "../Spinner"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { FolderClosed } from "lucide-react"
+import { useTaskboardStore } from "@/stores/taskboard"
 
 const createTaskboardFormSchema = z.object({
   taskboard_name: z.string().min(1, "Taskboard name is required")
@@ -23,6 +23,7 @@ const NoTaskboardsStage = () => {
 
   const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
   const selectedProject = useProjectStore_selectedProject()
+  const setNoTaskboards = useTaskboardStore(state => state.setNoTaskboards)
 
   const {
     mutateAsync: createTaskboardTrigger,
@@ -30,10 +31,15 @@ const NoTaskboardsStage = () => {
   } = useCreateTaskboard({
     onSuccess: (data) => {
       if (!selectedWorkspace) return
-      updateTaskboardStore({
-        noTaskboards: false
+      setNoTaskboards(false)
+      navigate({
+        to : "/workspace/$workspace_id/project/$project_id/taskboard/$taskboard_id",
+        params : {
+          workspace_id : selectedWorkspace.workspace_id,
+          project_id : data.project_id,
+          taskboard_id : data.task_board_id
+        }
       })
-      navigate(`/p/w/${selectedWorkspace.workspace_id}/d/${data.project_id}/t/${data.task_board_id}`)
     }
   })
 

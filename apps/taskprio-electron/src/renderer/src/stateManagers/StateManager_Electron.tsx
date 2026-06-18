@@ -1,170 +1,151 @@
 import { useGoogleLoginT } from "@/services/authentication";
-import { updateDialogsStore } from "@/stores/dialogs";
-import { updateElectronStore, useElectronStore_preferences } from "@/stores/electron";
-import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
-import { ETaskTodoPageUIMode, updateTaskTodoPageStore } from "@/stores/taskTodoPage";
+import { useElectronStore, useElectronStore_preferences } from "@/stores/electron";
+import { ETaskTodoPageUIMode, useTaskTodoPageStore } from "@/stores/taskTodoPage";
 import { TElectronStorePreferencesOverlayLocation } from "@repo/taskprio-types";
-import React, { createContext, useLayoutEffect } from "react";
-import { useNavigate } from "react-router";
+import React, { createContext, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useDialogsStore } from "@/stores/dialogs";
 
 type TStateManager_ElectronProps = {
-    children: React.ReactNode
+  children: React.ReactNode
 }
 
 type TStateManager_ElectronContext = {
-    switchToOverlayModeFromFullMode: () => void,
-    switchToOverlayModeFromFocusMode: () => void,
-    switchToFocusModeFromFullMode: () => void,
-    switchToFocusModeFromOverlayMode: () => void,
-    switchToFullModeFromOverlayOrFocusMode: () => void,
-    switchOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void
+  switchToOverlayModeFromFullMode: () => void,
+  switchToOverlayModeFromFocusMode: () => void,
+  switchToFocusModeFromFullMode: () => void,
+  switchToFocusModeFromOverlayMode: () => void,
+  switchToFullModeFromOverlayOrFocusMode: () => void,
+  switchOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void
 }
 
 export const StateManager_ElectronContext = createContext<TStateManager_ElectronContext>({
-    switchToOverlayModeFromFullMode: () => { },
-    switchToOverlayModeFromFocusMode: () => { },
-    switchToFocusModeFromFullMode: () => { },
-    switchToFocusModeFromOverlayMode: () => { },
-    switchToFullModeFromOverlayOrFocusMode: () => { },
-    switchOverlayLocation: () => { }
+  switchToOverlayModeFromFullMode: () => { },
+  switchToOverlayModeFromFocusMode: () => { },
+  switchToFocusModeFromFullMode: () => { },
+  switchToFocusModeFromOverlayMode: () => { },
+  switchToFullModeFromOverlayOrFocusMode: () => { },
+  switchOverlayLocation: () => { }
 })
 
 const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children }) => {
 
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
-    const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
-    const preferences = useElectronStore_preferences()
+  // const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
+  const preferences = useElectronStore_preferences()
+  const _setDisplays = useElectronStore(state => state.setDisplays)
+  const setPreferences = useElectronStore(state => state.setPreferences)
+  const setIsElectron = useElectronStore(state => state.setIsElectron);
+  const setWindowMaximaize = useElectronStore(state => state.setWindowMaximize);
+  const setAcceptInvitationDialog = useDialogsStore(state => state.setAcceptInvitationDialog)
+  const setUIMode = useTaskTodoPageStore(state => state.setUIMode)
 
-    const {
-        mutateAsync: googleLoginT,
-    } = useGoogleLoginT(() => {
-        navigate("/p/w")
-    })
+  const {
+    mutateAsync: googleLoginT,
+  } = useGoogleLoginT(() => {
+    navigate({ to: "/workspace" })
+  })
 
-    const setDisplays = async () => {
-        const displays = await window.electronAPI.requestDisplayList()
-        updateElectronStore({
-            displays
+  const setDisplays = async () => {
+    const displays = await window.electronAPI.requestDisplayList()
+    _setDisplays(displays)
+  }
+
+  const getAppPreferences = async () => {
+    const value = await window.electronAPI.requestAppPreferences()
+    setPreferences(value ?? null)
+  }
+
+  useEffect(() => {
+    if (!!window.electronAPI) {
+      setIsElectron(!!window.electronAPI)
+      window.electronAPI.onWindowMaximizeStateChange((value) => {
+        setWindowMaximaize(value);
+      })
+      window.electronAPI.onGoogleLoginSuccess((proofKey, clientId) => {
+        googleLoginT({
+          proofKey: proofKey,
+          clientId: clientId
         })
-    }
-
-    const getAppPreferences = async () => {
-        const value = await window.electronAPI.requestAppPreferences()
-        updateElectronStore({
-            preferences: value ?? null
-        })
-    }
-
-    useLayoutEffect(() => {
-        if (!!window.electronAPI) {
-            updateElectronStore({
-                isElectron: !!window.electronAPI
-            })
-            window.electronAPI.onWindowMaximizeStateChange((value) => {
-                updateElectronStore({
-                    windowMaximize: value
-                })
-            })
-            window.electronAPI.onGoogleLoginSuccess((proofKey, clientId) => {
-                googleLoginT({
-                    proofKey: proofKey,
-                    clientId: clientId
-                })
-            })
-            window.electronAPI.onAcceptInvitation((inviteToken) => {
-                if (inviteToken) {
-                    updateDialogsStore({
-                        acceptInvitationDialog: {
-                            open: true,
-                            token: inviteToken
-                        }
-                    })
-                }
-            })
-            window.electronAPI.onConsoleLog((value) => {
-                console.log(value)
-            })
-            setDisplays()
-            getAppPreferences()
+      })
+      window.electronAPI.onAcceptInvitation((inviteToken) => {
+        if (inviteToken) {
+          setAcceptInvitationDialog(inviteToken, true)
         }
-    }, [])
-
-    const switchToOverlayModeFromFullMode = () => {
-        if (!!window.electronAPI) {
-            navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
-            updateTaskTodoPageStore({
-                uIMode: ETaskTodoPageUIMode.OVERLAY
-            })
-            window.electronAPI.makeWindowToTaskTodoOverlayMode()
-        }
+      })
+      window.electronAPI.onConsoleLog((value) => {
+        console.log(value)
+      })
+      setDisplays()
+      getAppPreferences()
+      console.log("Electron listeners added")
     }
+  }, [])
 
-    const switchToOverlayModeFromFocusMode = () => {
-        if (!!window.electronAPI) {
-            updateTaskTodoPageStore({
-                uIMode: ETaskTodoPageUIMode.OVERLAY
-            })
-            window.electronAPI.makeWindowToTaskTodoOverlayMode(true)
-        }
+  const switchToOverlayModeFromFullMode = () => {
+    if (!!window.electronAPI) {
+      // navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
+      setUIMode(ETaskTodoPageUIMode.OVERLAY)
+      window.electronAPI.makeWindowToTaskTodoOverlayMode()
     }
+  }
 
-    const switchToFocusModeFromFullMode = () => {
-        if (!!window.electronAPI) {
-            navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
-            updateTaskTodoPageStore({
-                uIMode: ETaskTodoPageUIMode.WIDGET
-            })
-            window.electronAPI.makeWindowToFocusMode()
-        }
+  const switchToOverlayModeFromFocusMode = () => {
+    if (!!window.electronAPI) {
+      setUIMode(ETaskTodoPageUIMode.OVERLAY)
+      window.electronAPI.makeWindowToTaskTodoOverlayMode(true)
     }
+  }
 
-    const switchToFocusModeFromOverlayMode = () => {
-        if (!!window.electronAPI) {
-            updateTaskTodoPageStore({
-                uIMode: ETaskTodoPageUIMode.WIDGET
-            })
-            window.electronAPI.makeWindowToFocusMode(true)
-        }
+  const switchToFocusModeFromFullMode = () => {
+    if (!!window.electronAPI) {
+      // navigate(`/p/task_todo_overlay/${selectedWorkspace?.workspace_id}`)
+      setUIMode(ETaskTodoPageUIMode.WIDGET)
+      window.electronAPI.makeWindowToFocusMode()
     }
+  }
 
-    const switchToFullModeFromOverlayOrFocusMode = () => {
-        if (!!window.electronAPI) {
-            updateTaskTodoPageStore({
-                uIMode: ETaskTodoPageUIMode.FULL
-            })
-            window.electronAPI.makeWindowToFullMode()
-            setTimeout(() => {
-                navigate(-1)
-            }, 100)
-        }
+  const switchToFocusModeFromOverlayMode = () => {
+    if (!!window.electronAPI) {
+      setUIMode(ETaskTodoPageUIMode.WIDGET)
+      window.electronAPI.makeWindowToFocusMode(true)
     }
+  }
 
-    const switchOverlayLocation = (location: TElectronStorePreferencesOverlayLocation) => {
-        if (!!window.electronAPI) {
-            window.electronAPI.changeOverlayLocation(location)
-            updateElectronStore({
-                preferences: {
-                    ...preferences,
-                    overlay: {
-                        ...preferences?.overlay,
-                        location: location
-                    }
-                }
-            })
-        }
+  const switchToFullModeFromOverlayOrFocusMode = () => {
+    if (!!window.electronAPI) {
+      setUIMode(ETaskTodoPageUIMode.FULL)
+      window.electronAPI.makeWindowToFullMode()
+      setTimeout(() => {
+        // navigate(-1)
+      }, 100)
     }
+  }
 
-    return <StateManager_ElectronContext.Provider
-        value={{
-            switchToOverlayModeFromFullMode,
-            switchToOverlayModeFromFocusMode,
-            switchToFocusModeFromFullMode,
-            switchToFocusModeFromOverlayMode,
-            switchToFullModeFromOverlayOrFocusMode,
-            switchOverlayLocation
-        }}
-    >{children}</StateManager_ElectronContext.Provider>;
+  const switchOverlayLocation = (location: TElectronStorePreferencesOverlayLocation) => {
+    if (!!window.electronAPI) {
+      window.electronAPI.changeOverlayLocation(location)
+      setPreferences({
+        ...preferences,
+        overlay: {
+          ...preferences?.overlay,
+          location: location
+        }
+      })
+    }
+  }
+
+  return <StateManager_ElectronContext.Provider
+    value={{
+      switchToOverlayModeFromFullMode,
+      switchToOverlayModeFromFocusMode,
+      switchToFocusModeFromFullMode,
+      switchToFocusModeFromOverlayMode,
+      switchToFullModeFromOverlayOrFocusMode,
+      switchOverlayLocation
+    }}
+  >{children}</StateManager_ElectronContext.Provider>;
 
 }
 

@@ -3,7 +3,7 @@ import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard"
 import { useProjectStore_selectedProject } from "@/stores/project"
 import { useWorkspaceStore_selectedWorkspace } from "@/stores/workspace"
 import { EWebsocketClientEventType, TWebSocketJoinProjectChannelMessage, TWebSocketJoinTaskboardChannelMessage, TWebSocketJoinWorkspaceChannelMessage, TWebSocketLeaveProjectChannelMessage, TWebSocketLeaveTaskboardChannelMessage, TWebSocketLeaveWorkspaceChannelMessage, TWebSocketMessage } from "@repo/taskprio-types"
-import { createContext, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { createContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useWebSocketEventHandlers } from "./eventHandlers/WebsocketEventHandlers"
 import { usePingServer } from "@/services/private/PrivateLayout"
 

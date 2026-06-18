@@ -3,20 +3,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useDropTaskboard } from "@/services/private/taskboard/mutation";
-import { updateDialogsStore, useDialogsStore_dropTaskboardDialog } from "@/stores/dialogs";
+import { useDialogsStore, useDialogsStore_dropTaskboardDialog } from "@/stores/dialogs";
 
 import { useProjectStore_selectedProject } from "@/stores/project";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Spinner from "../Spinner";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 
 const DropTaskboardDialog = () => {
 
   const navigate = useNavigate()
 
+  const { workspace_id, project_id } = useParams({ strict: false })
   const selectedProject = useProjectStore_selectedProject()
+  const setDropTaskboardDialog = useDialogsStore(state => state.setDropTaskboardDialog)
 
   const {
     open,
@@ -28,13 +30,14 @@ const DropTaskboardDialog = () => {
     isPending: dropTaskboardIsPending
   } = useDropTaskboard({
     onSuccess: () => {
-      updateDialogsStore({
-        dropTaskboardDialog: {
-          open: false,
-          taskboard: null
+      setDropTaskboardDialog(null, false)
+      navigate({
+        to: "/workspace/$workspace_id/project/$project_id",
+        params: {
+          workspace_id: workspace_id!,
+          project_id: project_id!
         }
       })
-      navigate(`/p/w/${selectedProject!.workspace_id}/d/${selectedProject?.project_id}/t`)
       form.reset()
     }
   })
@@ -66,12 +69,7 @@ const DropTaskboardDialog = () => {
           form.reset()
         }
         if (!dropTaskboardIsPending) {
-          updateDialogsStore({
-            dropTaskboardDialog: {
-              open: !open,
-              taskboard
-            }
-          })
+          setDropTaskboardDialog(taskboard, !open)
         }
       }}
     >
