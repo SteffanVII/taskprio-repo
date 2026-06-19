@@ -83,6 +83,7 @@ function WorkspaceLayout() {
       <WorkspaceInvitationDialog />
       <ProfileDialog />
       <TagDialog />
+      {/* Check if we need this for some reason */}
       <TaskboardTaskAssignerDialog />
       <TaskboardTrashSheet />
       <AcceptInvitationDialog />

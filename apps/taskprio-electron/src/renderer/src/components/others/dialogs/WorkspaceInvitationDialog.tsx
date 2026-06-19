@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useGetUserProjectsByWorkspace } from "@/services/private/project/query";
 import { useDialogsStore, useDialogsStore_workspaceInvitationDialog } from "@/stores/dialogs";
@@ -17,6 +17,10 @@ import Spinner from "../Spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useInviteToWorkspace } from "@/services/private/workspace/mutation";
+import { Empty, EmptyTitle } from "@/components/ui/empty";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 const EmailInputSchema = z.object({
   email: z.string().email(),
@@ -122,28 +126,45 @@ const WorkspaceInvitationDialog = () => {
                         disabled={isInvitingToWorkspace}
                       />
                     </FormControl>
+                    <FormDescription>Type and hit enter to add email</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </form>
           </Form>
-          <div
-            className=" flex flex-wrap gap-2 "
+          <Card
+            className=" flex flex-wrap gap-2 p-4 "
           >
+            {
+              emails.length === 0 &&
+              <Empty>
+                <EmptyTitle>No Emails Added</EmptyTitle>
+              </Empty>
+            }
             {
               emails.map((email) => (
                 <Badge
                   key={email}
                 >
                   {email}
+                  <Button
+                    variant={"ghost"}
+                    size={"icon-xs"}
+                    onClick={() => {
+                      setEmails(emails.filter(e => e !== email ))
+                    }}
+                  >
+                    <X/>
+                  </Button>
                 </Badge>
               ))
             }
-          </div>
+          </Card>
           {
             projects && projects.length > 0 &&
             <div className=" flex flex-col gap-2 " >
+              <p>Select Projects to include the new members to</p>
               {
                 projects.map((project) => (
                   <div
