@@ -16,7 +16,9 @@ export const Route = createFileRoute('/accept')({
     if (!search.token) {
       throw redirect({ to : "/" })
     }
-    const response = await fetch(`${import.meta.env.VITE_TASKPRIO_SERVICE_URL}/invitation/workspace/accept/${search.token}`)
+    const response = await fetch(`${import.meta.env.VITE_TASKPRIO_SERVICE_URL}/invitation/workspace/accept/${search.token}`, {
+      method : "POST"
+    })
     const data = await response.json()
     return { response, data }
   },
