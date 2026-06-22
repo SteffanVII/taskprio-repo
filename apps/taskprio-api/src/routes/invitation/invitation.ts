@@ -165,18 +165,12 @@ export const registerInvitationPublicRoutes = (router: Router) => {
     "/workspace/accept/:invitation",
     async (req: IAcceptInvitationRequest, res: Response) => {
 
-      const { email } = req.user
       const { invitation: invitationToken } = req.params
 
       try {
 
         // Decode the token
         const decodedToken = jwt.verify(invitationToken, process.env.JSONWEBTOKEN_SECRET) as TInvitationTokenDecoded;
-
-        if (decodedToken.email !== email) {
-          res.status(400).json({ message: "You are not the recipient of this invitation" });
-          return
-        }
 
         // If the token has expired, return an error
         if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
