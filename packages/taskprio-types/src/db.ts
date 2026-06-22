@@ -14,6 +14,103 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
+export type Timestamp = ColumnType<Date, Date | string, Date | string>;
+
+export interface _EFMigrationsHistory {
+  MigrationId: string;
+  ProductVersion: string;
+}
+
+export interface AspNetAspNetRoleClaims {
+  ClaimType: string | null;
+  ClaimValue: string | null;
+  Id: Generated<number>;
+  RoleId: string;
+}
+
+export interface AspNetAspNetRoles {
+  ConcurrencyStamp: string | null;
+  Id: string;
+  Name: string | null;
+  NormalizedName: string | null;
+}
+
+export interface AspNetAspNetUserClaims {
+  ClaimType: string | null;
+  ClaimValue: string | null;
+  Id: Generated<number>;
+  UserId: string;
+}
+
+export interface AspNetAspNetUserLogins {
+  LoginProvider: string;
+  ProviderDisplayName: string | null;
+  ProviderKey: string;
+  UserId: string;
+}
+
+export interface AspNetAspNetUserRoles {
+  RoleId: string;
+  UserId: string;
+}
+
+export interface AspNetAspNetUsers {
+  AccessFailedCount: number;
+  ConcurrencyStamp: string | null;
+  Email: string | null;
+  EmailConfirmed: boolean;
+  FullName: string;
+  Id: Generated<string>;
+  LockoutEnabled: boolean;
+  LockoutEnd: Timestamp | null;
+  NormalizedEmail: string | null;
+  NormalizedUserName: string | null;
+  PasswordHash: string | null;
+  PhoneNumber: string | null;
+  PhoneNumberConfirmed: boolean;
+  PublicId: string;
+  SecurityStamp: string | null;
+  TwoFactorEnabled: boolean;
+  UserName: string | null;
+}
+
+export interface AspNetAspNetUserTokens {
+  LoginProvider: string;
+  Name: string;
+  UserId: string;
+  Value: string | null;
+}
+
+export interface AspNetToDoToDo {
+  _Id: Generated<string>;
+  _ParentTodoId: string | null;
+  _ToDoListId: string;
+  _UserId: string;
+  CreatedAt: Timestamp;
+  Description: string;
+  Id: string;
+  Title: string;
+  UpdatedAt: Timestamp;
+}
+
+export interface AspNetToDoToDoList {
+  _Id: Generated<string>;
+  _ToDoPageId: string;
+  CreatedAt: Timestamp;
+  Id: Generated<string>;
+  Name: string;
+  UpdatedAt: Timestamp;
+}
+
+export interface AspNetToDoToDoPage {
+  _Id: Generated<string>;
+  _UserId: string;
+  CreatedAt: Timestamp;
+  Id: Generated<string>;
+  Name: string;
+  UpdatedAt: Timestamp;
+}
+
 export interface InvitationWorkspaceInvitation {
   accepted: Generated<boolean | null>;
   created_at: Generated<ColumnType<string, string | string, Date | string> | null>;
@@ -360,6 +457,17 @@ export interface WorkspaceWorkspaceRole {
 }
 
 export interface DB {
+  __EFMigrationsHistory: _EFMigrationsHistory;
+  "aspNet_toDo.toDo": AspNetToDoToDo;
+  "aspNet_toDo.toDoList": AspNetToDoToDoList;
+  "aspNet_toDo.toDoPage": AspNetToDoToDoPage;
+  "aspNet.AspNetRoleClaims": AspNetAspNetRoleClaims;
+  "aspNet.AspNetRoles": AspNetAspNetRoles;
+  "aspNet.AspNetUserClaims": AspNetAspNetUserClaims;
+  "aspNet.AspNetUserLogins": AspNetAspNetUserLogins;
+  "aspNet.AspNetUserRoles": AspNetAspNetUserRoles;
+  "aspNet.AspNetUsers": AspNetAspNetUsers;
+  "aspNet.AspNetUserTokens": AspNetAspNetUserTokens;
   "invitation.workspace_invitation": InvitationWorkspaceInvitation;
   "invitation.workspace_invitation_base64": InvitationWorkspaceInvitationBase64;
   "project.project": ProjectProject;

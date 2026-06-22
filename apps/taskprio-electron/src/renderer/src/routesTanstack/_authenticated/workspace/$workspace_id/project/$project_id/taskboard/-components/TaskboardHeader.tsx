@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useDialogsStore } from "@/stores/dialogs";
 import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
 import { Link } from "@tanstack/react-router";
-import { EllipsisVertical, Pencil, StopCircle, Trash2, X } from "lucide-react";
+import { Archive, EllipsisVertical, Pencil, StopCircle, Trash2, X } from "lucide-react";
 
 
 const TaskboardHeader = () => {
@@ -81,8 +81,8 @@ const TaskboardHeader = () => {
           <DropdownMenuItem
             onClick={handleOpenTrashTaskboardDialog}
           >
-            Task Trash
-            <DropdownMenuShortcut><Trash2 /></DropdownMenuShortcut>
+            Task Archive
+            <DropdownMenuShortcut><Archive /></DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

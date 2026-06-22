@@ -1,4 +1,3 @@
-import LoaderScreen from "@/components/others/LoaderScreen";
 import { WebSocketProvider } from "@/components/others/websocket/WebsocketProvider";
 import { AUTH_TOKEN_KEY, USER_DATA_KEY } from "@/lib/globals";
 import StateManager_Project from "@/stateManagers/StateManager_Project";
@@ -40,7 +39,7 @@ function AuthenticatedLayout() {
       <StateManager_Workspace>
         <StateManager_Project>
           <StateManager_Taskboard>
-            <Outlet />
+            <Outlet/>
           </StateManager_Taskboard>
         </StateManager_Project>
       </StateManager_Workspace>

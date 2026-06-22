@@ -26,7 +26,7 @@ function RouteComponent() {
 
   return (
     <div
-      className={cn("p-8 space-y-8")}
+      className={cn("h-full p-8 space-y-8 bg-muted")}
     >
       <ProjectPageHeader/>
       <TaskboardsSection/>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useGetProjectTaskboards } from "@/services/private/taskboard/query";
 import { useDialogsStore } from "@/stores/dialogs";
@@ -19,6 +20,7 @@ const TaskboardsSection = () => {
 
   const {
     data : taskboards,
+    isLoading : taskboardsIsLoading
   } = useGetProjectTaskboards()
 
   return (
@@ -38,6 +40,10 @@ const TaskboardsSection = () => {
           "flex flex-wrap gap-4"
         )}
       >
+        {
+          taskboardsIsLoading &&
+          Array.from({ length: 6 }).map( (_,index) => <Skeleton key={index} className={cn("w-[10rem] h-[4rem] bg-card")} /> )
+        }
         {taskboards && taskboards.map((taskboard) => (
           <TaskboardCard key={taskboard.task_board_id} data={taskboard} />
         ))}

@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import React, { useState } from "react";
 import { useTaskboardStore_selectedTaskboard } from "@/stores/taskboard";
 
-import { ArchiveRestore, Trash2, Undo2 } from "lucide-react";
+import { Archive, ArchiveRestore, Trash2, Undo2 } from "lucide-react";
 import { useGetTaskboardTrashTasks } from "@/services/private/taskboard/query";
 import Spinner from "../Spinner";
 import { TTaskPrimitive } from "@repo/taskprio-types";
@@ -76,7 +76,7 @@ const TaskboardTrashSheet = () => {
           }}
         >
           <SheetHeader>
-            <SheetTitle className="flex gap-2 items-center" ><Trash2 className="size-4 text-destructive" /> {selectedTaskboard?.task_board_name} trash</SheetTitle>
+            <SheetTitle className="flex gap-2 items-center" ><Archive className="size-4" /> {selectedTaskboard?.task_board_name} Archive</SheetTitle>
           </SheetHeader>
           {
             taskboardTrashTasksIsLoading &&

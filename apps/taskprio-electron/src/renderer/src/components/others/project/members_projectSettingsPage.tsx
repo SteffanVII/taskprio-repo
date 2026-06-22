@@ -25,6 +25,7 @@ import useIsUserWorkspaceOwnerOrAdmin from "@/lib/hooks/useIsUserWorkspaceOwnerO
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Empty, EmptyDescription, EmptyTitle } from "@/components/ui/empty";
 
 type TMembersSectionContext = {
   selectedMember: TProjectMember | null,
@@ -288,7 +289,10 @@ const AddProjectMemberDialog: React.FC<TAddProjectMemberDialogProps> = ({
           >
             {
               availableMembers?.length === 0 &&
-              <p className="text-sm text-muted-foreground font-bold" >No available members</p>
+              <Empty>
+                <EmptyTitle>No Members</EmptyTitle>
+                <EmptyDescription>There are currently no workspace member that are not part of this project.</EmptyDescription>
+              </Empty>
             }
             {
               availableMembers?.map(member => (
