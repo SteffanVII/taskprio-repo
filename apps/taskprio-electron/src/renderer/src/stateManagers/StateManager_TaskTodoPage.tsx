@@ -41,7 +41,7 @@ const StateManager_TaskTodoPage: React.FC<TStateManager_TaskTodoPage> = ({
 
   const queryClient = useQueryClient()
 
-  const { workspace_id } = useParams({ from : "/_authenticated/workspace/$workspace_id/" })
+  const { workspace_id } = useParams({ strict : false })
 
   const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
   const timerCount = useTaskTodoPageStore_timerCount()

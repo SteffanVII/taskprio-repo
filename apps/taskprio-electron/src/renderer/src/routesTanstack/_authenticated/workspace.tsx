@@ -23,6 +23,7 @@ import { useGetUserWorkspaces } from "@/services/private/workspace/query";
 import { useProjectStore_noProjects } from "@/stores/project";
 import { useWorkspaceStore_noWorkspaces } from "@/stores/workspace";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 
 export const Route = createFileRoute("/_authenticated/workspace")({
@@ -41,6 +42,10 @@ function WorkspaceLayout() {
   const {
     isLoading: projectsIsLoading
   } = useGetUserProjectsByWorkspace()
+
+  useEffect(() => {
+    console.log("Workspace")
+  }, [])
 
   return (
     <>
