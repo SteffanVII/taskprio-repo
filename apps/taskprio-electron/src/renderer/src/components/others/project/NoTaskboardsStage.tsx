@@ -60,7 +60,7 @@ const NoTaskboardsStage = () => {
 
   return (
     <div
-      className={` size-full flex items-center justify-center bg-background `}
+      className={` size-full flex items-center justify-center bg-muted `}
     >
       <Empty>
         <EmptyHeader>

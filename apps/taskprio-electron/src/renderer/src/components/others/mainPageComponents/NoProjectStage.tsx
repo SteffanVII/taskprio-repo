@@ -70,7 +70,7 @@ const NoProjectStage = () => {
 
   return (
     <div
-      className={` size-full grow flex items-center justify-center `}
+      className={` size-full grow flex items-center justify-center bg-muted `}
     >
       {
         // Show sidebar button when in mobile mode
