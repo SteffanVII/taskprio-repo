@@ -18,7 +18,7 @@
     "@repo/taskprio-types": "workspace:*",
     "@types/multer": "^2.0.0",
     "argon2": "^0.43.0",
-    "aws-sdk": "^2.1692.0",
+    "aws-sdk": "^2.1693.0",
     "axios": "^1.9.0",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
