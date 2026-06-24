@@ -14,7 +14,7 @@ function registerRedirectRoutes(router: Router) {
       const { tokens, res: response } = await googleAuthClient.getToken(code as string)
       let clientId = "";
       try {
-        const data = JSON.parse(response.config.data);
+        const data = response.config.data;
         clientId = data.client_id;
       } catch {
         const params = new URLSearchParams(response.config.data);
@@ -41,7 +41,7 @@ function registerRedirectRoutes(router: Router) {
       const { tokens, res: response } = await googleAuthClient.getToken(code as string)
       let clientId = "";
       try {
-        const data = JSON.parse(response.config.data);
+        const data = response.config.data
         clientId = data.client_id;
       } catch {
         const params = new URLSearchParams(response.config.data);
