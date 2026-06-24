@@ -14,10 +14,11 @@ function registerRedirectRoutes(router: Router) {
       const { tokens, res: response } = await googleAuthClient.getToken(code as string)
       let clientId = "";
       try {
-        const data = response.config.data;
+        const data = JSON.parse(response.data);
+        console.log(data)
         clientId = data.client_id;
       } catch {
-        const params = new URLSearchParams(response.config.data);
+        const params = new URLSearchParams(response.data);
         clientId = params.get("client_id") || "";
       }
       console.log(clientId)
@@ -41,10 +42,11 @@ function registerRedirectRoutes(router: Router) {
       const { tokens, res: response } = await googleAuthClient.getToken(code as string)
       let clientId = "";
       try {
-        const data = response.config.data
-        clientId = data.client_id;
+        const data = JSON.parse(response.data) 
+        console.log(data)
+        clientId = data.clientId;
       } catch {
-        const params = new URLSearchParams(response.config.data);
+        const params = new URLSearchParams(response.data);
         clientId = params.get("client_id") || "";
       }
       console.log(clientId)
