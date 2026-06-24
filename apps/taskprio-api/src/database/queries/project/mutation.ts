@@ -11,7 +11,7 @@ export const createProject = async (
     userId: string
 ): Promise<TProject | undefined> => {
 
-    const projectNameAbbreviation = getProjectNameAbbreviation(body.project_name)
+    const projectNameAbbreviation = body.project_abbreviation || getProjectNameAbbreviation(body.project_name)
 
     return await taskprioKysely.transaction().execute(async trx => {
 
@@ -19,6 +19,7 @@ export const createProject = async (
             .values({
                 project_name: body.project_name,
                 project_abbreviation: projectNameAbbreviation,
+                project_color: body.project_color,
                 workspace_id: sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${body.workspace_id})`,
                 created_by: sql<string>`${sql.raw(EDatabaseFunction.DETECT_AND_CONVERT_TO_UUID)}(${userId})`
             })
