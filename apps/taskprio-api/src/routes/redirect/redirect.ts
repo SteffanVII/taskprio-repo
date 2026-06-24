@@ -41,6 +41,7 @@ function registerRedirectRoutes(router: Router) {
       console.log(req.query)
       const { tokens, res: response } = await googleAuthClient.getToken(code as string)
       let clientId = "";
+      console.log(response.config.data)
       try {
         const data = JSON.parse(response.data) 
         console.log(data)
