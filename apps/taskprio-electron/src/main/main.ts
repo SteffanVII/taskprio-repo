@@ -6,6 +6,7 @@ import { generalMain } from './general';
 import { taskTodoOverlayMain } from './taskTodoOverlay';
 import "./protocolHandler"
 import { websocketMain } from './websocket';
+import { generatePKCE } from './general/googleAuthPKCE';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -25,6 +26,7 @@ if (process.defaultApp) {
 }
 
 export let mainWindow: BrowserWindow;
+export const PKCE = generatePKCE()
 
 const createWindow = () => {
 

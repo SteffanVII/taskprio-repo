@@ -1,5 +1,5 @@
 import { app } from "electron"
-import { mainWindow } from "./main"
+import { mainWindow, PKCE } from "./main"
 import path from "node:path";
 import { EEventListeners } from "src/lib/enums";
 
@@ -38,9 +38,8 @@ const handler = (url: string) => {
     if (url.includes("taskprio-app://googlelogin")) {
         const urlObj = new URL(url)
         const searchParams = urlObj.searchParams
-        const proofKey = searchParams.get("proof_key")
-        const clientId = searchParams.get("client_id")
-        mainWindow.webContents.send(EEventListeners.GOOGLE_LOGIN_SUCCESS, proofKey, clientId)
+        const code = searchParams.get("code")
+        mainWindow.webContents.send(EEventListeners.GOOGLE_LOGIN_SUCCESS, code, PKCE.verifier)
     }
 
     if (url.includes("taskprio-app://accept_invitation")) {

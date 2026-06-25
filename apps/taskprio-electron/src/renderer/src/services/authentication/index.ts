@@ -54,13 +54,13 @@ export const useGoogleLoginT = (successCallback: (data: TLoginResponse) => void)
   const setUser = useGlobalsStore(state => state.setUser)
   const setInvitationRecipient = useGlobalsStore(state => state.setInvitationRecipient)
 
-  return useMutation<TLoginResponse, any, { proofKey: string, clientId: string, for_invitation_purpose?: boolean }>({
-    mutationFn: async (payload: { proofKey: string, clientId: string, for_invitation_purpose?: boolean }) => {
+  return useMutation<TLoginResponse, any, { code: string, verifier: string, for_invitation_purpose?: boolean }>({
+    mutationFn: async (payload: { code: string, verifier: string, for_invitation_purpose?: boolean }) => {
       const response = await axiosInstance.post<TLoginResponse>(
         `/login/google`,
         {
-          client_id: payload.clientId,
-          proof_key: payload.proofKey,
+          code: payload.code,
+          verifier: payload.verifier,
           for_invitation_purpose: payload.for_invitation_purpose
         }
       )

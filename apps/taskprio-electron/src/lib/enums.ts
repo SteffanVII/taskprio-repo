@@ -12,6 +12,8 @@ export enum EEvents {
     // General
     REQUEST_DISPLAY_LIST = "request_display_list",
     REQUEST_APP_PREFERENCES = "request_app_preferences",
+    OPEN_EXTERNAL_BROWSER = "open_external_browser",
+    GET_PKCE = "get_pkce",
 
     // Task todo
     MAKE_WINDOW_TO_TASK_TODO_OVERLAY_MODE = "make-window-to-task-todo-overlay-mode",
