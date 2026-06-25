@@ -9,6 +9,6 @@ export const generalAPI = {
 
     // Listeners
     onConsoleLog: (callback: (value: string) => void) => ipcRenderer.on(EEventListeners.CONSOLE_LOG, (_, value: string) => callback(value)),
-    onGoogleLoginSuccess: (callback: (code: string) => void) => ipcRenderer.on(EEventListeners.GOOGLE_LOGIN_SUCCESS, (_, code, verifier) => callback(code)),
+    onGoogleLoginSuccess: (callback: (code: string, verifier: string) => void) => ipcRenderer.on(EEventListeners.GOOGLE_LOGIN_SUCCESS, (_, code, verifier) => callback(code, verifier)),
     onAcceptInvitation: (callback: (inviteToken: string) => void) => ipcRenderer.on(EEventListeners.ACCEPT_INVITATION, (_, inviteToken) => callback(inviteToken))
 }

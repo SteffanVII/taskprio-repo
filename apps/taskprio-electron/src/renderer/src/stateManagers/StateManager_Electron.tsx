@@ -68,7 +68,7 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
       window.electronAPI.onWindowMaximizeStateChange((value) => {
         setWindowMaximaize(value);
       })
-      window.electronAPI.onGoogleLoginSuccess(async (code, verifier) => {
+      window.electronAPI.onGoogleLoginSuccess((code, verifier) => {
         googleLoginT({
           code: code,
           verifier: verifier

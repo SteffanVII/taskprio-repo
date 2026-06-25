@@ -20,12 +20,10 @@ export const generalMain = () => {
   })
 
   ipcMain.handle(EEvents.OPEN_EXTERNAL_BROWSER, (_, url: string) => {
-    console.log(url)
     shell.openExternal(url)
   })
 
   ipcMain.handle(EEvents.GET_PKCE, (): { verifier : string, challenge : string } => {
-    console.log(PKCE);
     return PKCE;
   })
 
