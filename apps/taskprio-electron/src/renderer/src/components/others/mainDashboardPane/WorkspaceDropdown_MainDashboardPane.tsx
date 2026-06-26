@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useGlobalsStore_user } from "@/stores/globals";
 import { useWorkspaceStore, useWorkspaceStore_selectedWorkspace } from "@/stores/workspace";
 
-import { ChevronDown, House, MessageCircleWarningIcon, Plus } from "lucide-react";
+import { House, MessageCircleWarningIcon, Plus } from "lucide-react";
 import { useContext, useState } from "react";
 import { EWorkspaceRole, TWorkspace } from "@repo/taskprio-types";
 import { useTaskTodoPageStore_sessionActive } from "@/stores/taskTodoPage";
@@ -20,6 +19,7 @@ import { useGetUserWorkspaces } from "@/services/private/workspace/query";
 import { useProjectStore } from "@/stores/project";
 import { useTaskboardStore } from "@/stores/taskboard";
 import { useDialogsStore } from "@/stores/dialogs";
+import { Separator } from "@/components/ui/separator";
 
 const ignoreTodoSessionIsActiveLocalStorageName = import.meta.env.VITE_IGNORE_TODO_SESSION_IS_ACTIVE_WARNING_LOCAL_STORAGE_NAME;
 
@@ -166,12 +166,17 @@ const WorkspaceDropdown_MainDashboardPane = () => {
         >
         </PopoverTrigger>
         <PopoverContent
-          className=" w-[20rem] p-0 overflow-hidden"
+          className=" w-[20rem] gap-2 overflow-hidden"
           side="right"
-        >
+          >
+          <PopoverHeader>
+            <PopoverTitle>Workspaces</PopoverTitle>
+            <PopoverDescription>Select current workspace</PopoverDescription>
+          </PopoverHeader>
+          <Separator/>
           <div
             className={cn(
-              ` flex flex-col gap-2 p-2 `
+              ` flex flex-col gap-2 `
             )}
           >
             <div

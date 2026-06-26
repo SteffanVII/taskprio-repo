@@ -10,18 +10,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Spinner from "../Spinner";
-import { useNavigate, useParams } from "@tanstack/react-router";
 
 const DropTaskboardDialog = () => {
 
-  const navigate = useNavigate()
 
-  const { workspace_id, project_id } = useParams({ strict: false })
   const selectedProject = useProjectStore_selectedProject()
   const setDropTaskboardDialog = useDialogsStore(state => state.setDropTaskboardDialog)
 
   const {
     open,
+    from,
     taskboard
   } = useDialogsStore_dropTaskboardDialog()
 
@@ -30,16 +28,11 @@ const DropTaskboardDialog = () => {
     isPending: dropTaskboardIsPending
   } = useDropTaskboard({
     onSuccess: () => {
-      setDropTaskboardDialog(null, false)
-      navigate({
-        to: "/workspace/$workspace_id/project/$project_id",
-        params: {
-          workspace_id: workspace_id!,
-          project_id: project_id!
-        }
-      })
+      setDropTaskboardDialog(false, null)
       form.reset()
-    }
+    },
+    fromTaskboard: from === "TASKBOARD",
+    fromProjectSettings: from === "PROJECT_SETTINGS"
   })
 
   const dropTaskboardFormSchema = z.object({
@@ -65,11 +58,9 @@ const DropTaskboardDialog = () => {
     <Dialog
       open={open}
       onOpenChange={(openValue) => {
-        if (!openValue) {
+        if (!openValue && !dropTaskboardIsPending) {
           form.reset()
-        }
-        if (!dropTaskboardIsPending) {
-          setDropTaskboardDialog(taskboard, !open)
+          setDropTaskboardDialog(false, null)
         }
       }}
     >

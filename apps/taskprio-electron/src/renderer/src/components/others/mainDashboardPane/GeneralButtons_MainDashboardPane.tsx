@@ -6,6 +6,7 @@ import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, Side
 import { useProjectStore } from "@/stores/project";
 import { useGlobalsStore } from "@/stores/globals";
 import { useTaskboardStore } from "@/stores/taskboard";
+import { useGetUserWorkspaces } from "@/services/private/workspace/query";
 
 const GeneralButtons = () => {
 
@@ -18,12 +19,18 @@ const GeneralButtons = () => {
     channelActions
   } = useContext(WebSocketContext)
 
+  const {
+    isLoading: workspacesIsLoading
+  } = useGetUserWorkspaces()
+
   const navigate = useNavigate()
 
   const setNoProjects = useProjectStore(state => state.setNoProjects)
   const setSelectedProject = useProjectStore(state => state.setSelectedProject)
   const setSelectedTask = useGlobalsStore(state => state.setSelectedTask)
   const setSelectedTaskboard = useTaskboardStore(state => state.setSelectedTaskboard)
+
+  const disabled = workspacesIsLoading;
 
   const resetStates = () => {
     setNoProjects(false)
@@ -105,7 +112,7 @@ const GeneralButtons = () => {
           {
             generalButtons.map( button => (
               <SidebarMenuItem key={button.title} >
-                <SidebarMenuButton isActive={pathname.includes(button.path)} onClick={button.onclick} >{button.icon} {button.title}</SidebarMenuButton>
+                <SidebarMenuButton isActive={pathname.includes(button.path)} onClick={button.onclick} disabled={disabled} >{button.icon} {button.title}</SidebarMenuButton>
               </SidebarMenuItem>
             ) )
           }

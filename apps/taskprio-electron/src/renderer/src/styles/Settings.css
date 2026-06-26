@@ -20,11 +20,11 @@
 }
 
 .SettingsSectionHeaderTitle {
-    @apply text-lg font-medium;
+    @apply font-medium;
 }
 
 .SettingsSectionHeaderDescription {
-    @apply text-sm text-muted-foreground;
+    @apply text-xs text-muted-foreground;
 }
 
 .SettingsSectionContent {

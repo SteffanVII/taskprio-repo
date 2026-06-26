@@ -10,23 +10,24 @@ function registerRedirectRoutes(router: Router) {
       const {
         code,
       } = req.query;
-      console.log(req.query)
-      const { tokens, res: response } = await googleAuthClient.getToken(code as string)
-      let clientId = "";
-      try {
-        const data = JSON.parse(response.config.data);
-        clientId = data.client_id;
-      } catch {
-        const params = new URLSearchParams(response.config.data);
-        clientId = params.get("client_id") || "";
-      }
-      console.log(clientId)
+      // const { tokens, res: response } = await googleAuthClient.getToken(code as string)
+      // let clientId = "";
+      // try {
+      //   const data = JSON.parse(response.data);
+      //   console.log(data)
+      //   clientId = data.client_id;
+      // } catch {
+      //   const params = new URLSearchParams(response.data);
+      //   clientId = params.get("client_id") || "";
+      // }
+      // console.log(clientId)
 
-      const proofKey = uuidV4()
-      googleTokensStore.set(proofKey, tokens as TGoogleTokens)
+      // const proofKey = uuidV4()
+      // googleTokensStore.set(proofKey, tokens as TGoogleTokens)
       const redirectUrl = new URL('taskprio-app://googlelogin');
-      redirectUrl.searchParams.append('proof_key', proofKey);
-      redirectUrl.searchParams.append('client_id', clientId);
+      // redirectUrl.searchParams.append('proof_key', proofKey);
+      // redirectUrl.searchParams.append('client_id', clientId);
+      redirectUrl.searchParams.append('code', code as string);
       res.redirect(302, redirectUrl.toString())
     }
   )
@@ -37,23 +38,24 @@ function registerRedirectRoutes(router: Router) {
       const {
         code,
       } = req.query;
-      console.log(req.query)
-      const { tokens, res: response } = await googleAuthClient.getToken(code as string)
-      let clientId = "";
-      try {
-        const data = JSON.parse(response.config.data);
-        clientId = data.client_id;
-      } catch {
-        const params = new URLSearchParams(response.config.data);
-        clientId = params.get("client_id") || "";
-      }
-      console.log(clientId)
+      // const { tokens, res: response } = await googleAuthClient.getToken(code as string)
+      // let clientId = "";
+      // try {
+      //   const data = JSON.parse(response.data);
+      //   console.log(data)
+      //   clientId = data.client_id;
+      // } catch {
+      //   const params = new URLSearchParams(response.data);
+      //   clientId = params.get("client_id") || "";
+      // }
+      // console.log(clientId)
 
-      const proofKey = uuidV4()
-      googleTokensStore.set(proofKey, tokens as TGoogleTokens)
+      // const proofKey = uuidV4()
+      // googleTokensStore.set(proofKey, tokens as TGoogleTokens)
       const redirectUrl = new URL('taskprio-app://googlelogin');
-      redirectUrl.searchParams.append('proof_key', proofKey);
-      redirectUrl.searchParams.append('client_id', clientId);
+      // redirectUrl.searchParams.append('proof_key', proofKey);
+      // redirectUrl.searchParams.append('client_id', clientId);
+      redirectUrl.searchParams.append('code', code as string);
       res.redirect(302, redirectUrl.toString())
     }
   )

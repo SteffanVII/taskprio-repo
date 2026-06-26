@@ -7,8 +7,8 @@ export interface ILoginRequest extends Request {
 
 export interface IGoogleLoginRequest extends Request {
     body: {
-        proof_key: string,
-        client_id: string,
+        code: string,
+        verifier: string,
         for_invitation_purpose?: boolean
     },
     user: {

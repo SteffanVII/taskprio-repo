@@ -1,6 +1,9 @@
 import { TProject, TProjectInactiveForTable, TTag, TTaskboard, TTaskboardInactiveForTable, TTaskForCardView } from "@repo/taskprio-types";
 import { create } from "zustand";
 
+export type TDropProjectFrom = "PROJECT" | "WORKSPACE_SETTINGS"
+export type TDropTaskboardFrom = "TASKBOARD" | "PROJECT_SETTINGS"
+
 export type TDialogStoreValues = {
   createProjectDialog: {
     open: boolean
@@ -17,6 +20,7 @@ export type TDialogStoreValues = {
   },
   dropTaskboardDialog: {
     open: boolean,
+    from: TDropTaskboardFrom
     taskboard: TTaskboard | null
   },
   deactivateTaskboardDialog: {
@@ -29,6 +33,7 @@ export type TDialogStoreValues = {
   },
   dropProjectDialog: {
     open: boolean,
+    from: TDropProjectFrom
     project: TProject | TProjectInactiveForTable | null
   },
   deactivateProjectDialog: {
@@ -70,10 +75,10 @@ type TDialogsStoreActions = {
   setCreateTaskboardDialog: (open: boolean) => void,
   setCreateWorkspaceDialog: (open: boolean) => void,
   setRenameTaskboardDialog: (taskboard: TTaskboard | null, open: boolean) => void,
-  setDropTaskboardDialog: (taskboard: TTaskboard | null, open: boolean) => void,
+  setDropTaskboardDialog: (open: boolean, taskboard: TTaskboard | null, from? : TDropTaskboardFrom) => void,
   setDeactivateTaskboardDialog: (taskboard: TTaskboard | null, open: boolean) => void,
   setReactivateTaskboardDialog: (taskboard: TTaskboardInactiveForTable | null, open: boolean) => void,
-  setDropProjectDialog: (project: TProject | TProjectInactiveForTable | null, open: boolean) => void,
+  setDropProjectDialog: (open: boolean, project: TProject | TProjectInactiveForTable | null, from?: TDropProjectFrom) => void,
   setDeactivateProjectDialog: (project: TProject | null, open: boolean) => void,
   setReactivateProjectDialog: (project: TProjectInactiveForTable | null, open: boolean) => void,
   setWorkspaceInvitationDialog: (open: boolean) => void,
@@ -104,7 +109,8 @@ const initialState: TDialogStoreValues = {
   },
   dropTaskboardDialog: {
     open: false,
-    taskboard: null
+    taskboard: null,
+    from: "TASKBOARD"
   },
   deactivateTaskboardDialog: {
     open: false,
@@ -116,6 +122,7 @@ const initialState: TDialogStoreValues = {
   },
   dropProjectDialog: {
     open: false,
+    from: "PROJECT",
     project: null
   },
   deactivateProjectDialog: {
@@ -179,10 +186,11 @@ export const useDialogsStore = create<TDialogsStore>((set) => ({
       open
     }
   })),
-  setDropTaskboardDialog: (taskboard: TTaskboard | null, open: boolean) => set((state) => ({
+  setDropTaskboardDialog: (open: boolean, taskboard: TTaskboard | null, from : TDropTaskboardFrom | undefined = "TASKBOARD" ) => set((state) => ({
     dropTaskboardDialog: {
       ...state.dropTaskboardDialog,
       taskboard,
+      from,
       open
     }
   })),
@@ -200,10 +208,11 @@ export const useDialogsStore = create<TDialogsStore>((set) => ({
       open
     }
   })),
-  setDropProjectDialog: (project: TProject | TProjectInactiveForTable | null, open: boolean) => set((state) => ({
+  setDropProjectDialog: (open: boolean, project: TProject | TProjectInactiveForTable | null, from: TDropProjectFrom | undefined = "PROJECT") => set((state) => ({
     dropProjectDialog: {
       ...state.dropProjectDialog,
       project,
+      from,
       open
     }
   })),

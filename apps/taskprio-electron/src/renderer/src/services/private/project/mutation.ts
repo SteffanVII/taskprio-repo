@@ -108,7 +108,9 @@ export const useAddMembersToProject = (
 
 }
 
-type TUseDeactivateProjectOptions = UseMutationOptions<any, AxiosError, TDeactivateProjectRequestBody>
+type TUseDeactivateProjectOptions = UseMutationOptions<any, AxiosError, TDeactivateProjectRequestBody> & {
+  fromProject?: boolean,
+}
 
 export const useDeactivateProject = (options?: TUseDeactivateProjectOptions) => {
 
@@ -134,26 +136,34 @@ export const useDeactivateProject = (options?: TUseDeactivateProjectOptions) => 
     },
     ...options,
     onSuccess(data, variables, context) {
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, variables.workspace_id]
-      })
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, variables.workspace_id]
-      })
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, variables.workspace_id]
-      })
+
+      // Refetch workspace inactive projects
       queryClient.invalidateQueries({
         queryKey: [...QueryKeys.GET_WORKSPACE_INACTIVE_PROJECTS.split, variables.workspace_id]
       })
-      if (project_id === variables.project_id) {
+
+      queryClient.setQueryData(
+        [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, variables.workspace_id],
+        (oldData : TProject[]) => {
+          return !oldData ? oldData : oldData.filter( project => project.project_id !== variables.project_id )
+        }
+      )
+
+      queryClient.invalidateQueries({
+        queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, variables.workspace_id]
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, variables.workspace_id]
+      })
+
+      if (options?.fromProject && project_id === variables.project_id) {
         setSelectedProject(null)
         setSelectedTask(null)
         setNoTaskboard(false)
         setSelectedTaskboard(null)
-        // navigate(`/p/w/${workspace_id}/d`)
         navigate({
-          to: "/workspace/$workspace_id/project",
+          to: "/workspace/$workspace_id",
           params: {
             workspace_id: workspace_id!
           }
@@ -165,7 +175,10 @@ export const useDeactivateProject = (options?: TUseDeactivateProjectOptions) => 
 
 }
 
-type TUseDropProjectOptions = UseMutationOptions<any, AxiosError, TDropProjectRequestQueryParams>
+type TUseDropProjectOptions = UseMutationOptions<any, AxiosError, TDropProjectRequestQueryParams> & {
+  fromProject?: boolean,
+  fromWorkspaceSettings?: boolean
+}
 
 export const useDropProject = (options?: TUseDropProjectOptions) => {
 
@@ -194,26 +207,35 @@ export const useDropProject = (options?: TUseDropProjectOptions) => {
     },
     ...options,
     onSuccess(data, variables, context) {
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, variables.workspace_id]
-      })
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_PROJECT_INACTIVE_TASKBOARDS.split, variables.project_id]
-      })
+
+      // Refetch workspace inactive projects
+      if (options?.fromWorkspaceSettings) {
+        queryClient.invalidateQueries({
+          queryKey: [...QueryKeys.GET_PROJECT_INACTIVE_TASKBOARDS.split, variables.project_id]
+        })
+      }
+
+      queryClient.setQueryData(
+        [...QueryKeys.GET_USER_PROJECTS_BY_WORKSPACE.split, variables.workspace_id],
+        (oldData : TProject[]) => {
+          return !oldData ? oldData : oldData.filter( project => project.project_id !== variables.project_id )
+        }
+      )
+
       queryClient.invalidateQueries({
         queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split, variables.workspace_id]
       })
       queryClient.invalidateQueries({
         queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split, variables.workspace_id]
       })
-      if (project_id === variables.project_id) {
+
+      if (options?.fromProject && project_id === variables.project_id) {
         setSelectedProject(null)
         setSelectedTask(null)
         setNoTaskboard(false)
         setSelectedTaskboard(null)
-        // navigate(`/p/w/${workspace_id}/d`)
         navigate({
-          to: "/workspace/$workspace_id/project",
+          to: "/workspace/$workspace_id",
           params: {
             workspace_id: workspace_id!
           }

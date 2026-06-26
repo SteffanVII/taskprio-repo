@@ -9,17 +9,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Spinner from "../Spinner";
-import { useNavigate } from "@tanstack/react-router";
 
 const DropProjectDialog = () => {
-
-  const navigate = useNavigate();
 
   const selectedWorkspace = useWorkspaceStore_selectedWorkspace()
   const setDropProjectDialog = useDialogsStore(state => state.setDropProjectDialog)
 
   const {
     open,
+    from,
     project
   } = useDialogsStore_dropProjectDialog()
 
@@ -28,15 +26,11 @@ const DropProjectDialog = () => {
     isPending: dropProjectIsPending
   } = useDropProject({
     onSuccess: () => {
-      setDropProjectDialog(null, false)
-      navigate({
-        to: "/workspace/$workspace_id/project",
-        params: {
-          workspace_id: selectedWorkspace!.workspace_id
-        }
-      })
+      setDropProjectDialog(false, null)
       form.reset()
-    }
+    },
+    fromProject: from === "PROJECT",
+    fromWorkspaceSettings: from === "WORKSPACE_SETTINGS"
   })
 
   const dropProjectFormSchema = z.object({
@@ -64,11 +58,9 @@ const DropProjectDialog = () => {
     <Dialog
       open={open}
       onOpenChange={(openValue) => {
-        if (!openValue) {
+        if (!openValue && !dropProjectIsPending) {
           form.reset()
-        }
-        if (!dropProjectIsPending) {
-          setDropProjectDialog(project, !open)
+          setDropProjectDialog(false, null)
         }
       }}
     >

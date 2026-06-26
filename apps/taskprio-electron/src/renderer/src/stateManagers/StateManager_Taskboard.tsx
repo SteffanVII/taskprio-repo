@@ -37,13 +37,11 @@ const StateManager_Taskboard: React.FC<TStateManager_Taskboard> = ({ children })
 
   useEffect(() => {
     setNoTaskboards((taskboards && taskboards.length < 1) ?? false)
-  }, [
-    taskboards
-  ])
+  }, [ taskboards ])
 
   // Update the selected taskboard in the globals store
   useLayoutEffect(() => {
-    if (!selectedTaskboard && taskboard_id) {
+    if (taskboard_id && (!selectedTaskboard || selectedTaskboard.task_board_id !== taskboard_id)) {
       const foundTaskboard = taskboards?.find(taskboard => taskboard.task_board_id === taskboard_id) ?? null
       setSelectedTaskboard(foundTaskboard)
       setNoTaskboards(false)

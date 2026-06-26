@@ -60,6 +60,7 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
             const lastVisitedProjectId = localStorage.getItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME)
             const foundProject = projects.find(project => project.project_id === lastVisitedProjectId) || projects[0]
             localStorage.setItem(import.meta.env.VITE_LAST_PROJECT_VISITED_COOKIE_NAME, foundProject.project_id)
+            console.log(foundProject)
             navigate({
               to: "/workspace/$workspace_id/project/$project_id",
               params: {
@@ -79,7 +80,7 @@ const StateManager_Project: React.FC<TStateManager_Project> = ({ children }) => 
   ])
 
   useEffect(() => {
-    if (!selectedProject && project_id) {
+    if (project_id && (!selectedProject || selectedProject.project_id !== project_id)) {
       const foundProject = projects?.find(project => project.project_id === project_id) ?? null;
       const projectMemberRole = foundProject?.project_members.find(projectMember => projectMember.user_id === user?.user_id)?.project_role ?? null
       setSelectedProject(foundProject)

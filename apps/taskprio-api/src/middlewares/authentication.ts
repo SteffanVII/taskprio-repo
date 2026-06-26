@@ -41,30 +41,33 @@ export const authenticateRequestMiddleware = (req: Request, res: Response, next:
  */
 export const verifyGoogleCredentialdMiddleware = async (req: IGoogleLoginRequest, res: Response, next: NextFunction) => {
 
-  const { proof_key, client_id } = req.body;
+  const { code, verifier } = req.body;
 
-  if (!proof_key) {
-    res.status(400).json({ message: "Proof key is required" });
+  if (!code) {
+    res.status(400).json({ message: "Code is required" });
     return;
   }
 
-  if (!client_id) {
-    res.status(400).json({ message: "Client ID is required" });
+  if (!verifier) {
+    res.status(400).json({ message: "Verifier is required" });
     return;
   }
 
   try {
 
-    const tokens = googleTokensStore.get(proof_key);
+    const verified = await googleAuthClient.getToken({
+      code : code,
+      codeVerifier : verifier
+    })
 
-    if (!tokens) {
+    if (!verified.tokens.id_token) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
 
     const ticket = await googleAuthClient.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: client_id
+      idToken: verified.tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID
     })
 
     const payload = ticket.getPayload();

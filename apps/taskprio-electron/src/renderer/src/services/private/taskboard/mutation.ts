@@ -5,6 +5,7 @@ import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react
 import { AxiosError } from "axios"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { useGlobalsStore } from "@/stores/globals"
+import { TGetProjectTaskboardsResponse } from "./types"
 
 type TUseCreateTaskboardOptions = UseMutationOptions<TTaskboard, Error, TCreateTaskboardRequestBody>
 
@@ -54,22 +55,25 @@ export const useDeactivateTaskboard = (options?: TUseDeactivateTaskboardOptions)
     },
     ...options,
     onSuccess(data, variables, context) {
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_PROJECT_TASKBOARDS.split, variables.project_id]
-      })
+
+      queryClient.setQueryData(
+        [...QueryKeys.GET_PROJECT_TASKBOARDS.split, variables.project_id],
+        (oldData : TGetProjectTaskboardsResponse) => {
+          return !oldData ? oldData :  oldData.filter( taskboard => taskboard.task_board_id !== variables.taskboard_id )
+        }
+      )
+
       queryClient.invalidateQueries({
         queryKey: [...QueryKeys.GET_USER_TASK_TODO_STATE.split]
       })
       queryClient.invalidateQueries({
         queryKey: [...QueryKeys.GET_TASKS_ASSIGNED_TO_USER_BY_WORKSPACE.split]
       })
-      console.log(taskboard_id);
-      console.log(variables.taskboard_id);
-      console.log(taskboard_id === variables.taskboard_id);
+
+      // Navigate to project page if the current taskboard is deactivated
       if (taskboard_id && taskboard_id === variables.taskboard_id) {
-        // navigate(`/p/w/${workspace_id}/d/${project_id}/t`)
         navigate({
-          to: "/workspace/$workspace_id/project/$project_id/taskboard",
+          to: "/workspace/$workspace_id/project/$project_id",
           params: {
             workspace_id: workspace_id!,
             project_id: project_id!
@@ -124,11 +128,17 @@ export const useReactivateTaskboard = (options?: TUseReactivateTaskboardOptions)
 
 }
 
-type TUseDropTaskboardOptions = UseMutationOptions<any, AxiosError, TDropTaskboardRequestQuery>
+type TUseDropTaskboardOptions = UseMutationOptions<any, AxiosError, TDropTaskboardRequestQuery> & {
+  fromTaskboard?: boolean,
+  fromProjectSettings?: boolean,
+}
 
 export const useDropTaskboard = (options?: TUseDropTaskboardOptions) => {
 
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
+
+  const { workspace_id, project_id, taskboard_id } = useParams({ strict: false })
 
   return useMutation<any, AxiosError, TDropTaskboardRequestQuery>({
     mutationFn: async (payload) => {
@@ -141,9 +151,30 @@ export const useDropTaskboard = (options?: TUseDropTaskboardOptions) => {
       return response.data
     },
     onSuccess(data, variables, context) {
-      queryClient.invalidateQueries({
-        queryKey: [...QueryKeys.GET_PROJECT_TASKBOARDS.split, variables.project_id]
-      })
+
+      queryClient.setQueryData(
+        [...QueryKeys.GET_PROJECT_TASKBOARDS.split, variables.project_id],
+        (oldData : TGetProjectTaskboardsResponse) => {
+          return !oldData ? oldData :  oldData.filter( taskboard => taskboard.task_board_id !== variables.taskboard_id )
+        }
+      )
+
+      if (options?.fromProjectSettings) {
+        queryClient.invalidateQueries({
+          queryKey : [...QueryKeys.GET_PROJECT_INACTIVE_TASKBOARDS.split, variables.project_id]
+        })
+      }
+
+      // Navigate to project page if the current taskboard is dropped
+      if (taskboard_id === variables.taskboard_id && options?.fromTaskboard) {
+        navigate({
+          to: "/workspace/$workspace_id/project/$project_id",
+          params: {
+            workspace_id: workspace_id!,
+            project_id: project_id!
+          }
+        })
+      }
       options?.onSuccess?.(data, variables, context)
     },
   })

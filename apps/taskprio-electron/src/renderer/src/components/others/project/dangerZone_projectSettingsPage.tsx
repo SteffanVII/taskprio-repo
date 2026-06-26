@@ -43,7 +43,7 @@ const DangerZone_ProjectSettingsPage = () => {
               variant={"destructive"}
               className="w-fit"
               onClick={() => {
-                setDropProjectDialog(project,true)
+                setDropProjectDialog(true, project, "PROJECT")
               }}
             >Drop Project</Button>
             <p className=" text-sm text-muted-foreground " >

@@ -105,7 +105,7 @@ const DeactivateProjectRow: React.FC<TDeactivateProjectRowProps> = ({ data }) =>
   }
 
   const handleDropProjectDialog = () => {
-    setDropProjectDialog(data, true)
+    setDropProjectDialog(true, data, "WORKSPACE_SETTINGS")
   }
 
   return (

@@ -16,7 +16,9 @@ type TStateManager_ElectronContext = {
   switchToFocusModeFromFullMode: () => void,
   switchToFocusModeFromOverlayMode: () => void,
   switchToFullModeFromOverlayOrFocusMode: () => void,
-  switchOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void
+  switchOverlayLocation: (location: TElectronStorePreferencesOverlayLocation) => void,
+  openExternalBrowser: (url: string) => void,
+  getPKCE: () => Promise<{ verifier : string, challenge : string }>
 }
 
 export const StateManager_ElectronContext = createContext<TStateManager_ElectronContext>({
@@ -25,7 +27,9 @@ export const StateManager_ElectronContext = createContext<TStateManager_Electron
   switchToFocusModeFromFullMode: () => { },
   switchToFocusModeFromOverlayMode: () => { },
   switchToFullModeFromOverlayOrFocusMode: () => { },
-  switchOverlayLocation: () => { }
+  switchOverlayLocation: () => { },
+  openExternalBrowser: () => { },
+  getPKCE: async () => { return { verifier: "", challenge: "" } }
 })
 
 const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children }) => {
@@ -57,16 +61,17 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
     setPreferences(value ?? null)
   }
 
+  // Listeners for events coming from electron main
   useEffect(() => {
     if (!!window.electronAPI) {
       setIsElectron(!!window.electronAPI)
       window.electronAPI.onWindowMaximizeStateChange((value) => {
         setWindowMaximaize(value);
       })
-      window.electronAPI.onGoogleLoginSuccess((proofKey, clientId) => {
+      window.electronAPI.onGoogleLoginSuccess((code, verifier) => {
         googleLoginT({
-          proofKey: proofKey,
-          clientId: clientId
+          code: code,
+          verifier: verifier
         })
       })
       window.electronAPI.onAcceptInvitation((inviteToken) => {
@@ -136,6 +141,19 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
     }
   }
 
+  const openExternalBrowser = (url: string) => {
+    if (!!window.electronAPI) {
+      window.electronAPI.openExternalBrowser(url)
+    }
+  }
+
+  const getPKCE = async () => {
+    if (!!window.electronAPI) {
+      return await window.electronAPI.getPKCE()
+    }
+    return { verifier: "", challenge: "" }
+  }
+
   return <StateManager_ElectronContext.Provider
     value={{
       switchToOverlayModeFromFullMode,
@@ -143,7 +161,9 @@ const StateManager_Electron: React.FC<TStateManager_ElectronProps> = ({ children
       switchToFocusModeFromFullMode,
       switchToFocusModeFromOverlayMode,
       switchToFullModeFromOverlayOrFocusMode,
-      switchOverlayLocation
+      switchOverlayLocation,
+      openExternalBrowser,
+      getPKCE
     }}
   >{children}</StateManager_ElectronContext.Provider>;
 

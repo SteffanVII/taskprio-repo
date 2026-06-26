@@ -15,10 +15,12 @@ declare global {
 
             // General
             requestDisplayList: () => Promise<TDisplay[]>,
-            requestAppPreferences: () => Promise<TElectronStorePreferencesType>
+            requestAppPreferences: () => Promise<TElectronStorePreferencesType>,
+            openExternalBrowser: (url: string) => void,
+            getPKCE: () => Promise<{ verifier : string, challenge : string }>,
 
             // General listeners
-            onGoogleLoginSuccess: (callback: (credential: string, clientId: string) => void) => void,
+            onGoogleLoginSuccess: (callback: (code: string, verifier: string) => void) => void,
             onAcceptInvitation: (callback: (inviteToken: string) => void) => void,
             onConsoleLog: (callback: (value: string) => void) => void,
 
