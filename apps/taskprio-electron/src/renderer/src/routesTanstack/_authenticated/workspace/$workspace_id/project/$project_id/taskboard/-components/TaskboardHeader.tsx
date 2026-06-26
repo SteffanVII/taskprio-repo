@@ -31,7 +31,7 @@ const TaskboardHeader = () => {
   const handleOpenDropTaskboardDialog = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    setDropTaskboardDialog( taskboard, true )
+    setDropTaskboardDialog(true, taskboard)
   }
 
   const handleOpenDeactivateTaskboardDialog = (e: React.MouseEvent) => {

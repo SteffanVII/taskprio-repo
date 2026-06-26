@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteImport } from './routesTanstack/_authenticat
 import { Route as AuthenticatedIndexRouteImport } from './routesTanstack/_authenticated/index'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routesTanstack/_authenticated/workspace'
 import { Route as AuthenticatedWorkspaceWorkspace_idRouteImport } from './routesTanstack/_authenticated/workspace/$workspace_id'
+import { Route as AuthenticatedWorkspaceWorkspace_idIndexRouteImport } from './routesTanstack/_authenticated/workspace/$workspace_id/index'
 import { Route as AuthenticatedWorkspaceWorkspace_idTaskTodoRouteImport } from './routesTanstack/_authenticated/workspace/$workspace_id/taskTodo'
 import { Route as AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRouteImport } from './routesTanstack/_authenticated/workspace/$workspace_id/workspaceSettings/index'
 import { Route as AuthenticatedWorkspaceWorkspace_idTaskTodoIndexRouteImport } from './routesTanstack/_authenticated/workspace/$workspace_id/taskTodo/index'
@@ -60,6 +61,12 @@ const AuthenticatedWorkspaceWorkspace_idRoute =
     id: '/$workspace_id',
     path: '/$workspace_id',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
+const AuthenticatedWorkspaceWorkspace_idIndexRoute =
+  AuthenticatedWorkspaceWorkspace_idIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWorkspaceWorkspace_idRoute,
   } as any)
 const AuthenticatedWorkspaceWorkspace_idTaskTodoRoute =
   AuthenticatedWorkspaceWorkspace_idTaskTodoRouteImport.update({
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/workspace': typeof AuthenticatedWorkspaceRouteWithChildren
   '/workspace/$workspace_id': typeof AuthenticatedWorkspaceWorkspace_idRouteWithChildren
   '/workspace/$workspace_id/taskTodo': typeof AuthenticatedWorkspaceWorkspace_idTaskTodoRouteWithChildren
+  '/workspace/$workspace_id/': typeof AuthenticatedWorkspaceWorkspace_idIndexRoute
   '/workspace/$workspace_id/project/': typeof AuthenticatedWorkspaceWorkspace_idProjectIndexRoute
   '/workspace/$workspace_id/taskTodo/': typeof AuthenticatedWorkspaceWorkspace_idTaskTodoIndexRoute
   '/workspace/$workspace_id/workspaceSettings/': typeof AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRoute
@@ -149,7 +157,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/workspace': typeof AuthenticatedWorkspaceRouteWithChildren
   '/': typeof AuthenticatedIndexRoute
-  '/workspace/$workspace_id': typeof AuthenticatedWorkspaceWorkspace_idRouteWithChildren
+  '/workspace/$workspace_id': typeof AuthenticatedWorkspaceWorkspace_idIndexRoute
   '/workspace/$workspace_id/project': typeof AuthenticatedWorkspaceWorkspace_idProjectIndexRoute
   '/workspace/$workspace_id/taskTodo': typeof AuthenticatedWorkspaceWorkspace_idTaskTodoIndexRoute
   '/workspace/$workspace_id/workspaceSettings': typeof AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRoute
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/workspace/$workspace_id': typeof AuthenticatedWorkspaceWorkspace_idRouteWithChildren
   '/_authenticated/workspace/$workspace_id/taskTodo': typeof AuthenticatedWorkspaceWorkspace_idTaskTodoRouteWithChildren
+  '/_authenticated/workspace/$workspace_id/': typeof AuthenticatedWorkspaceWorkspace_idIndexRoute
   '/_authenticated/workspace/$workspace_id/project/': typeof AuthenticatedWorkspaceWorkspace_idProjectIndexRoute
   '/_authenticated/workspace/$workspace_id/taskTodo/': typeof AuthenticatedWorkspaceWorkspace_idTaskTodoIndexRoute
   '/_authenticated/workspace/$workspace_id/workspaceSettings/': typeof AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/workspace/$workspace_id'
     | '/workspace/$workspace_id/taskTodo'
+    | '/workspace/$workspace_id/'
     | '/workspace/$workspace_id/project/'
     | '/workspace/$workspace_id/taskTodo/'
     | '/workspace/$workspace_id/workspaceSettings/'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/workspace/$workspace_id'
     | '/_authenticated/workspace/$workspace_id/taskTodo'
+    | '/_authenticated/workspace/$workspace_id/'
     | '/_authenticated/workspace/$workspace_id/project/'
     | '/_authenticated/workspace/$workspace_id/taskTodo/'
     | '/_authenticated/workspace/$workspace_id/workspaceSettings/'
@@ -289,6 +300,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/workspace/$workspace_id'
       preLoaderRoute: typeof AuthenticatedWorkspaceWorkspace_idRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
+    '/_authenticated/workspace/$workspace_id/': {
+      id: '/_authenticated/workspace/$workspace_id/'
+      path: '/'
+      fullPath: '/workspace/$workspace_id/'
+      preLoaderRoute: typeof AuthenticatedWorkspaceWorkspace_idIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceWorkspace_idRoute
     }
     '/_authenticated/workspace/$workspace_id/taskTodo': {
       id: '/_authenticated/workspace/$workspace_id/taskTodo'
@@ -403,6 +421,7 @@ const AuthenticatedWorkspaceWorkspace_idProjectProject_idTaskboardRouteWithChild
 
 interface AuthenticatedWorkspaceWorkspace_idRouteChildren {
   AuthenticatedWorkspaceWorkspace_idTaskTodoRoute: typeof AuthenticatedWorkspaceWorkspace_idTaskTodoRouteWithChildren
+  AuthenticatedWorkspaceWorkspace_idIndexRoute: typeof AuthenticatedWorkspaceWorkspace_idIndexRoute
   AuthenticatedWorkspaceWorkspace_idProjectIndexRoute: typeof AuthenticatedWorkspaceWorkspace_idProjectIndexRoute
   AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRoute: typeof AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRoute
   AuthenticatedWorkspaceWorkspace_idProjectProject_idTaskboardRoute: typeof AuthenticatedWorkspaceWorkspace_idProjectProject_idTaskboardRouteWithChildren
@@ -414,6 +433,8 @@ const AuthenticatedWorkspaceWorkspace_idRouteChildren: AuthenticatedWorkspaceWor
   {
     AuthenticatedWorkspaceWorkspace_idTaskTodoRoute:
       AuthenticatedWorkspaceWorkspace_idTaskTodoRouteWithChildren,
+    AuthenticatedWorkspaceWorkspace_idIndexRoute:
+      AuthenticatedWorkspaceWorkspace_idIndexRoute,
     AuthenticatedWorkspaceWorkspace_idProjectIndexRoute:
       AuthenticatedWorkspaceWorkspace_idProjectIndexRoute,
     AuthenticatedWorkspaceWorkspace_idWorkspaceSettingsIndexRoute:

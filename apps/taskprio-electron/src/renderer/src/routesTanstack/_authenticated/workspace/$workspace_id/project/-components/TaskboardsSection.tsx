@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useGetProjectTaskboards } from "@/services/private/taskboard/query";
@@ -25,14 +26,14 @@ const TaskboardsSection = () => {
 
   return (
     <section
-      className={cn(" space-y-4")}
+      className={cn("space-y-4")}
     >
       <div
         className={cn(
           "flex items-center gap-4"
         )}
       >
-        <h3 className={cn("text-lg font-medium")} >Taskboards</h3>
+        <h3 className={cn("font-medium")} >Taskboards</h3>
         <Button size={"icon"} variant={"outline"} onClick={handleCreateTaskboardOnClick} ><Plus/></Button>
       </div>
       <div
@@ -47,6 +48,17 @@ const TaskboardsSection = () => {
         {taskboards && taskboards.map((taskboard) => (
           <TaskboardCard key={taskboard.task_board_id} data={taskboard} />
         ))}
+        {
+          taskboards && taskboards.length === 0 &&
+          <>
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No taskboards yet</EmptyTitle>
+                <EmptyDescription>Create a taskboard to get started</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </>
+        }
       </div>
     </section>
   )

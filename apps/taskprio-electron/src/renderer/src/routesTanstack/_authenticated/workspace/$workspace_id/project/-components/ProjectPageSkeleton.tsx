@@ -6,7 +6,9 @@ const ProjectPageSkeleton = () => {
     <div
       className={cn(
         "p-8",
-        "flex flex-col gap-8"
+        "flex flex-col gap-8",
+        "size-full",
+        "bg-muted"
       )}
     >
       <div

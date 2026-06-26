@@ -105,7 +105,7 @@ const DeactivateTaskboardRow: React.FC<TDeactivateTaskboardRowProps> = ({ data }
   }
 
   const handleShowDropTaskboardDialog = () => [
-    setDropTaskboardDialog(data,true)
+    setDropTaskboardDialog(true, data, "PROJECT_SETTINGS")
   ]
 
   return (
