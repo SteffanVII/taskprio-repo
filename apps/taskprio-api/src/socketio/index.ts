@@ -6,7 +6,11 @@ export let io : Server;
 
 export const initializeSocketIO = async (httpServer : http.Server, callback?: (io: Server) => void) => {
 
-  io = new Server(httpServer)
+  io = new Server(httpServer, {
+    cors : {
+      origin : ["*"]
+    }
+  })
   console.log("Socket.IO server initialized ✅")
   callback?.(io)
 

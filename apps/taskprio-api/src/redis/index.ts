@@ -5,12 +5,17 @@ import { createAdapter } from '@socket.io/redis-adapter';
 
 dotenv.config()
 
+const PORT = Number(process.env.REDIS_PORT);
+const PASSWORD = process.env.REDIS_PASSWORD;
+const USERNAME = process.env.REDIS_USERNAME;
+const HOST = process.env.REDIS_SOCKET_HOST;
+
 export const pubClient = createClient({
-    username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD,
+    username: USERNAME,
+    password: PASSWORD,
     socket: {
-        host: process.env.REDIS_SOCKET_HOST,
-        port: Number(process.env.REDIS_SOCKET_PORT)
+        host: HOST,
+        port: PORT
     }
 })
 
