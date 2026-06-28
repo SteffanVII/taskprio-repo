@@ -16,6 +16,9 @@ export const pubClient = createClient({
 
 export const subClient = pubClient.duplicate()
 
+pubClient.on('error', (err) => console.log('Redis Client Error', err));
+subClient.on('error', (err) => console.log('Redis Subscribe Client Error', err));
+
 export const connectRedisPubSubClients = async () => {
   await Promise.all([
     pubClient.connect(),
