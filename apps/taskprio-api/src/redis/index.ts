@@ -11,12 +11,12 @@ const USERNAME = process.env.REDIS_USERNAME;
 const HOST = process.env.REDIS_SOCKET_HOST;
 
 export const pubClient = createClient({
-    username: USERNAME,
-    password: PASSWORD,
-    socket: {
-        host: HOST,
-        port: PORT
-    }
+  username: USERNAME,
+  password: PASSWORD,
+  socket: {
+    host: HOST,
+    port: PORT
+  }
 })
 
 export const subClient = pubClient.duplicate()
