@@ -8,7 +8,9 @@ export const initializeSocketIO = async (httpServer : http.Server, callback?: (i
 
   io = new Server(httpServer, {
     cors : {
-      origin : ["*", "http://localhost:5001"]
+      origin : ["http://localhost:5001", "*"],
+      methods : ["GET", "POST"],
+      credentials : true
     }
   })
   console.log("Socket.IO server initialized ✅")
