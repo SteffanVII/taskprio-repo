@@ -5,15 +5,12 @@ import { createPostgrePool, getPostgrePool, testDatabaseConnection } from "./dat
 import reigsterAuthenticationRoutes from "./routes/authentication/authentication.js";
 import cookieParser from "cookie-parser";
 import registerProjectRoutes from "./routes/project/project.js";
-import { authenticateRequestMiddleware, verifyProjectMemberMiddleware } from "./middlewares/authentication.js";
+import { authenticateRequestMiddleware } from "./middlewares/authentication.js";
 import { registerWorkspaceRoutes } from "./routes/workspace/workspace.js";
 import { registerTaskSectionRoutes } from "./routes/tasksection/tasksection.js";
 import { registerTaskboardRoutes } from "./routes/taskboard/taskboard.js";
 import { registerTaskRoutes } from "./routes/task/task.js";
 import http from "http";
-import { WebSocketServer } from "ws";
-import { registerWebSocketLogic } from "./websocket/index.js";
-import { WebSocketConnectionsManager } from "./websocket/connectionsManager.js";
 import { OAuth2Client } from "google-auth-library";
 import { Resend } from "resend";
 import { registerInvitationPrivateRoutes, registerInvitationPublicRoutes } from "./routes/invitation/invitation.js";
@@ -70,9 +67,9 @@ APP.use(express.urlencoded({ extended: true }));
 
 // Websocket server
 export const SERVER = http.createServer(APP)
-const wss = new WebSocketServer({ server: SERVER })
+// const wss = new WebSocketServer({ server: SERVER })
 // export const wsConnectionsManager = new WebSocketConnectionsManager( wss );
-export const wsConnectionsManager = new WebSocketConnectionsManager(wss)
+// export const wsConnectionsManager = new WebSocketConnectionsManager(wss)
 
 // Create the pool for postgre clients
 createPostgrePool()
@@ -84,7 +81,7 @@ initAWSS3()
 await testAWSS3Connection()
 
 // Mount the websocket
-registerWebSocketLogic(wss, wsConnectionsManager)
+// registerWebSocketLogic(wss, wsConnectionsManager)
 
 // Connect redis pub and sub
 connectRedisPubSubClients()
@@ -131,7 +128,7 @@ registerTaskSectionRoutes(taskSectionRoutes)
 
 // Task routes
 const taskRoutes = express.Router()
-registerTaskRoutes(taskRoutes, wsConnectionsManager)
+registerTaskRoutes(taskRoutes)
 
 // Invitation private routes
 const invitationRoutes = express.Router()
@@ -184,12 +181,6 @@ process.on('SIGTERM', gracefulShutdown);
 
 async function gracefulShutdown() {
     console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
-
-    // Close websocket connections
-    wss.clients.forEach(client => {
-        client.close()
-    })
-    wss.close()
 
     // Close postgre pool
     await getPostgrePool()?.end()

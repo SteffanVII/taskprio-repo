@@ -16,6 +16,7 @@ const StateManager_Socket = (
 ) => {
 
   const socket = io(import.meta.env.VITE_TASKPRIO_SERVICE_URL, {
+    withCredentials: true,
     autoConnect: false
   })
 

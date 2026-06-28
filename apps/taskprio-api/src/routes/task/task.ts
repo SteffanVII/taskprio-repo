@@ -1,721 +1,605 @@
 import { Response, Router } from "express";
 import { IAddTaskAssigneeRequest, IAddTaskCommentRequest, IAddTaskTagRequest, IArrangeTaskRequest, ICreateTaskRequest, IGetTaskCommentsRequest, IGetTaskRequest, ILogTaskTimeRequest, IMoveTaskToTrashRequest, IRemoveTaskAssigneeRequest, IRemoveTaskTagRequest, IRestoreTaskFromTrashRequest, IUpdateTaskPrimitiveFieldsRequest } from "./interfaces.js";
-import { addTaskAssignee, addTaskComment, arrangeTask, createTask, logTaskTime, removeTaskAssignee, restoreTaskFromTrash, transferTaskToTrash, updateTaskPrimitiveFields } from "../../database/queries/task/mutation.js";
+import { addTaskComment, arrangeTask, createTask, logTaskTime, removeTaskAssignee, restoreTaskFromTrash, transferTaskToTrash, updateTaskPrimitiveFields } from "../../database/queries/task/mutation.js";
 import { getTask, getTaskComments } from "../../database/queries/task/query.js";
-import { TTask, TTaskArrangedWebSocketMessage, TTaskAssigneeAddedWebSocketMessage, TTaskAssigneeRemovedWebSocketMessage, TTaskCreateWebSocketMessage, TTaskTagAddedWebSocketMessage, TTaskTagRemovedWebSocketMessage, TWebSocketMessage } from "@repo/taskprio-types";
 import { getProjectMemberByTaskId } from "../../database/queries/project/query.js";
-import { EWebSocketEventType } from "@repo/taskprio-types";
 import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
 import { verifyProjectMemberMiddleware } from "../../middlewares/authentication.js";
-import { WebSocketConnectionsManager } from "../../websocket/connectionsManager.js";
 import { taskprioKysely } from "../../database/kysely/kysely.js";
 import { addTaskTag, removeTaskTag } from "../../database/queries/tag/mutation.js";
 import { getTaskboardIdFromTaskId } from "../../database/queries/taskboard/query.js";
+import { TTask } from "@repo/taskprio-types";
 
-export const registerTaskRoutes = ( router : Router, wsConnectionsManager : WebSocketConnectionsManager ) => {
+export const registerTaskRoutes = (router: Router) => {
 
-    // GET Routes
-    // Get Task
-    router.get(
-        `/:task_id`,
-        verifyProjectMemberMiddleware,
-        async ( req : IGetTaskRequest, res : Response ) => {
-            const { task_id } = req.params;
-            const { user_id } = req.user;
+  // GET Routes
+  // Get Task
+  router.get(
+    `/:task_id`,
+    verifyProjectMemberMiddleware,
+    async (req: IGetTaskRequest, res: Response) => {
+      const { task_id } = req.params;
+      const { user_id } = req.user;
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
 
-            try {
-                const task = await getTask(task_id, user_id)
-                res.status(200).json(task)
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+      try {
+        const task = await getTask(task_id, user_id)
+        res.status(200).json(task)
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+    }
+  )
+
+  // Get task comments
+  router.get(
+    `/comments/:task_id`,
+    verifyProjectMemberMiddleware,
+    async (req: IGetTaskCommentsRequest, res: Response) => {
+
+      const { task_id } = req.params
+
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
+
+      try {
+        const comments = await getTaskComments(task_id)
+        res.status(200).json(comments)
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+
+    }
+  )
+
+  // POST Routes
+  // Create task
+  router.post(
+    `/`,
+    verifyProjectMemberMiddleware,
+    async (req: ICreateTaskRequest, res: Response) => {
+      const body = req.body
+
+      try {
+
+        let transactionReturn: {
+          createdTask: TTask,
+          workspaceId: string
         }
-    )
 
-    // Get task comments
-    router.get(
-        `/comments/:task_id`,
-        verifyProjectMemberMiddleware,
-        async ( req : IGetTaskCommentsRequest, res : Response ) => {
+        transactionReturn = await taskprioKysely.transaction().execute(async trx => {
 
-            const { task_id } = req.params
+          const createdTask = await createTask(
+            body.task_section_id,
+            body.task_title,
+            req.user.user_id,
+            trx
+          )
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+          const workspaceId = await getWorkspaceIdFromProjectId(req.projectId, trx);
 
-            try {
-                const comments = await getTaskComments( task_id )
-                res.status(200).json(comments)
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+          return {
+            createdTask,
+            workspaceId
+          }
 
+        })
+
+        res.status(201).json(transactionReturn.createdTask)
+
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+
+    }
+  )
+
+  // Add task assignee
+  router.post(
+    `/assignee/:task_id`,
+    async (req: IAddTaskAssigneeRequest, res: Response) => {
+
+      const { user_id: target_user_id, task_id, taskboard_id } = req.body
+      const { user_id: source_user_id } = req.user
+
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
+
+      if (!target_user_id) {
+        res.status(400).json({
+          message: "Target user ID is required"
+        })
+        return
+      }
+
+      try {
+
+        const targetProjectMember = await getProjectMemberByTaskId(task_id, target_user_id)
+        const sourceProjectMember = await getProjectMemberByTaskId(task_id, source_user_id)
+
+        if (!targetProjectMember) {
+          res.status(403).json({
+            message: "Target user is not a project member"
+          })
+          return
         }
-    )
 
-    // POST Routes
-    // Create task
-    router.post(
-        `/`,
-        verifyProjectMemberMiddleware,
-        async ( req : ICreateTaskRequest, res : Response ) => {
-            const body = req.body
-
-            try {
-
-                let transactionReturn : {
-                    createdTask : TTask,
-                    workspaceId : string
-                }
-
-                transactionReturn = await taskprioKysely.transaction().execute( async trx => {
-
-                    const createdTask = await createTask(
-                        body.task_section_id,
-                        body.task_title,
-                        req.user.user_id,
-                        trx
-                    )
-
-                    const workspaceId = await getWorkspaceIdFromProjectId( req.projectId, trx );
-
-                    return {
-                        createdTask,
-                        workspaceId
-                    }
-
-                } )
-
-                const message : TTaskCreateWebSocketMessage = {
-                    data : transactionReturn.createdTask,
-                    workspace_id : transactionReturn.workspaceId
-                }
-
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    transactionReturn.createdTask.task_board_id,
-                    {
-                        type : EWebSocketEventType.TASK_CREATED,
-                        message : message
-                    },
-                    undefined,
-                    [ req.user.user_id ],
-                )
-
-                res.status(201).json(transactionReturn.createdTask)
-
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
-
+        if (!sourceProjectMember) {
+          res.status(403).json({
+            message: "Forbidden"
+          })
         }
-    )
 
-    // Add task assignee
-    router.post(
-        `/assignee/:task_id`,
-        async ( req : IAddTaskAssigneeRequest, res : Response ) => {
+        res.status(200).json({
+          message: "Task assignee added",
+        })
 
-            const { user_id : target_user_id, task_id, taskboard_id } = req.body
-            const { user_id : source_user_id } = req.user
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+    }
+  )
 
-            if ( !target_user_id ) {
-                res.status(400).json({
-                    message : "Target user ID is required"
-                })
-                return
-            }
+  // Log task time
+  router.post(
+    `/log-time/:task_id`,
+    async (req: ILogTaskTimeRequest, res: Response) => {
 
-            try {
-                
-                const targetProjectMember = await getProjectMemberByTaskId( task_id, target_user_id )
-                const sourceProjectMember = await getProjectMemberByTaskId( task_id, source_user_id )
+      const { task_id } = req.params
+      const { time_spent } = req.body
+      const { user_id } = req.user
 
-                if ( !targetProjectMember ) {
-                    res.status(403).json({
-                        message : "Target user is not a project member"
-                    })
-                    return
-                }
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
 
-                if ( !sourceProjectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                }
+      if (time_spent === undefined) {
+        res.status(400).json({
+          message: "Time spent is required"
+        })
+        return
+      }
 
-                const assignee = await addTaskAssignee( task_id, target_user_id )
+      if (time_spent <= 0) {
+        res.status(400).json({
+          message: "Time spent must be greater than 0"
+        })
+        return
+      }
 
-                const wsMessage : TTaskAssigneeAddedWebSocketMessage = {
-                    data : assignee,
-                    task_id,
-                    taskboard_id
-                }
+      try {
 
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    taskboard_id,
-                    {
-                        type : EWebSocketEventType.TASK_ASSIGNEE_ADDED,
-                        message : wsMessage
-                    },
-                    undefined,
-                    [ source_user_id ]
-                )
 
-                res.status(200).json({
-                    message : "Task assignee added",
-                })
+        const projectMember = await getProjectMemberByTaskId(task_id, user_id)
 
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
-
+        if (!projectMember) {
+          res.status(403).json({
+            message: "Forbidden"
+          })
+          return
         }
-    )
 
-    // Log task time
-    router.post(
-        `/log-time/:task_id`,
-        async ( req : ILogTaskTimeRequest, res : Response ) => {
+        const loggedTaskTime = await logTaskTime(
+          task_id,
+          user_id,
+          time_spent
+        )
 
-            const { task_id } = req.params
-            const { time_spent } = req.body
-            const { user_id } = req.user
+        res.status(200).json(loggedTaskTime)
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+    }
+  )
 
-            if ( time_spent === undefined ) {
-                res.status(400).json({
-                    message : "Time spent is required"
-                })
-                return
-            }
+  // Add task tag
+  router.post(
+    `/tag`,
+    async (req: IAddTaskTagRequest, res: Response) => {
 
-            if ( time_spent <= 0 ) {
-                res.status(400).json({
-                    message : "Time spent must be greater than 0"
-                })
-                return
-            }
+      const { task_id, tag_id } = req.body
+      const { user_id } = req.user
 
-            try {
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
 
+      if (!tag_id) {
+        res.status(400).json({
+          message: "Tag ID is required"
+        })
+        return
+      }
 
-                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
+      try {
 
-                if ( !projectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
+        const taskboardId = await getTaskboardIdFromTaskId(task_id)
 
-                const loggedTaskTime = await logTaskTime(
-                    task_id,
-                    user_id,
-                    time_spent
-                )
-
-                res.status(200).json( loggedTaskTime )
-
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+        if (!taskboardId) {
+          res.status(404).json({
+            message: "Taskboard not found"
+          })
+          return
         }
-    )
 
-    // Add task tag
-    router.post(
-        `/tag`,
-        async ( req : IAddTaskTagRequest, res : Response ) => {
-            
-            const { task_id, tag_id } = req.body
-            const { user_id } = req.user
+        const projectMember = await getProjectMemberByTaskId(task_id, user_id)
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
-
-            if ( !tag_id ) {
-                res.status(400).json({
-                    message : "Tag ID is required"
-                })
-                return
-            }
-
-            try {
-
-                const taskboardId = await getTaskboardIdFromTaskId( task_id )
-
-                if ( !taskboardId ) {
-                    res.status(404).json({
-                        message : "Taskboard not found"
-                    })
-                    return
-                }
-
-                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
-
-                if ( !projectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
-
-                const addedTaskTag = await addTaskTag( task_id, tag_id )
-
-                const wsMessage : TTaskTagAddedWebSocketMessage = {
-                    data : addedTaskTag,
-                    taskboard_id : taskboardId,
-                    task_id
-                }
-
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    taskboardId,
-                    {
-                        type : EWebSocketEventType.TASK_TAG_ADDED,
-                        message : wsMessage
-                    },
-                    undefined,
-                    [ user_id ]
-                )
-
-                res.status(200).json(addedTaskTag)
-                
-
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : error
-                })
-            }
-
+        if (!projectMember) {
+          res.status(403).json({
+            message: "Forbidden"
+          })
+          return
         }
-    )
 
-    // Add task comment
-    router.post(
-        `/comment/:task_id`,
-        verifyProjectMemberMiddleware,
-        async ( req : IAddTaskCommentRequest, res : Response ) => {
+        const addedTaskTag = await addTaskTag(task_id, tag_id)
 
-            const { task_id } = req.params
-            const { comment_content, replying_to_task_comment_id } = req.body
-            const { user_id } = req.user
+        res.status(200).json(addedTaskTag)
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
 
-            if ( !comment_content ) {
-                res.status(400).json({
-                    message : "Comment content is required"
-                })
-                return
-            }
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: error
+        })
+      }
 
-            try {
-                await addTaskComment( task_id, user_id, comment_content, replying_to_task_comment_id )
-                res.status(200).json({
-                    message : "Task comment added"
-                })
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+    }
+  )
 
+  // Add task comment
+  router.post(
+    `/comment/:task_id`,
+    verifyProjectMemberMiddleware,
+    async (req: IAddTaskCommentRequest, res: Response) => {
+
+      const { task_id } = req.params
+      const { comment_content, replying_to_task_comment_id } = req.body
+      const { user_id } = req.user
+
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
+
+      if (!comment_content) {
+        res.status(400).json({
+          message: "Comment content is required"
+        })
+        return
+      }
+
+      try {
+        await addTaskComment(task_id, user_id, comment_content, replying_to_task_comment_id)
+        res.status(200).json({
+          message: "Task comment added"
+        })
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+
+    }
+  )
+
+  // PATCH Routes
+  // Arrange task
+  router.patch(
+    `/move/:task_id`,
+    async (req: IArrangeTaskRequest, res: Response) => {
+      const { task_id } = req.params
+      const body = req.body
+      const { user_id } = req.user
+
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
+
+      try {
+
+        const projectMember = await getProjectMemberByTaskId(task_id, user_id)
+
+        if (!projectMember) {
+          res.status(403).json({
+            message: "Forbidden"
+          })
+          return
         }
-    )
 
-    // PATCH Routes
-    // Arrange task
-    router.patch(
-        `/move/:task_id`,
-        async ( req : IArrangeTaskRequest, res : Response ) => {
-            const { task_id } = req.params
-            const body = req.body
-            const { user_id } = req.user
+        const updatedTask = await arrangeTask(
+          task_id,
+          body
+        )
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+        res.status(200).json(updatedTask)
 
-            try {
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+    }
+  )
 
-                const projectMember = await getProjectMemberByTaskId( task_id, user_id )
+  // Update task primitive fields
+  router.patch(
+    `/primitive-fields/:task_id`,
+    verifyProjectMemberMiddleware,
+    async (req: IUpdateTaskPrimitiveFieldsRequest, res: Response) => {
 
-                if ( !projectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
+      const { task_id } = req.params
+      const body = req.body
+      const { user_id } = req.user
 
-                const updatedTask = await arrangeTask(
-                    task_id,
-                    body
-                )
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
 
-                const wsMessage : TWebSocketMessage<TTaskArrangedWebSocketMessage> = {
-                    type : EWebSocketEventType.TASK_ARRANGED,
-                    message : {
-                        data : updatedTask,
-                        taskboard_id : updatedTask.task_board_id
-                    }
-                }
+      if (!body || Object.keys(body).length === 0) {
+        res.status(400).json({
+          message: "Body is required"
+        })
+        return
+      }
 
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    updatedTask.task_board_id,
-                    wsMessage,
-                    undefined,
-                    [ user_id ]
-                )
+      if (body.task_title === null) {
+        res.status(400).json({
+          message: "Task title cannot be null"
+        })
+        return
+      }
 
-                res.status(200).json(updatedTask)
-                
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+      try {
+
+        const updatedTask = await updateTaskPrimitiveFields(
+          task_id,
+          body
+        )
+
+        res.status(200).json(updatedTask)
+
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+
+    }
+  )
+
+  // Restore task from trash
+  router.patch(
+    `/restore-from-trash/:task_id/:taskboard_id`,
+    async (req: IRestoreTaskFromTrashRequest, res: Response) => {
+
+      const { task_id, taskboard_id } = req.params
+
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
+
+      if (!taskboard_id) {
+        res.status(400).json({
+          message: "Taskboard ID is required"
+        })
+        return
+      }
+
+      try {
+        await restoreTaskFromTrash(task_id, taskboard_id)
+        res.status(200).json({
+          message: "Task restored from trash"
+        })
+      } catch (error) {
+        console.log(error)
+        if (error.message === "There is no task section available to restore the task to" || error.message === "Task not found") {
+          res.status(404).json({
+            message: error.message
+          })
+        } else {
+          res.status(500).json({
+            message: "Internal server error"
+          })
         }
-    )
+      }
 
-    // Update task primitive fields
-    router.patch(
-        `/primitive-fields/:task_id`,
-        verifyProjectMemberMiddleware,
-        async ( req : IUpdateTaskPrimitiveFieldsRequest, res : Response ) => {
+    }
+  )
 
-            const { task_id } = req.params
-            const body = req.body
-            const { user_id } = req.user
+  // DELETE Routes
+  // Remove task assignee
+  router.delete(
+    `/assignee/:task_id`,
+    async (req: IRemoveTaskAssigneeRequest, res: Response) => {
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+      const { task_id } = req.params
+      const { user_id: target_user_id } = req.body
+      const { user_id: source_user_id } = req.user
 
-            if ( !body || Object.keys(body).length === 0 ) {
-                res.status(400).json({
-                    message : "Body is required"
-                })
-                return
-            }
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
 
-            if ( body.task_title === null ) {
-                res.status(400).json({
-                    message : "Task title cannot be null"
-                })
-                return
-            }
+      if (!target_user_id) {
+        res.status(400).json({
+          message: "Target user ID is required"
+        })
+      }
 
-            try {
-                
-                const updatedTask = await updateTaskPrimitiveFields(
-                    task_id,
-                    body
-                )
+      try {
 
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    updatedTask.task_board_id,
-                    {
-                        type : EWebSocketEventType.TASK_UPDATED,
-                        message : updatedTask
-                    },
-                    undefined,
-                    [ user_id ],
-                )
+        const targetProjectMember = await getProjectMemberByTaskId(task_id, target_user_id)
+        const sourceProjectMember = await getProjectMemberByTaskId(task_id, source_user_id)
 
-                res.status(200).json( updatedTask )
-
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
-
+        if (!targetProjectMember) {
+          res.status(403).json({
+            message: "Target user is not a project member"
+          })
+          return
         }
-    )
 
-    // Restore task from trash
-    router.patch(
-        `/restore-from-trash/:task_id/:taskboard_id`,
-        async ( req : IRestoreTaskFromTrashRequest, res : Response ) => {
-
-            const { task_id, taskboard_id } = req.params
-
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
-
-            if ( !taskboard_id ) {
-                res.status(400).json({
-                    message : "Taskboard ID is required"
-                })
-                return
-            }
-
-            try {
-                await restoreTaskFromTrash( task_id, taskboard_id )
-                res.status(200).json({
-                    message : "Task restored from trash"
-                })
-            } catch (error) {
-                console.log(error)
-                if ( error.message === "There is no task section available to restore the task to" || error.message === "Task not found" ) {
-                    res.status(404).json({
-                        message : error.message
-                    })
-                } else {
-                    res.status(500).json({
-                        message : "Internal server error"
-                    })
-                }
-            }
-
+        if (!sourceProjectMember) {
+          res.status(403).json({
+            message: "Forbidden"
+          })
+          return
         }
-    )
 
-    // DELETE Routes
-    // Remove task assignee
-    router.delete(
-        `/assignee/:task_id`,
-        async ( req : IRemoveTaskAssigneeRequest, res : Response ) => {
+        await removeTaskAssignee(task_id, target_user_id)
 
-            const { task_id } = req.params
-            const { user_id : target_user_id } = req.body
-            const { user_id : source_user_id } = req.user
+        const taskboardId = await getTaskboardIdFromTaskId(task_id)
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
-
-            if ( !target_user_id ) {
-                res.status(400).json({
-                    message : "Target user ID is required"
-                })
-            }
-
-            try {
-                
-                const targetProjectMember = await getProjectMemberByTaskId( task_id, target_user_id )
-                const sourceProjectMember = await getProjectMemberByTaskId( task_id, source_user_id )
-
-                if ( !targetProjectMember ) {
-                    res.status(403).json({
-                        message : "Target user is not a project member"
-                    })
-                    return
-                }
-
-                if ( !sourceProjectMember ) {
-                    res.status(403).json({
-                        message : "Forbidden"
-                    })
-                    return
-                }
-
-                await removeTaskAssignee( task_id, target_user_id )
-
-                const taskboardId = await getTaskboardIdFromTaskId( task_id )
-
-                if ( !taskboardId ) {
-                    res.status(404).json({
-                        message : "Taskboard not found"
-                    })
-                    return
-                }
-
-                const wsMessage : TTaskAssigneeRemovedWebSocketMessage = {
-                    data : target_user_id,
-                    taskboard_id : taskboardId,
-                    task_id
-                }
-
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    taskboardId,
-                    {
-                        type : EWebSocketEventType.TASK_ASSIGNEE_REMOVED,
-                        message : wsMessage
-                    },
-                    undefined,
-                    [ source_user_id ]
-                )
-
-                res.status(200).json({
-                    message : "Task assignee removed"
-                })
-                
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+        if (!taskboardId) {
+          res.status(404).json({
+            message: "Taskboard not found"
+          })
+          return
         }
-    )
 
-    // Remove task tag
-    router.delete(
-        `/tag`,
-        async ( req : IRemoveTaskTagRequest, res : Response ) => {
+        res.status(200).json({
+          message: "Task assignee removed"
+        })
 
-            const { task_id, tag_id } = req.body
-            const { user_id } = req.user
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+    }
+  )
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
+  // Remove task tag
+  router.delete(
+    `/tag`,
+    async (req: IRemoveTaskTagRequest, res: Response) => {
 
-            if ( !tag_id ) {
-                res.status(400).json({
-                    message : "Tag ID is required"
-                })
-                return
-            }
+      const { task_id, tag_id } = req.body
+      const { user_id } = req.user
 
-            try {
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
 
-                const taskboardId = await getTaskboardIdFromTaskId( task_id )
-                if ( !taskboardId ) {
-                    res.status(404).json({
-                        message : "Taskboard not found"
-                    })
-                    return
-                }
+      if (!tag_id) {
+        res.status(400).json({
+          message: "Tag ID is required"
+        })
+        return
+      }
 
-                await removeTaskTag( task_id, tag_id )
+      try {
 
-
-                const wsMessage : TTaskTagRemovedWebSocketMessage = {
-                    data : tag_id,
-                    taskboard_id : taskboardId,
-                    task_id
-                }
-
-                wsConnectionsManager.broadcastToChannel(
-                    "taskboard",
-                    taskboardId,
-                    {
-                        type : EWebSocketEventType.TASK_TAG_REMOVED,
-                        message : wsMessage
-                    },
-                    undefined,
-                    [ user_id ]
-                )
-
-                res.status(200).json({
-                    message : "Task tag removed"
-                })
-
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : error
-                })
-            }
-
+        const taskboardId = await getTaskboardIdFromTaskId(task_id)
+        if (!taskboardId) {
+          res.status(404).json({
+            message: "Taskboard not found"
+          })
+          return
         }
-    )
 
-    // Move task to trash
-    router.delete(
-        `/trash/:task_id`,
-        async ( req : IMoveTaskToTrashRequest, res : Response ) => {
+        await removeTaskTag(task_id, tag_id)
 
-            const {
-                task_id
-            } = req.params
+        res.status(200).json({
+          message: "Task tag removed"
+        })
 
-            if ( !task_id ) {
-                res.status(400).json({
-                    message : "Task ID is required"
-                })
-                return
-            }
-            
-            try {
-                await transferTaskToTrash( task_id )
-                res.status(200).json({
-                    message : "Task moved to trash"
-                })
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({
-                    message : "Internal server error"
-                })
-            }
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: error
+        })
+      }
 
-        }
-    )
+    }
+  )
+
+  // Move task to trash
+  router.delete(
+    `/trash/:task_id`,
+    async (req: IMoveTaskToTrashRequest, res: Response) => {
+
+      const {
+        task_id
+      } = req.params
+
+      if (!task_id) {
+        res.status(400).json({
+          message: "Task ID is required"
+        })
+        return
+      }
+
+      try {
+        await transferTaskToTrash(task_id)
+        res.status(200).json({
+          message: "Task moved to trash"
+        })
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          message: "Internal server error"
+        })
+      }
+
+    }
+  )
 
 }

@@ -7,8 +7,6 @@ import { getTaskboardTrashTasks } from "../../database/queries/task/query.js";
 import { EProjectRole, EWebSocketEventType, TTaskboardDeactivatedWebSocketMessage, TTaskboardDroppedWebSocketMessage, TTaskboardReactivatedWebSocketMessage } from "@repo/taskprio-types";
 import { createTaskboard, deactivateTaskboard, dropTaskboard, reactivateTaskboard } from "../../database/queries/taskboard/mutation.js";
 import { getWorkspaceIdFromProjectId } from "../../database/queries/workspace/query.js";
-import { taskboardDroppedEventSender } from "../../websocket/eventSenders/taskboardEventSenders.js";
-import { wsConnectionsManager } from "../../app.js";
 
 export const registerTaskboardRoutes = ( router : Router ) => {
 
@@ -100,28 +98,9 @@ export const registerTaskboardRoutes = ( router : Router ) => {
         verifyProjectOwnerOrAdminMiddleware,
         async ( req : IDeactivateTaskboardRequest, res : Response ) => {
             const { taskboard_id, project_id } = req.body;
-            const { user_id } = req.user;
 
             try {
                 await deactivateTaskboard( project_id, taskboard_id)
-                const workspaceId = await getWorkspaceIdFromProjectId(project_id)
-                const projectMembers = await getProjectMembers(project_id);
-                if ( workspaceId && projectMembers.length > 0 ) {
-                    const wsMessage : TTaskboardDeactivatedWebSocketMessage = {
-                        taskboard_id,
-                        workspace_id : workspaceId
-                    }
-                    wsConnectionsManager.broadcastToChannel(
-                        "project",
-                        project_id,
-                        {
-                            type : EWebSocketEventType.TASKBOARD_DEACTIVATED,
-                            message : wsMessage
-                        },
-                        undefined,
-                        [ user_id ]
-                    )
-                }
                 res.status(200).json({message : "Taskboard deactivated successfully"})
             } catch (error) {
                 console.log(error)
@@ -135,26 +114,8 @@ export const registerTaskboardRoutes = ( router : Router ) => {
         verifyProjectOwnerOrAdminMiddleware,
         async ( req : IReactivateTaskboardRequest, res : Response ) => {
             const { taskboard_id, project_id } = req.body;
-            const { user_id } = req.user;
             try {
                 await reactivateTaskboard(taskboard_id, project_id)
-                const workspaceId = await getWorkspaceIdFromProjectId(project_id)
-                const projectMembers = await getProjectMembers(project_id);
-                if ( workspaceId && projectMembers.length > 0 ) {
-                    const wsMessage : TTaskboardReactivatedWebSocketMessage = {
-                        project_id
-                    }
-                    wsConnectionsManager.broadcastToChannel(
-                        "project",
-                        project_id,
-                        {
-                            type : EWebSocketEventType.TASKBOARD_REACTIVATED,
-                            message : wsMessage
-                        },
-                        undefined,
-                        [ user_id ]
-                    )
-                }
                 res.status(200).json({message : "Taskboard reactivated successfully"})
             } catch (error) {
                 console.log(error)
@@ -171,24 +132,8 @@ export const registerTaskboardRoutes = ( router : Router ) => {
         verifyProjectOwnerOrAdminMiddleware,
         async ( req : IDropTaskboardRequest, res : Response ) => {
             const { taskboard_id, project_id, taskboard_name_confirmation } = req.query
-            const { user_id } = req.user;
             try {
                 await dropTaskboard(project_id, taskboard_id, taskboard_name_confirmation)
-                const workspaceId = await getWorkspaceIdFromProjectId(project_id);
-                const wsMessage : TTaskboardDroppedWebSocketMessage = {
-                    taskboard_id,
-                    workspace_id : workspaceId
-                }
-                wsConnectionsManager.broadcastToChannel(
-                    "project",
-                    project_id,
-                    {
-                        type : EWebSocketEventType.TASKBOARD_DROPPED,
-                        message : wsMessage
-                    },
-                    undefined,
-                    [ user_id ]
-                )
                 res.status(200).json({message : "Taskboard deleted successfully"})
             } catch (error) {
                 console.log(error)

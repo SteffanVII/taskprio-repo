@@ -6,7 +6,6 @@ import { IAuthenticatedRequest } from "../../middlewares/interfaces.js";
 import { createWorkspace, deactivateWorkspaceMember, reactivateWorkspaceMember, updateWorkspaceMemberRole } from "../../database/queries/workspace/mutation.js";
 import { verifyWorkspaceMemberMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
 import { EWebSocketEventType, TWorkspaceMemberDeactivatedWebSocketMessage } from "@repo/taskprio-types";
-import { wsConnectionsManager } from "../../app.js";
 import { emitWorkspaceMemberDeactivated } from "../../socketio/emitters/workspace.js";
 
 export const registerWorkspaceRoutes = (router: Router) => {
@@ -132,7 +131,6 @@ export const registerWorkspaceRoutes = (router: Router) => {
     async (req: IDeactivateWorkspaceMemberRequest, res: Response) => {
 
       const { workspace_id, member_id } = req.body
-      const { user_id } = req.user
 
       try {
         await deactivateWorkspaceMember(member_id, workspace_id)
@@ -143,22 +141,7 @@ export const registerWorkspaceRoutes = (router: Router) => {
             userId : member_id
           }
         })
-
-        const workspaceMembers = await getWorkspaceMembers(workspace_id)
-
-        const wsMessage: TWorkspaceMemberDeactivatedWebSocketMessage = {
-          workspace_id,
-          member_id
-        }
-
-        wsConnectionsManager.broadcastToUsers(
-          {
-            type: EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
-            message: wsMessage
-          },
-          workspaceMembers.map(member => member.user_id).filter(id => id !== user_id)
-        )
-
+        
         res.status(200).json({ message: "Workspace member deactivated" })
 
       } catch (error) {
@@ -175,25 +158,9 @@ export const registerWorkspaceRoutes = (router: Router) => {
     async (req: IReactivateWorkspaceMemberRequest, res: Response) => {
 
       const { workspace_id, member_id } = req.body
-      const { user_id } = req.user
 
       try {
         await reactivateWorkspaceMember(member_id, workspace_id)
-
-        const workspaceMembers = await getWorkspaceMembers(workspace_id)
-
-        const wsMessage: TWorkspaceMemberDeactivatedWebSocketMessage = {
-          workspace_id,
-          member_id
-        }
-
-        wsConnectionsManager.broadcastToUsers(
-          {
-            type: EWebSocketEventType.WORKSPACE_MEMBER_REACTIVATED,
-            message: wsMessage
-          },
-          workspaceMembers.map(member => member.user_id).filter(id => id !== user_id)
-        )
 
         res.status(200).json({ message: "Workspace member reactivated" })
       } catch (error) {
