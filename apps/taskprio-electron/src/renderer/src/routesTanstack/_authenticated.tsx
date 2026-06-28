@@ -1,6 +1,7 @@
 import { WebSocketProvider } from "@/components/others/websocket/WebsocketProvider";
 import { AUTH_TOKEN_KEY, USER_DATA_KEY } from "@/lib/globals";
 import StateManager_Project from "@/stateManagers/StateManager_Project";
+import StateManager_Socket from "@/stateManagers/StateManager_Socket";
 import StateManager_Taskboard from "@/stateManagers/StateManager_Taskboard";
 import StateManager_Workspace from "@/stateManagers/StateManager_Workspace";
 import { useGlobalsStore } from "@/stores/globals";
@@ -36,13 +37,15 @@ function AuthenticatedLayout() {
 
   return (
     <WebSocketProvider>
-      <StateManager_Workspace>
-        <StateManager_Project>
-          <StateManager_Taskboard>
-            <Outlet/>
-          </StateManager_Taskboard>
-        </StateManager_Project>
-      </StateManager_Workspace>
+      <StateManager_Socket>
+        <StateManager_Workspace>
+          <StateManager_Project>
+            <StateManager_Taskboard>
+              <Outlet/>
+            </StateManager_Taskboard>
+          </StateManager_Project>
+        </StateManager_Workspace>
+      </StateManager_Socket>
     </WebSocketProvider>
   )
 }

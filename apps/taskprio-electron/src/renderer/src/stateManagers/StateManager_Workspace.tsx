@@ -7,6 +7,7 @@ import { WebSocketContext } from "@/components/others/websocket/WebsocketProvide
 import { useGlobalsStore_user } from "@/stores/globals";
 import { useProjectStore } from "@/stores/project";
 import { useTaskboardStore } from "@/stores/taskboard";
+import { useSocket } from "./StateManager_Socket";
 
 type TStateManager_Workspace = {
   children: React.ReactNode
@@ -30,6 +31,10 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
   const {
     channelActions
   } = useContext(WebSocketContext);
+
+  const {
+    joinChannel
+  } = useSocket()
 
   const {
     data: workspaces,
@@ -85,6 +90,7 @@ const StateManager_Workspace: React.FC<TStateManager_Workspace> = ({ children })
       setNoTaskboards(false)
       if (foundWorkspace) {
         channelActions.joinWorkspaceChannel(foundWorkspace.workspace_id)
+        joinChannel(foundWorkspace.workspace_id)
       }
     }
   }, [

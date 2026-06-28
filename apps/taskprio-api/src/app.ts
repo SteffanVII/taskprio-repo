@@ -26,6 +26,8 @@ import { registerToDoRoutes } from "./routes/todo/todo.js";
 import { initializeTaskTodoTimerHeartbeatTimeouts } from "./initializers/taskTodoTimerHeartbeatTimeoutManager.js";
 import { IAuthenticatedRequest } from "./middlewares/interfaces.js";
 import registerRedirectRoutes from "./routes/redirect/redirect.js";
+import { connectRedisPubSubClients, initializeRedisAdapterToSocketIO } from "./redis/index.js";
+import { initializeSocketIO } from "./socketio/index.js";
 
 dotenv.config();
 
@@ -44,6 +46,8 @@ const resendApiKey = process.env.RESEND_API_KEY
 const PORT = process.env.PORT || 5000;
 
 export const APP = express();
+
+// Resend
 export const resend = new Resend(resendApiKey)
 
 // Google auth client
@@ -82,8 +86,14 @@ await testAWSS3Connection()
 // Mount the websocket
 registerWebSocketLogic(wss, wsConnectionsManager)
 
-// // Connect to redis
-// redisConnect()
+// Connect redis pub and sub
+connectRedisPubSubClients()
+
+// Initialize socket.io
+initializeSocketIO(SERVER, (io) => {
+  // Add redis adapter to socket.io
+  initializeRedisAdapterToSocketIO(io)
+});
 
 // Initialize multer
 export const multerInstance = multer({

@@ -5,13 +5,14 @@ import jwt from "jsonwebtoken";
 import { getUserByEmail } from "../../database/queries/user/query.js";
 import { PoolClient } from "pg";
 import { getPoolClient } from "../../database/postgresql.js";
-import { TGetInvitationInfoResponseData, TInvitationTokenDecoded } from "@repo/taskprio-types";
+import { ESocketEventType, TGetInvitationInfoResponseData, TInvitationTokenDecoded } from "@repo/taskprio-types";
 import { getInvitation } from "../../database/queries/invitation/query.js";
 import { addWorkspaceMember } from "../../database/queries/workspace/mutation.js";
 import { acceptInvitation, createInvitationBatch } from "../../database/queries/invitation/mutation.js";
 import { addMemberToProjects, addProjectMember } from "../../database/queries/project/mutation.js";
 import { getWorkspaceMember } from "../../database/queries/workspace/query.js";
 import dotenv from "dotenv"
+import { io } from "../../socketio/index.js";
 
 dotenv.config()
 
@@ -211,6 +212,8 @@ export const registerInvitationPublicRoutes = (router: Router) => {
           decodedToken.sender_id,
           decodedToken.projects
         )
+
+        io.emit(ESocketEventType.WORKSPACE_JOIN)
 
         res.status(200).clearCookie(process.env.INVITATION_ACCESS_TOKEN_COOKIE_NAME).json({ message: "Invitation accepted" })
 

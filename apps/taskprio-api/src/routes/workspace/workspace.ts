@@ -7,191 +7,201 @@ import { createWorkspace, deactivateWorkspaceMember, reactivateWorkspaceMember, 
 import { verifyWorkspaceMemberMiddleware, verifyWorkspaceOwnerOrAdminMiddleware } from "../../middlewares/authentication.js";
 import { EWebSocketEventType, TWorkspaceMemberDeactivatedWebSocketMessage } from "@repo/taskprio-types";
 import { wsConnectionsManager } from "../../app.js";
+import { emitWorkspaceMemberDeactivated } from "../../socketio/emitters/workspace.js";
 
-export const registerWorkspaceRoutes = ( router : Router ) => {
+export const registerWorkspaceRoutes = (router: Router) => {
 
-    // GET
+  // GET
 
-    // Get workspaces
-    router.get( "/s", async ( req : IAuthenticatedRequest, res : Response ) => {
-        const { user_id } = req.user;
+  // Get workspaces
+  router.get("/s", async (req: IAuthenticatedRequest, res: Response) => {
+    const { user_id } = req.user;
 
-        try {
-            const workspaces = await getUserWorkspaces(user_id);
-            res.status(200).json(workspaces);
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ message : "Internal server error" });
+    try {
+      const workspaces = await getUserWorkspaces(user_id);
+      res.status(200).json(workspaces);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  })
+
+  // Get workspace
+  router.get("/:workspace_id", async (req: IGetWorkspaceRequest, res: Response) => {
+    const { workspace_id } = req.params;
+    const { user_id } = req.user;
+
+    try {
+      const workspaceMember = await getWorkspaceMember(workspace_id, user_id);
+
+      if (!workspaceMember) {
+        res.status(404).json({ message: "Not a member of this workspace" });
+        return
+      }
+
+      const workspace = await getUserWorkspace(workspace_id, user_id);
+
+      if (!workspace) {
+        res.status(404).json({ message: "Workspace not found" });
+        return
+      }
+
+      res.status(200).json(workspace);
+
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  })
+
+  // Get workspace member
+  router.get(
+    "/member/:workspace_id/:member_id",
+    verifyWorkspaceMemberMiddleware,
+    async (req: IGetWorkspaceMemberRequest, res: Response) => {
+
+      const { workspace_id, member_id } = req.params;
+
+      try {
+        const workspaceMember = await getWorkspaceMember(workspace_id, member_id);
+        if (!workspaceMember) {
+          res.status(404).json({ message: "Workspace member not found" });
+        } else {
+          res.status(200).json(workspaceMember);
         }
-    } )
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal server error" });
+      }
 
-    // Get workspace
-    router.get( "/:workspace_id", async ( req : IGetWorkspaceRequest, res : Response ) => {
-        const { workspace_id } = req.params;
-        const { user_id } = req.user;
+    }
+  )
 
-        try {
-            const workspaceMember = await getWorkspaceMember(workspace_id, user_id);
+  // POST
 
-            if ( !workspaceMember ) {
-                res.status(404).json({ message : "Not a member of this workspace" });
-                return 
-            }
+  // Create workspace
+  router.post("/", async (req: ICreateWorkspaceRequest, res: Response) => {
+    const { workspace_name } = req.body;
+    const { user_id } = req.user;
 
-            const workspace = await getUserWorkspace(workspace_id, user_id);
+    if (!workspace_name) {
+      res.status(400).json({ message: "Workspace name is required" });
+      return
+    }
 
-            if ( !workspace ) {
-                res.status(404).json({ message : "Workspace not found" });
-                return 
-            }
+    try {
+      const workspace = await createWorkspace({ workspace_name }, user_id)
+      res.status(201).json(workspace)
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
 
-            res.status(200).json(workspace);
+  })
 
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ message : "Internal server error" });
+  // PATCH
+
+  router.patch(
+    "/member-role/:workspace_id/:member_id",
+    async (req: IUpdateWorkspaceMemberRoleRequest, res: Response) => {
+
+      const {
+        workspace_id,
+        member_id
+      } = req.params
+      const { role } = req.body
+
+      try {
+        await updateWorkspaceMemberRole(
+          workspace_id,
+          member_id,
+          role
+        )
+        res.status(200).json({ message: "Workspace member role updated" })
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal server error" })
+      }
+
+    }
+  )
+
+  router.patch(
+    `/member/deactivate`,
+    verifyWorkspaceOwnerOrAdminMiddleware,
+    async (req: IDeactivateWorkspaceMemberRequest, res: Response) => {
+
+      const { workspace_id, member_id } = req.body
+      const { user_id } = req.user
+
+      try {
+        await deactivateWorkspaceMember(member_id, workspace_id)
+
+        emitWorkspaceMemberDeactivated(workspace_id, {
+          data : {
+            workspaceId : workspace_id,
+            userId : member_id
+          }
+        })
+
+        const workspaceMembers = await getWorkspaceMembers(workspace_id)
+
+        const wsMessage: TWorkspaceMemberDeactivatedWebSocketMessage = {
+          workspace_id,
+          member_id
         }
-    })
 
-    // Get workspace member
-    router.get(
-        "/member/:workspace_id/:member_id",
-        verifyWorkspaceMemberMiddleware,
-        async ( req : IGetWorkspaceMemberRequest, res : Response ) => {
+        wsConnectionsManager.broadcastToUsers(
+          {
+            type: EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
+            message: wsMessage
+          },
+          workspaceMembers.map(member => member.user_id).filter(id => id !== user_id)
+        )
 
-            const { workspace_id, member_id } = req.params;
+        res.status(200).json({ message: "Workspace member deactivated" })
 
-            try {
-                const workspaceMember = await getWorkspaceMember(workspace_id, member_id);
-                if ( !workspaceMember ) {
-                    res.status(404).json({ message : "Workspace member not found" });
-                } else {
-                    res.status(200).json(workspaceMember);
-                }
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({ message : "Internal server error" });
-            }
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal server error" })
+      }
 
-        }
-    )
+    }
+  )
 
-    // POST
+  router.patch(
+    `/member/reactivate`,
+    verifyWorkspaceOwnerOrAdminMiddleware,
+    async (req: IReactivateWorkspaceMemberRequest, res: Response) => {
 
-    // Create workspace
-    router.post( "/", async ( req : ICreateWorkspaceRequest, res : Response ) => {
-        const { workspace_name } = req.body;
-        const { user_id } = req.user;
+      const { workspace_id, member_id } = req.body
+      const { user_id } = req.user
 
-        if ( !workspace_name ) {
-            res.status(400).json({ message : "Workspace name is required" });
-            return
-        }
+      try {
+        await reactivateWorkspaceMember(member_id, workspace_id)
 
-        try {
-            const workspace = await createWorkspace( { workspace_name }, user_id )
-            res.status(201).json(workspace)
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ message : "Internal server error" });
+        const workspaceMembers = await getWorkspaceMembers(workspace_id)
+
+        const wsMessage: TWorkspaceMemberDeactivatedWebSocketMessage = {
+          workspace_id,
+          member_id
         }
 
-    })
+        wsConnectionsManager.broadcastToUsers(
+          {
+            type: EWebSocketEventType.WORKSPACE_MEMBER_REACTIVATED,
+            message: wsMessage
+          },
+          workspaceMembers.map(member => member.user_id).filter(id => id !== user_id)
+        )
 
-    // PATCH
-    router.patch(
-        "/member-role/:workspace_id/:member_id",
-        async ( req : IUpdateWorkspaceMemberRoleRequest, res : Response ) => {
+        res.status(200).json({ message: "Workspace member reactivated" })
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal server error" })
+      }
 
-            const {
-                workspace_id,
-                member_id
-            } = req.params
-            const { role } = req.body
-
-            try {
-                await updateWorkspaceMemberRole(
-                    workspace_id,
-                    member_id,
-                    role
-                )
-                res.status(200).json({ message : "Workspace member role updated" })
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({ message : "Internal server error" })
-            }
-
-        }
-    )
-
-    router.patch(
-        `/member/deactivate`,
-        verifyWorkspaceOwnerOrAdminMiddleware,
-        async ( req : IDeactivateWorkspaceMemberRequest, res : Response ) => {
-
-            const { workspace_id, member_id } = req.body
-            const { user_id } = req.user
-
-            try {
-                await deactivateWorkspaceMember(member_id, workspace_id)
-
-                const workspaceMembers = await getWorkspaceMembers( workspace_id )
-
-                const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
-                    workspace_id,
-                    member_id
-                }
-
-                wsConnectionsManager.broadcastToUsers(
-                    {
-                        type : EWebSocketEventType.WORKSPACE_MEMBER_DEACTIVATED,
-                        message : wsMessage
-                    },
-                    workspaceMembers.map( member => member.user_id ).filter( id => id !== user_id )
-                )
-
-                res.status(200).json({ message : "Workspace member deactivated" })
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({ message : "Internal server error" })
-            }
-
-        }
-    )
-
-    router.patch(
-        `/member/reactivate`,
-        verifyWorkspaceOwnerOrAdminMiddleware,
-        async ( req : IReactivateWorkspaceMemberRequest, res : Response ) => {
-            
-            const { workspace_id, member_id } = req.body
-            const { user_id } = req.user
-
-            try {
-                await reactivateWorkspaceMember(member_id, workspace_id)
-
-                const workspaceMembers = await getWorkspaceMembers(workspace_id)
-
-                const wsMessage : TWorkspaceMemberDeactivatedWebSocketMessage = {
-                    workspace_id,
-                    member_id
-                }
-
-                wsConnectionsManager.broadcastToUsers(
-                    {
-                        type : EWebSocketEventType.WORKSPACE_MEMBER_REACTIVATED,
-                        message : wsMessage
-                    },
-                    workspaceMembers.map( member => member.user_id ).filter( id => id !== user_id )
-                )
-
-                res.status(200).json({ message : "Workspace member reactivated" })
-            } catch (error) {
-                console.log(error)
-                res.status(500).json({ message : "Internal server error" })
-            }
-
-        }
-    )
+    }
+  )
 
 }

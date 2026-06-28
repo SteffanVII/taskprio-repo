@@ -28,6 +28,9 @@ export * from "./types/wSocket/enums"
 
 export * from "./types/todo/types"
 
+export * from "./types/socketIO/types"
+export * from "./types/socketIO/enums"
+
 export * from "./types/general/types"
 
 export * from "./db"

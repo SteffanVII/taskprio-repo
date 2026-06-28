@@ -1,17 +1,31 @@
-
 import { createClient } from 'redis';
+import dotenv from 'dotenv';
+import { Server } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
 
-const client = createClient({
-    username: 'default',
-    password: 'FoLKplqmQ6H84gPt6vF0xZTbYxv90NmT',
+dotenv.config()
+
+export const pubClient = createClient({
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
     socket: {
-        host: 'redis-12407.crce194.ap-seast-1-1.ec2.redns.redis-cloud.com',
-        port: 12407
+        host: process.env.REDIS_SOCKET_HOST,
+        port: Number(process.env.REDIS_SOCKET_PORT)
     }
-});
+})
 
-client.on('error', err => console.log('Redis Client Error', err));
+export const subClient = pubClient.duplicate()
 
-export const redisConnect = async () => {
-    await client.connect();
+export const connectRedisPubSubClients = async () => {
+  await Promise.all([
+    pubClient.connect(),
+    subClient.connect()
+  ])
+  console.log("Redis publish client connected ✅")
+  console.log("Redis subscribe client connected ✅")
+}
+
+export const initializeRedisAdapterToSocketIO = (io: Server) => {
+  io.adapter(createAdapter(pubClient, subClient))
+  console.log("Redis adapter for socket.io initialized ✅")
 }
